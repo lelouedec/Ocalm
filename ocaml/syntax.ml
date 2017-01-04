@@ -1,6 +1,6 @@
 open Printf
 
-type t = 
+type t =
   | Unit
   | Bool of bool
   | Int of int
@@ -28,8 +28,8 @@ type t =
   | Put of t * t * t
 and fundef = { name : Id.t * Type.t; args : (Id.t * Type.t) list; body : t }
 
-let rec infix_to_string (to_s : 'a -> string) (l : 'a list) (op : string) : string = 
-    match l with 
+let rec infix_to_string (to_s : 'a -> string) (l : 'a list) (op : string) : string =
+    match l with
     | [] -> ""
     | [x] -> to_s x
     | hd :: tl -> (to_s hd) ^ op ^ (infix_to_string to_s tl op)
@@ -43,35 +43,76 @@ let rec to_string exp =
   | Not e -> sprintf "(not %s)" (to_string e)
   | Neg e -> sprintf "(- %s)" (to_string e)
   | Add (e1, e2) -> sprintf "(%s + %s)" (to_string e1) (to_string e2)
-  | Sub (e1, e2) -> sprintf "(%s - %s)" (to_string e1) (to_string e2) 
+  | Sub (e1, e2) -> sprintf "(%s - %s)" (to_string e1) (to_string e2)
   | FNeg e -> sprintf "(-. %s)" (to_string e)
   | FAdd (e1, e2) -> sprintf "(%s +. %s)" (to_string e1) (to_string e2)
-  | FSub (e1, e2) -> sprintf "(%s -. %s)" (to_string e1) (to_string e2) 
+  | FSub (e1, e2) -> sprintf "(%s -. %s)" (to_string e1) (to_string e2)
   | FMul (e1, e2) -> sprintf "(%s *. %s)" (to_string e1) (to_string e2)
-  | FDiv (e1, e2) -> sprintf "(%s /. %s)" (to_string e1) (to_string e2) 
-  | Eq (e1, e2) -> sprintf "(%s = %s)" (to_string e1) (to_string e2) 
-  | LE (e1, e2) -> sprintf "(%s <= %s)" (to_string e1) (to_string e2)  
-  | If (e1, e2, e3) -> 
-          sprintf "(if %s then %s else %s)" (to_string e1) (to_string e2) (to_string e3)   
-  | Let ((id,t), e1, e2) -> 
-          sprintf "(let %s = %s in %s)" (Id.to_string id) (to_string e1) (to_string e2)   
-  | Var id -> Id.to_string id 
-  | App (e1, le2) -> sprintf "(%s %s)" (to_string e1) (infix_to_string to_string le2 " ") 
-  | LetRec (fd, e) ->  
-          sprintf "(let rec %s %s = %s in %s)" 
+  | FDiv (e1, e2) -> sprintf "(%s /. %s)" (to_string e1) (to_string e2)
+  | Eq (e1, e2) -> sprintf "(%s = %s)" (to_string e1) (to_string e2)
+  | LE (e1, e2) -> sprintf "(%s <= %s)" (to_string e1) (to_string e2)
+  | If (e1, e2, e3) ->
+          sprintf "(if %s then %s else %s)" (to_string e1) (to_string e2) (to_string e3)
+  | Let ((id,t), e1, e2) ->
+          sprintf "(let %s = %s in %s)" (Id.to_string id) (to_string e1) (to_string e2)
+  | Var id -> Id.to_string id
+  | App (e1, le2) -> sprintf "(%s %s)" (to_string e1) (infix_to_string to_string le2 " ")
+  | LetRec (fd, e) ->
+          sprintf "(let rec %s %s = %s in %s)"
           (let (x, _) = fd.name in (Id.to_string x))
-          (infix_to_string (fun (x,_) -> (Id.to_string x)) fd.args " ") 
+          (infix_to_string (fun (x,_) -> (Id.to_string x)) fd.args " ")
           (to_string fd.body)
           (to_string e)
-  | LetTuple (l, e1, e2)-> 
-          sprintf "(let (%s) = %s in %s)" 
+  | LetTuple (l, e1, e2)->
+          sprintf "(let (%s) = %s in %s)"
           (infix_to_string (fun (x, _) -> Id.to_string x) l ", ")
           (to_string e1)
           (to_string e2)
   | Get(e1, e2) -> sprintf "%s.(%s)" (to_string e1) (to_string e2)
-  | Put(e1, e2, e3) -> sprintf "(%s.(%s) <- %s)"  
+  | Put(e1, e2, e3) -> sprintf "(%s.(%s) <- %s)"
                  (to_string e1) (to_string e2) (to_string e3)
-  | Tuple(l) -> sprintf "(%s)" (infix_to_string to_string l ", ") 
-  | Array(e1,e2) -> sprintf "(Array.create %s %s)" 
-       (to_string e1) (to_string e2) 
+  | Tuple(l) -> sprintf "(%s)" (infix_to_string to_string l ", ")
+  | Array(e1,e2) -> sprintf "(Array.create %s %s)"
+       (to_string e1) (to_string e2)
 
+let rec height = function
+  | Unit -> 0
+  | Bool b -> 0
+  | Int i -> 0
+  | Float f -> 0
+  | Not e -> height e + 1
+  | Neg e -> height e + 1
+  | Add (e1, e2) -> max (height e1) (height e2) + 1
+  | Sub (e1, e2) -> max (height e1) (height e2) + 1
+  | FNeg e -> height e + 1
+  | FAdd (e1, e2) -> max (height e1) (height e2) + 1
+  | FSub (e1, e2) -> max (height e1) (height e2) + 1
+  | FMul (e1, e2) -> max (height e1) (height e2) + 1
+  | FDiv (e1, e2) -> max (height e1) (height e2) + 1
+  | Eq (e1, e2) -> max (height e1) (height e2) + 1
+  | LE (e1, e2) -> max (height e1) (height e2) + 1
+  | If (e1, e2, e3) ->
+          max (height e1) (max (height e2) (height e3)) + 1
+  | Let ((id,t), e1, e2) ->
+          max (height e1) (height e2) + 1
+  | Var id -> 0
+  (*
+  | App (e1, le2) -> sprintf "(%s %s)" (to_string e1) (infix_to_string to_string le2 " ")
+  | LetRec (fd, e) ->
+          sprintf "(let rec %s %s = %s in %s)"
+          (let (x, _) = fd.name in (Id.to_string x))
+          (infix_to_string (fun (x,_) -> (Id.to_string x)) fd.args " ")
+          (to_string fd.body)
+          (to_string e)
+  | LetTuple (l, e1, e2)->
+          sprintf "(let (%s) = %s in %s)"
+          (infix_to_string (fun (x, _) -> Id.to_string x) l ", ")
+          (to_string e1)
+          (to_string e2)
+  | Get(e1, e2) -> sprintf "%s.(%s)" (to_string e1) (to_string e2)
+  | Put(e1, e2, e3) -> sprintf "(%s.(%s) <- %s)"
+                 (to_string e1) (to_string e2) (to_string e3)
+  | Tuple(l) -> sprintf "(%s)" (infix_to_string to_string l ", ")
+  | Array(e1,e2) -> sprintf "(Array.create %s %s)"
+       (to_string e1) (to_string e2)  *)
+  | _ -> 0

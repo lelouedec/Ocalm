@@ -1,14 +1,17 @@
-let print_ast l =
-  print_string (Syntax.to_string (Parser.exp Lexer.token l)); print_newline ()
+let print_ast exp =
+  print_string (Syntax.to_string exp); print_newline ()
 
-let file f = 
+let file f =
   let inchan = open_in f in
   try
-    print_ast (Lexing.from_channel inchan);
-    close_in inchan
+    let exp = Parser.exp Lexer.token (Lexing.from_channel inchan) in
+      let h = Syntax.height exp in
+      print_string (Printf.sprintf "height: %d\n" h);
+      print_ast exp;
+      close_in inchan
   with e -> (close_in inchan; raise e)
 
-let () = 
+let () =
   let files = ref [] in
   Arg.parse
     [ ]
