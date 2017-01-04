@@ -7,6 +7,8 @@ let file f =
     let exp = Parser.exp Lexer.token (Lexing.from_channel inchan) in
       let h = Syntax.height exp in
       print_string (Printf.sprintf "height: %d\n" h);
+      let vars = Syntax.variables exp in
+      print_string (Printf.sprintf "vars: %s\n" (String.concat ", " vars));
       print_ast exp;
       close_in inchan
   with e -> (close_in inchan; raise e)
