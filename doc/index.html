@@ -1,0 +1,190 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+<body>
+<h1 id="compilation-project">Compilation project</h1>
+<p>Welcome to the compilation project. This document contains the basic information you need to get you started.</p>
+<h2 id="practical-organization">Practical organization</h2>
+<h3 id="group">Group</h3>
+<p>The very first step you need to do is to make group choices. We recommend groups of size five people, and at least four people. You need to choose your group on the moodle (activity &quot;Group choice&quot; at the top of the project). If you want, you can choose a name for your group and send it to us by email.</p>
+<h3 id="important-dates-subject-to-change">Important dates (subject to change)</h3>
+<p>Mon. 2 - 13h30 - 17h00 Presentation of the project<br />
+Wed. 4 - 14h00 - 17h00 Git/Caml labs<br />
+Thu. 26 - 09h00 - 13h00 Project defense<br />
+Fri. 7, 14, 21 - 18h00 Weekly report + mid project submission on 14<br />
+Wed. 25 - 12h00 Final project submission</p>
+<h3 id="tutors-presence">Tutors presence</h3>
+<p>See on Moodle for schedule.</p>
+<!--
+
+#### Philippe Bidinger
+
+Tue. 10 - 14h00 - 16h30  
+Thu. 12 - 14h00 - 16h30  
+Mon. 16 - 14h00 - 16h30  
+Thu. 19 - 14h00 - 16h30  
+Mon. 23 - 14h00 - 16h30  
+
+#### Florent Bouchez Tichadou
+TODO
+-->
+<h2 id="prerequisites">Prerequisites</h2>
+<p>It is important that you are at least familiar with both Git and OCaml at the beginning of the project. There will be a lab in the first week if you need further help.</p>
+<h3 id="learning-git">Learning Git</h3>
+<p>This project involves working as a team on a single project. To achieve maximum efficiency, we force you to use the Git Source Code Management software. If you don't know Git (or need to freshen up your memories), look at the <a href="./tutorial_git.html">git tutorial</a>.</p>
+<h3 id="learning-ocaml">Learning OCaml</h3>
+<p>Although you will be compiling only a minimal subset of OCaml, MinCaml, it is essential for you to learn the minimum required to write small programs in OCaml so that you know:</p>
+<ul>
+<li>The semantics of the programs you will be compiling</li>
+<li>How to write tests for your compiler!</li>
+</ul>
+<p>There are many resources available on the Internet. We recommend you to use:</p>
+<ul>
+<li><a href="http://try.ocamlpro.com">try.ocamlpro.com</a> where your can try by yourself the language;</li>
+<li>this <a href="https://ocaml.org/learn/tutorials/basics.html">tutorial</a> (+ see the table of contents) for more detailed explanations. Note that you can open a console with an OCaml &quot;top-level&quot; (interpreter) by launching the command <code>ocaml</code> in a terminal.</li>
+</ul>
+<p>Try to focus your attention on how functions are manipulated, you may skip features that are not supported in MinCaml, such as:</p>
+<ul>
+<li>lists</li>
+<li>pattern matching</li>
+<li>tuples</li>
+<li>mutable variables</li>
+<li>loops (for, while...)</li>
+</ul>
+<h2 id="setting-up-the-project">Setting up the project</h2>
+<h3 id="git-repository">Git repository</h3>
+<p>One person on the team must setup the Git repository on the team's project, while the other will just clone from the team's project.</p>
+<ol style="list-style-type: decimal">
+<li><p>Every one will need an account on the imag forge. If you don't have one, register at this <a href="https://forge.imag.fr/account/register.php">address</a>.</p></li>
+<li><p>Setting up the team's Git. This is done by only one person.</p></li>
+</ol>
+<p>Once you are logged in on the forge, register a new projet <code>My Page-&gt;Register Project</code>, or use this <a href="https://forge.imag.fr/register">link</a>. Choose a project name as close to your team's name as possible, make sure to choose git as the SCM, <em>LIG</em> as the laboratory, and make the project <em>private</em>.</p>
+<p>When the project is accepted, do not forget to add every team member to the list of developers so they can contribute.</p>
+<p>Make an initial (empty) clone of your project. this will create a directory <code>compilation-project</code> in the current working directory.</p>
+<pre><code>git clone git+ssh://&lt;login&gt;@scm.forge.imag.fr/var/lib/gforge/chroot/scmrepos/git/&lt;project&gt;.git compilation-project</code></pre>
+<p>If at that point you must enter your password, you should consider uploading your ssh key to the forge...</p>
+<p>Now you need to get the material for the project. Download the archive from moodle.</p>
+<pre><code>tar xvf archive.tar.gz
+cd archive</code></pre>
+<p>Copy the files from the archive to your git directory and make an initial add of those files so that they are available to everyone on the team.</p>
+<pre><code>git add *
+git commit -m &#39;Initial import&#39;
+git push</code></pre>
+<p>The other persons can now clone the Git repository on their account or personal computer.</p>
+<pre><code>  git clone git+ssh://&lt;login&gt;@scm.forge.imag.fr/var/lib/gforge/chroot/scmrepos/git/&lt;project&gt;.git compilation-project </code></pre>
+<h3 id="personal-computer">Personal computer</h3>
+<p>If you want to work on your personal computer, you should install (at minimum) the following packages:</p>
+<ul>
+<li>git</li>
+<li>for a project in C:</li>
+<li>bison &gt;= 2.3</li>
+<li>flex &gt;= 2.5</li>
+<li>for a project in OCaml:</li>
+<li>ocaml &gt;= 4.01</li>
+<li>ocamlbuild</li>
+<li>ocamlyacc</li>
+<li>to test the assembly:</li>
+<li>qemu-user</li>
+<li>gcc-arm-none-eabi</li>
+<li>gdb-arm-none-eabi</li>
+</ul>
+<h2 id="roadmap-and-organization-advice">Roadmap and organization advice</h2>
+<h3 id="step-1">Step 1</h3>
+<p>Read the <a href="./min-caml_article.pdf">reference paper</a>. It describes the compilation project as it was used at university of Tokyo. You don't have to understand everything and not everything is relevant but some parts will serve as reference for the implementation.</p>
+<p>The most important parts are section 2 and 4. In particular:</p>
+<ul>
+<li>Section 2 and Figure 1 describe the MinCaml language.</li>
+<li>Section 4.3 to 4.11 describe the transformations you will have to implement in the front-end.</li>
+</ul>
+<h3 id="step-2">Step 2</h3>
+<p>Before trying to code anything, everybody should get accustomed to the three languages used in the project. MinCaml, ASML and ARM. There are code examples for each of these languages in the archive, as well as instructions to execute them (see READMEs).</p>
+<ul>
+<li>MinCaml can be parsed with the provided parser, and run using ocaml.</li>
+<li>ARM programs are run using the qemu VM</li>
+<li>ASML programs can be run using a provided interpreter.</li>
+<li>You can compile C programs to ARM using gcc-arm-none-eabi (useful to see how to generate ARM code)</li>
+</ul>
+<h3 id="step-3">Step 3</h3>
+<p>Get an understanding of the different tasks in the project and decide what you want to work on.</p>
+<p>There are several tasks that can be performed more or less separately. For each of these tasks, there is a corresponding documentation.</p>
+<ul>
+<li><a href="./typing.html">Typechecking</a></li>
+<li><a href="./frontend.html">Compilation of MinCaml to ASML</a></li>
+<li><a href="./backend.html">Compilation of ASML to ARM</a></li>
+<li><a href="./testing.html">Testing</a></li>
+</ul>
+<p>Moreover, typechecking and the front-end rely heavily on tree traversal algorithms (in Java, see <a href="./java-tree.html">trees in Java</a>).</p>
+<p>The front-end and the back-end interface eachother via the intermediary language <a href="./asml.html">ASML</a>. It means you need to develop a data structure that represent ASML programs in memory (some sort of AST for ASML). More likely, the sub-team working on the backend will write this datatype because they need it first.</p>
+<p>Testing is an orthogonal part of the project. It requires a good understanding of the specifications. You will write a testing infrastructure (scripts to run the programs to test) and test cases (input programs).</p>
+<h3 id="step-4-preliminary-exercices">Step 4: Preliminary exercices</h3>
+<h4 id="tree-traversals">Tree traversals</h4>
+<p>Before starting to work on the front-end.</p>
+<ol style="list-style-type: decimal">
+<li>Compute the set of variables occuring in a MinCaml AST.</li>
+<li>Duplicate an AST.</li>
+</ol>
+<p>Use the tree traversals algorithms given in <a href="./java-tree.html">trees in java</a> document and in the provided code samples (HeightVisitor, PrintVisitor...).</p>
+<h4 id="asml-datatype">ASML datatype</h4>
+<p>The first step in the backend part is to design a data structure for the ASML language. You can also write a simple parser in order to test the backend before the front-end is complete. An easier solution may be to use a JSON representation for the ASML program so that you don't have to write a parser on your own.</p>
+<h4 id="command-line-options">Command line options</h4>
+<p>Implement the command-line options (see below for a description).</p>
+<h3 id="step-5">Step 5</h3>
+<p>Make a development plan.</p>
+<p>Subdivide the project in small increments. For a compiler, it is natural to define increments as subsets of the source languages. We suggest the following steps.</p>
+<ol style="list-style-type: decimal">
+<li>simple arithmetic expression</li>
+<li>call to external functions</li>
+<li>functions (let rec)</li>
+<li>if-then-else</li>
+<li>closures, tuple, arrays</li>
+<li>floats</li>
+</ol>
+<p>You don't have to follow precisely this order, but you should aim to reach point 3 for the mid-project submission. You may also identify other intermediary steps (for instance, dealing with bigger integer in ARM, or register allocation strategy).</p>
+<p>These steps can be followed for each task of the project (e.g. each transformation in the front-end, typechecking, testing, backend...). A good way to proceed is to write the tests before the code. Increments can be specified by set of test cases.</p>
+<h3 id="step-6">Step 6</h3>
+<p>Set up your environment (see <a href="./testing.html">testing</a>). You will save a lot of time if you have a properly set up environment from the beginning of the project.</p>
+<h2 id="other-documents">Other documents:</h2>
+<ul>
+<li>presentation slides</li>
+<li>arm-reference-manual.pdf</li>
+</ul>
+<h2 id="remarks-on-the-provided-java-code">Remarks on the provided java code</h2>
+<p>It is minimalist on purpose, we expect you refactor it to follow Java coding guidelines. At the very least, you should organizing classes into packages and separate files. Other ideas:</p>
+<ul>
+<li>compiling/deploying/testing with &quot;maven&quot; or &quot;ant&quot; (Makefile not portable, not recommended for java programs)</li>
+<li>using javadoc</li>
+<li>unit testing (e.g. JUnit)</li>
+</ul>
+<h2 id="mincamlc">Mincamlc</h2>
+<p>We will use our test suite on your compilers. So it is very important that your mincamlc program be self-contained and respect the following interface.</p>
+<h3 id="returned-value">Returned value</h3>
+<ul>
+<li>0 on success</li>
+<li>1 on error, plus error message on stderr</li>
+</ul>
+<h3 id="command-line-options-1">Command line options</h3>
+<ul>
+<li>-o <file> : output file</li>
+<li>-h : display help</li>
+<li>-v : display version</li>
+<li>-t : type check only</li>
+<li>-p : parse only</li>
+<li>-asml : output ASML</li>
+<li>-my-opt : you can add personal options (optimizations, etc.)</li>
+</ul>
+<p>Your program should not write anything on standard output (except for the -h, -v and -my-opt option). If you want to display extra information, for instance the types of the function in the MinCaml program, add an extra option for it. Unimplemented features should lead to a specific exception (e.g. NotYetImplemented). There should not be any development trace in the released version.</p>
+<h2 id="submissions">Submissions</h2>
+<p>For both submissions, we will retrieve and evaluate the code from your git archive on the master branch at the specified date and time. You will give us the documentation of the project at the beginning of the defense.</p>
+<p>We will evaluate the code (including the scripts for testing) on mandelbrot. It is recommended that you do a fresh clone your repository before the submission to make sure everything is working properly.</p>
+<p>Include a README that explains how to compile and lauch the compiler, and how to launch the test scripts. Say also what subset of mincaml is working properly. We are not interested in half-finished features. We would prefer to see robust and well-tested compilers on a smaller subset, rather than a lot features that more or less work.</p>
+<h3 id="mid-project-submission">Mid-project submission</h3>
+<p>For the mid-project, your compiler should work at least on a subset of the language that contains arithmetic expressions (<code>+</code> and <code>-</code>) and function calls (including to the library function <code>print_int</code>). The command line options should be fully functional.</p>
+</body>
+</html>
