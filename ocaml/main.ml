@@ -4,7 +4,10 @@ let print_ast l =
 let file f = 
   let inchan = open_in f in
   try
-    print_ast (Lexing.from_channel inchan);
+    let ast = Lexing.from_channel inchan in
+    let env = Env.get_env (Parser.exp Lexer.token ast) in
+    Env.iter
+      print_endline (Id.to_string env);
     close_in inchan
   with e -> (close_in inchan; raise e)
 

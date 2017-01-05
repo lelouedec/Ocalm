@@ -68,10 +68,10 @@ let rec to_string exp =
           (infix_to_string (fun (x, _) -> Id.to_string x) l ", ")
           (to_string e1)
           (to_string e2)
-  | Get(e1, e2) -> sprintf "%s.(%s)" (to_string e1) (to_string e2)
-  | Put(e1, e2, e3) -> sprintf "(%s.(%s) <- %s)"  
+  | Get (e1, e2) -> sprintf "%s.(%s)" (to_string e1) (to_string e2)
+  | Put (e1, e2, e3) -> sprintf "(%s.(%s) <- %s)"  
                  (to_string e1) (to_string e2) (to_string e3)
-  | Tuple(l) -> sprintf "(%s)" (infix_to_string to_string l ", ") 
-  | Array(e1,e2) -> sprintf "(Array.create %s %s)" 
+  | Tuple (l) -> sprintf "(%s)" (infix_to_string to_string l ", ") 
+  | Array (e1, e2) -> sprintf "(Array.create %s %s)" 
        (to_string e1) (to_string e2) 
 
