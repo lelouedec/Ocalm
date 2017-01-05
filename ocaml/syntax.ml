@@ -117,54 +117,21 @@ let rec height = function
        (to_string e1) (to_string e2)  *)
   | _ -> 0
 
-(* consider using Set instead of List to avoid sort_uniq *)
-let rec variables = function
-  | Unit -> []
-  | Bool b -> []
-  | Int i -> []
-  | Float f -> []
-  | Not e -> variables e
-  | Neg e -> variables e
-  | Add (e1, e2) ->
-    List.sort_uniq
-      (String.compare)
-      (variables e1 @ variables e2)
-  | Sub (e1, e2) ->
-    List.sort_uniq
-      (String.compare)
-      (variables e1 @ variables e2)
-  | FNeg e -> variables e
-  | FAdd (e1, e2) ->
-    List.sort_uniq
-      (String.compare)
-      (variables e1 @ variables e2)
-  | FSub (e1, e2) ->
-    List.sort_uniq
-      (String.compare)
-      (variables e1 @ variables e2)
-  | FMul (e1, e2) ->
-    List.sort_uniq
-      (String.compare)
-      (variables e1 @ variables e2)
-  | FDiv (e1, e2) ->
-    List.sort_uniq
-      (String.compare)
-      (variables e1 @ variables e2)
-  | Eq (e1, e2) ->
-    List.sort_uniq
-      (String.compare)
-      (variables e1 @ variables e2)
-  | LE (e1, e2) ->
-    List.sort_uniq
-      (String.compare)
-      (variables e1 @ variables e2)
-  | If (e1, e2, e3) ->
-    List.sort_uniq
-      (String.compare)
-      (variables e1 @ variables e2 @ variables e3)
+(* Sort only when the recursive call ends *)
+let rec get_vars = function
+  | Not e -> get_vars e
+  | Neg e -> get_vars e
+  | Add (e1, e2) -> get_vars e1 @ get_vars e2
+  | Sub (e1, e2) -> get_vars e1 @ get_vars e2
+  | FNeg e -> get_vars e
+  | FAdd (e1, e2) -> get_vars e1 @ get_vars e2
+  | FSub (e1, e2) -> get_vars e1 @ get_vars e2
+  | FMul (e1, e2) -> get_vars e1 @ get_vars e2
+  | FDiv (e1, e2) -> get_vars e1 @ get_vars e2
+  | Eq (e1, e2) -> get_vars e1 @ get_vars e2
+  | LE (e1, e2) -> get_vars e1 @ get_vars e2
+  | If (e1, e2, e3) -> get_vars e1 @ get_vars e2 @ get_vars e3
   | Let ((id,t), e1, e2) ->
-    List.sort_uniq
-      (String.compare)
-      ([Id.to_string id] @ variables e1 @ variables e2)
+      [Id.to_string id] @ get_vars e1 @ get_vars e2
   | Var id -> [Id.to_string id]
   | _ -> []
