@@ -26,7 +26,12 @@ let rec g (exp : t) (vars : string list) (repl_vars : string ToReplaceVars.t) : 
         g e1 vars repl_vars,
         g e2 vars repl_vars
       )
-  | Var id -> Var id
+  | Var id ->
+    let newid = if ToReplaceVars.mem id repl_vars then
+      ToReplaceVars.find id repl_vars
+    else
+      id
+    in Var (newid)
   | _ -> failwith "undef"
 
 let rec f (exp : t) : t = g exp [] ToReplaceVars.empty
