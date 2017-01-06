@@ -1,3 +1,0 @@
-- []  Front-End
-  - []  Type Checking
-  - []  k-normalization
