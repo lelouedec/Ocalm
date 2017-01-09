@@ -1,11 +1,11 @@
 let print_ast l =
-  print_string (Syntax.to_string (Parser.exp Lexer.token l)); print_newline ()
+  print_string (Asml.to_string (Parser_asml.exp Lexer_asml.token l)); print_newline ()
 
 let file f = 
   let inchan = open_in f in
   try
     let ast = Lexing.from_channel inchan in
-    
+      print_ast ast ;
     close_in inchan
   with e -> (close_in inchan; raise e)
 

@@ -11,15 +11,13 @@ type exp =
 	| FNeg of Id.t
 	| Add of Id.t * ident_or_imm
 	| Sub of Id.t * ident_or_imm
-	| Ld of 
-	| St of 	
+	| Ld of Id.t * ident_or_imm
+	| St of Id.t * ident_or_imm * Id.t 
 	| FAdd of Id.t * Id.t
 	| FSub of Id.t * Id.t
 	| FMul of Id.t * Id.t 
 	| FDiv of Id.t * Id.t 
 	| New of ident_or_imm
-	| Mem of Id.t * ident_or_imm
-	| Mem2 of  Id.t * ident_or_imm * Id.t 
 	| IfEq of Id.t * ident_or_imm * asmt * asmt
 	| IfLEq of Id.t * ident_or_imm * asmt * asmt
 	| IfGEq of Id.t * ident_or_imm * asmt * asmt
@@ -36,3 +34,6 @@ and fundefs =
  	| LetLabeleqFloat of  fundefs
  	| LetLaelEq of formal_args * asmt * fundefs
 
+let rec to_string exp =
+  match exp with
+  	|
