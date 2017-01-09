@@ -1,26 +1,30 @@
 open Syntax
 
-let rec genenerate exp st t =
+let rec genenerate exp st extst t =
   match exp with
   | Unit -> [(Type.Unit, t)]
   | Bool (_) -> [(Type.Bool, t)]
   | Int (_) -> [(Type.Int, t)]
   | Float (_) -> [(Type.Float, t)]
-  | Not e -> genenerate e st Type.Bool @ [(Type.Bool, t)]
-  | Neg e -> genenerate e st Type.Int @ [(Type.Int, t)]
-  | Add (e1, e2) -> genenerate e1 st Type.Int @ genenerate e2 st Type.Int @ [(Type.Int, t)]
-  | Sub (e1, e2) -> genenerate e1 st Type.Int @ genenerate e2 st Type.Int @ [(Type.Int, t)]
-  | FNeg e -> genenerate e st Type.Float @ [(Type.Float, t)]
-  | FAdd (e1, e2) -> genenerate e1 st Type.Float @ genenerate e2 st Type.Float @ [(Type.Float, t)]
-  | FSub (e1, e2) -> genenerate e1 st Type.Float @ genenerate e2 st Type.Float @ [(Type.Float, t)]
-  | FMul (e1, e2) -> genenerate e1 st Type.Float @ genenerate e2 st Type.Float @ [(Type.Float, t)]
-  | FDiv (e1, e2) -> genenerate e1 st Type.Float @ genenerate e2 st Type.Float @ [(Type.Float, t)]
+  | Not e -> genenerate e st extst Type.Bool @ [(Type.Bool, t)]
+  | Neg e -> genenerate e st extst Type.Int @ [(Type.Int, t)]
+  | Add (e1, e2) -> genenerate e1 st extst Type.Int @ genenerate e2 st extst Type.Int @ [(Type.Int, t)]
+  | Sub (e1, e2) -> genenerate e1 st extst Type.Int @ genenerate e2 st extst Type.Int @ [(Type.Int, t)]
+  | FNeg e -> genenerate e st extst Type.Float @ [(Type.Float, t)]
+  | FAdd (e1, e2) -> genenerate e1 st extst Type.Float @ genenerate e2 st extst Type.Float @ [(Type.Float, t)]
+  | FSub (e1, e2) -> genenerate e1 st extst Type.Float @ genenerate e2 st extst Type.Float @ [(Type.Float, t)]
+  | FMul (e1, e2) -> genenerate e1 st extst Type.Float @ genenerate e2 st extst Type.Float @ [(Type.Float, t)]
+  | FDiv (e1, e2) -> genenerate e1 st extst Type.Float @ genenerate e2 st extst Type.Float @ [(Type.Float, t)]
   (*| Eq (e1, e2) -> 
   | LE (e1, e2) ->   
   | If (e1, e2, e3) -> *)
-  | Let ((id,tv), e1, e2) -> genenerate e1 st tv @ genenerate e2 (St.add id tv st) t
-  (*| Var id -> 
-  | App (e1, le2) -> 
+  | Let ((id,tv), e1, e2) -> genenerate e1 st extst tv @ genenerate e2 (St.add id tv st) extst t
+	| Var(id) when St.mem id st -> let t1 = St.find id st in [(t1, t)]
+  | Var(id) when St.mem id extst -> let t1 = St.find id extst in [(t1, t)]
+	| Var(id) ->
+				let t1 = Type.gentyp () in St.add id t1 extst;
+				[t1, t]
+  (*| App (e1, le2) -> 
   | LetRec (fd, e) -> 
   | LetTuple (l, e1, e2)-> 
   | Get (e1, e2) -> 

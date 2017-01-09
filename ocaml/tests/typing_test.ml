@@ -11,7 +11,7 @@ let case1 =
       Syntax.Int 1, 
 			Syntax.Unit) in
 
-  let type_eq = genenerate e St.empty Type.Unit in
+  let type_eq = genenerate e St.empty St.empty Type.Unit in
 		print_endline "type equations :";
     List.iter
       to_string (type_eq);
