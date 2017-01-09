@@ -2,6 +2,7 @@ open Printf
 
 
 
+
 type ident_or_imm = 
 	| Ident of Id.t 
 	| Int of int 
@@ -12,12 +13,12 @@ match l  with
 	| Int i -> string_of_int i
 
 type exp = 
-	| Let of (Id.t * Type.t) * exp * exp
+	| Let of (Id.t * exp) * Syntax.t * exp
 	| Nop 
 	| LPexpRp of ( exp ) 
-	| Int of int 
+	| Int 
 	| Ident of Id.t
-	| Label of string 
+	| Label of Id.t 
 	| Neg of Id.t
 	| FNeg of Id.t
 	| Add of Id.t * ident_or_imm
@@ -35,19 +36,15 @@ type exp =
 	| CallLabel of exp
 	| CallClo of Id.t * exp
 
-type fundef = { name : Id.t; args : Id.t list; fargs : Id.t list; body : exp; ret : Type.t }
-
-
-
 let rec to_string exp =
  match exp with 
    	| Let ((id,t), e1, e2) -> 
-          sprintf "(let %s = %s in %s)" (id) (to_string e1) (to_string e2)
+          sprintf "(let %s = %s in %s)" (id) (Syntax.to_string e1) (to_string e2)
  	| Nop ->" "
 	| LPexpRp e -> sprintf " ( %s )" ( to_string e )
-	| Int i -> string_of_int i 
+	| Int -> sprintf " :int "
 	| Ident i -> i 
-	| Label s -> s  
+	| Label s -> sprintf "_ %s" s  
 	| Neg i -> i
 	| FNeg i -> i 
 	| Add (i,id) -> sprintf "%s + %s "  (i)  (ident_or_imm_to_string  id)
@@ -58,7 +55,7 @@ let rec to_string exp =
 	| FSub (i,id) -> sprintf "%s + %s "  (i)  (id)
 	| FMul (i,id) -> sprintf "%s + %s "  (i)  (id)
 	| FDiv (i,id) -> sprintf "%s + %s "  (i)  (id)
-	| New i -> sprintf "new %s" (ident_or_imm_to_string	i)
+	| New i -> sprintf "new %s in " (ident_or_imm_to_string	i)
 	| IfEq (i, id , t1, t2 ) -> sprintf ("if %s = %s  then %S else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
 	| IfLEq (i, id , t1, t2 ) -> sprintf ("if %s <= %s then %S else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
 	| IfGEq (i, id , t1, t2 ) -> sprintf ("if %s >= %s then %S else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
@@ -66,16 +63,52 @@ let rec to_string exp =
 	| CallClo  (id,t) -> sprintf " Call  %s %s" (id) (to_string t)
 
 
+type asmt =
+	| LpasmtRPAREN of asmt 
+	| LetIndentEq  of  Id.t * exp * asmt
+	| Exp of exp 
+
+let rec asmt_to_string asmt =
+	match asmt with 
+	| LpasmtRPAREN a -> sprintf " ( %s )" (asmt_to_string a)
+	| LetIndentEq (i,e2,a) -> sprintf "Let %s = %s in %s" (i) ( to_string e2) (asmt_to_string a)
+	| Exp e -> (to_string e)
+
+type forma_args =
+	| Identf  of Id.t * forma_args
+	| Ident of Id.t 
+	| Nil
+
+let rec form_to_string fa =
+	match fa with 
+	| Identf (i,f) -> sprintf " %s %s" (i) (form_to_string f)
+	| Ident i -> i 
+	| Nil -> " "
+
+type fundefs =
+	| LetUnderscEQ of asmt
+	| LetLabeleqFloat of Id.t * float * fundefs 
+	| LetLabelEq of Id.t * forma_args * asmt * fundefs 
+
+let rec fundefs_to_string fu =
+	match fu with 
+	| LetUnderscEQ a -> sprintf "Let _ = %s" (asmt_to_string a)
+	| LetLabeleqFloat (l,fl, fu) -> sprintf " Let _%s = %.2f %s " (l) (fl) (fundefs_to_string fu)
+	| LetLabelEq (l,fo, a, fu) -> sprintf "Let _%s = %s %s %s" (l) (form_to_string fo) (asmt_to_string a) (fundefs_to_string fu)
+
 
 let test () =
 	print_endline "Test";
 	let exp = 
 		Let (
-				("x", Type.Int ),
-				Int 0,
+				("x", Int ),
+				Syntax.Int 0,
 				Ident "x"
 			) in 
 	print_endline (to_string (exp) ); 
+	
+	let exp2 =
+		LetLabelEq ("f",Ident "x", Exp (New (Int (9) )), LetUnderscEQ(Exp ( I dent "coucou") ) ) in print_endline (fundefs_to_string (exp2) );
 
 
 

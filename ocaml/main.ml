@@ -10,7 +10,7 @@ let file f =
   with e -> (close_in inchan; raise e)
 
 let () = 
-print_endline " coucou";
+(*print_endline " coucou";
 let files = ref [] in
   Arg.parse
     [ ]
@@ -18,6 +18,7 @@ let files = ref [] in
     (Printf.sprintf "usage: %s filenames" Sys.argv.(0));
   List.iter
     (fun f -> ignore (file f))
-    !files
+    !files)*)
+Asml.test();
 
 
