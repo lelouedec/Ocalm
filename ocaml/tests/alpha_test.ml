@@ -37,4 +37,5 @@ let case2 () =
   assert (not (alpha_ed = knormed))
 
 let () =
+  print_endline "Alpha-conversion tests";
   case2 ()

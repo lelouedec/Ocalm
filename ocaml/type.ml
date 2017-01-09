@@ -10,14 +10,14 @@ type t =
 
 let gentyp () = Var(ref None)
 
-let rec to_s = function
-| Unit -> "unit"
-| Bool -> "bool"
-| Int -> "int"
-| Float -> "float"
-| Fun (l, t) -> "()"
-| Tuple l -> "<tuple>"
-| Array t -> "<array>"
-| Var r -> match !r with
-  | Some t -> to_s t
-  | _ -> "<undef>"
+let rec to_string = function
+  | Unit -> "unit"
+  | Bool -> "bool"
+  | Int -> "int"
+  | Float -> "float"
+  | Fun (l, t) -> "()"
+  | Tuple l -> "<tuple>"
+  | Array t -> "<array>"
+  | Var r -> match !r with
+    | Some t -> to_string t
+    | _ -> "<undef>"

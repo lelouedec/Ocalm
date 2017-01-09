@@ -57,7 +57,7 @@ let rec to_s (exp : t) =
   | Add (id1, id2) -> sprintf "(%s + %s)" (Id.to_string id1) (Id.to_string id2)
   | Eq (id1, id2) -> sprintf "(%s = %s)" (Id.to_string id1) (Id.to_string id2)
   | Let ((id, t), e1, e2) ->
-          sprintf "(let (%s : %s) = %s in %s)" (Id.to_string id) (Type.to_s t) (to_s e1) (to_s e2)
+          sprintf "(let (%s : %s) = %s in %s)" (Id.to_string id) (Type.to_string t) (to_s e1) (to_s e2)
   | Var id -> Id.to_string id
   | _ -> "to be defined"
 

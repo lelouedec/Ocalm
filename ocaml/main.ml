@@ -1,11 +1,13 @@
-let print_ast l =
-  print_string (Syntax.to_string (Parser.exp Lexer.token l)); print_newline ()
+let print_ast exp =
+  print_string (Syntax.to_string (exp)); print_newline ()
 
 let file f = 
   let inchan = open_in f in
   try
-    let ast = Lexing.from_channel inchan in
-    let env = Env.get_env (Parser.exp Lexer.token ast) in
+    let lex = Lexing.from_channel inchan in
+    let exp = Parser.exp Lexer.token lex in
+    let env = Env.get_env exp in
+    print_ast exp;
     Env.iter
       print_endline (Id.to_string env);
     close_in inchan

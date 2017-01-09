@@ -8,6 +8,9 @@ module E =
     end)
 include E
 
+let get_id_list l = 
+  List.fold_left (fun l2 e -> l2 @ let (x, _) = e in [x]) [] l
+
 let rec env_list exp = 
   match exp with
   | Not e -> env_list e
@@ -26,9 +29,8 @@ let rec env_list exp =
   | Var id -> [id]
   | App (e1, e2) -> env_list e1
   | LetRec (fd, e) -> 
-    let (x, _) = fd.name in [x] @ 
-    List.fold_left (fun l2 e -> l2 @ let (x, _) = e in [x]) [] fd.args @ env_list fd.body @ env_list e
-  | LetTuple (l, e1, e2)-> List.fold_left (fun l2 e -> l2 @ let (x, _) = e in [x]) [] l @ env_list e1 @ env_list e2
+    let (x, _) = fd.name in [x] @ get_id_list fd.args @ env_list fd.body @ env_list e
+  | LetTuple (l, e1, e2)-> get_id_list l @ env_list e1 @ env_list e2
   | Get (e1, e2) -> env_list e1 @ env_list e2
   | Put (e1, e2, e3) -> env_list e1 @ env_list e2 @ env_list e3
   | Tuple (l) -> List.fold_left (fun l2 e -> l2 @ env_list e) [] l
