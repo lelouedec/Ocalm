@@ -54,7 +54,14 @@ let rec to_s (exp : t) =
   | Int i -> string_of_int i
   | Float f -> sprintf "%.2f" f
   | Not id -> sprintf "(not %s)" (Id.to_string id)
+  | Neg id -> sprintf "(- %s)" (Id.to_string id)
   | Add (id1, id2) -> sprintf "(%s + %s)" (Id.to_string id1) (Id.to_string id2)
+  | Sub (id1, id2) -> sprintf "(%s - %s)" (Id.to_string id1) (Id.to_string id2)
+  | FNeg id -> sprintf "(-. %s)" (Id.to_string id)
+  | FAdd (id1, id2) -> sprintf "(%s +. %s)" (Id.to_string id1) (Id.to_string id2)
+  | FSub (id1, id2) -> sprintf "(%s -. %s)" (Id.to_string id1) (Id.to_string id2)
+  | FMul (id1, id2) -> sprintf "(%s *. %s)" (Id.to_string id1) (Id.to_string id2)
+  | FDiv (id1, id2) -> sprintf "(%s /. %s)" (Id.to_string id1) (Id.to_string id2)
   | Eq (id1, id2) -> sprintf "(%s = %s)" (Id.to_string id1) (Id.to_string id2)
   | Let ((id, t), e1, e2) ->
           sprintf "(let (%s : %s) = %s in %s)" (Id.to_string id) (Type.to_string t) (to_s e1) (to_s e2)

@@ -20,15 +20,15 @@ let case1 () =
 
 let case2 () =
   print_endline ">> case 2";
-  (* let z = 1 in (let x = y + z in x + y) *)
+  (* let z = 1. in (let x = y +. z in x -. y) *)
   let knormed =
     Let (
-      ( "z", Type.Var (ref (Some Type.Int)) ),
-      Int 1,
+      ( "z", Type.Var (ref (Some Type.Float)) ),
+      Float 1.,
       Let (
-        ( "x", Type.Var (ref (Some Type.Int)) ),
-        Add ( "y", "z" ),
-        Add ( "x", "y" )
+        ( "x", Type.Var (ref (Some Type.Float)) ),
+        FMul ( "y", "z" ),
+        FDiv ( "x", "y" )
       )
     ) in
   let beta_ed = Beta.f knormed in
@@ -45,7 +45,7 @@ let case3 () =
         Var "y",
         Var "x"
       ),
-      Var "z"
+      Neg "z"
     ) in
   let beta_ed = Beta.f knormed in
   print_endline (KNormal.to_s beta_ed)
