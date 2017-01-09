@@ -16,7 +16,7 @@ let case1 () =
       )
     ) in
   let beta_ed = Beta.f knormed in
-  print_endline (KNormal.to_s beta_ed)
+  print_endline (KNormal.to_string beta_ed)
 
 let case2 () =
   print_endline ">> case 2";
@@ -32,7 +32,7 @@ let case2 () =
       )
     ) in
   let beta_ed = Beta.f knormed in
-  print_endline (KNormal.to_s beta_ed)
+  print_endline (KNormal.to_string beta_ed)
 
 let case3 () =
   print_endline ">> case 3";
@@ -48,7 +48,7 @@ let case3 () =
       Neg "z"
     ) in
   let beta_ed = Beta.f knormed in
-  print_endline (KNormal.to_s beta_ed)
+  print_endline (KNormal.to_string beta_ed)
 
 let () =
   print_endline "Beta-reduction tests";

@@ -4,19 +4,12 @@ let print_ast exp =
 let file f = 
   let inchan = open_in f in
   try
-    let lex = Lexing.from_channel inchan in
-    let exp = Parser.exp Lexer.token lex in
-    print_ast exp;
-
-		let type_eq = Typing.genenerate exp St.empty St.empty Type.Unit in
-		print_endline "type equations :";
-    List.iter
-      Typing.to_string (type_eq);
-    List.iter
-      Typing.unify (type_eq);
-		print_endline "solved equations :";
-    List.iter
-      Typing.to_string (type_eq);
+    let _b = Lexing.from_channel inchan in
+    let _r = 
+      Typing.f
+        (Parser.exp Lexer.token _b) in
+    
+    print_endline ("var y : " ^ Type.to_string(St.find "y" !Typing.st));
 
     close_in inchan
   with e -> (close_in inchan; raise e)

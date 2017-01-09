@@ -33,7 +33,7 @@ let case2 () =
       )
     ) in
   let alpha_ed = Alpha.f knormed in
-  print_endline (KNormal.to_s alpha_ed);
+  print_endline (KNormal.to_string alpha_ed);
   assert (not (alpha_ed = knormed))
 
 let () =

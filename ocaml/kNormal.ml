@@ -47,7 +47,18 @@ type t =
   | Put of Id.t * Id.t * Id.t
 and fundef = { name : Id.t * Type.t; args : (Id.t * Type.t) list; body : t }
 
-let rec to_s (exp : t) =
+let rec temporaries exp =
+  match exp with
+  | _ -> ()
+
+let insert_let (e, t) k =
+  match e with
+  | Var(x) -> k x
+  | _ ->
+      let x = Id.gentmp in let e', t' = k x in
+      Let((x, t), e, e'), t'
+
+let rec to_string (exp : t) =
     match exp with
   | Unit -> "()"
   | Bool b -> if b then "true" else "false"
@@ -64,7 +75,7 @@ let rec to_s (exp : t) =
   | FDiv (id1, id2) -> sprintf "(%s /. %s)" (Id.to_string id1) (Id.to_string id2)
   | Eq (id1, id2) -> sprintf "(%s = %s)" (Id.to_string id1) (Id.to_string id2)
   | Let ((id, t), e1, e2) ->
-          sprintf "(let (%s : %s) = %s in %s)" (Id.to_string id) (Type.to_string t) (to_s e1) (to_s e2)
+          sprintf "(let (%s : %s) = %s in %s)" (Id.to_string id) (Type.to_string t) (to_string e1) (to_string e2)
   | Var id -> Id.to_string id
   | _ -> "to be defined"
 
