@@ -1,12 +1,10 @@
 open KNormal
 
-module Vars = Map.Make(String)
-
 let lookup id vars =
-  try Vars.find id vars
+  try St.find id vars
   with e -> id
 
-let rec g (exp : t) (vars : string Vars.t) : t =
+let rec g (exp : t) (vars : Id.t St.t) : t =
   match exp with
   | Unit | Bool _ | Int _ | Float _ -> exp
   | Neg id -> Neg (lookup id vars)
@@ -22,11 +20,11 @@ let rec g (exp : t) (vars : string Vars.t) : t =
     in (
       match e1' with
       (* e1 is a single variable *)
-      | Var (id') -> g e2 (Vars.add id id' vars)
+      | Var (id') -> g e2 (St.add id id' vars)
       (* e1 is a complex expression *)
       | _ -> Let ((id, t), e1', g e2 vars)
     )
   | Var id -> Var (lookup id vars)
   | _ -> failwith "dunno"
 
-let rec f (exp : t) : t = g exp Vars.empty
+let rec f (exp : t) : t = g exp St.empty

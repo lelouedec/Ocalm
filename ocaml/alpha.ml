@@ -1,12 +1,10 @@
 open KNormal
 
-module Vars = Map.Make(String)
-
 let lookup id vars =
-  try Vars.find id vars
+  try St.find id vars
   with e -> id
 
-let rec g (exp : t) (vars : string Vars.t) : t =
+let rec g (exp : t) (vars : Id.t St.t) : t =
   match exp with
   | Unit -> exp
   | Bool b -> exp
@@ -22,7 +20,7 @@ let rec g (exp : t) (vars : string Vars.t) : t =
     Sub (newid1, newid2)
   | Let ((id, t), e1, e2) ->
     let newid = Id.genid () in
-    let new_vars = Vars.add id newid vars in
+    let new_vars = St.add id newid vars in
     Let (
       (newid, t),
       g e1 vars,
@@ -33,4 +31,4 @@ let rec g (exp : t) (vars : string Vars.t) : t =
     in Var (newid)
   | _ -> failwith "undef"
 
-let rec f (exp : t) : t = g exp Vars.empty
+let rec f (exp : t) : t = g exp St.empty
