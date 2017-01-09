@@ -1,13 +1,13 @@
+tests := $(wildcard tests/*.ml)
+tests_byte := $(wildcard *_test.byte)
 
 all:
 	ocamlbuild main.byte
 	mv main.byte mincamlc
 
 unit-test:
-	ocamlbuild tests/typing_test.byte tests/alpha_test.byte tests/beta_test.byte
-	./typing_test.byte
-	./alpha_test.byte
-	./beta_test.byte
+	ocamlbuild $(patsubst %.ml,%.byte,$(tests))
+	for test in $(tests_byte); do ./$$test; done
 
 clean:
 	rm -rf _build
