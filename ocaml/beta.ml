@@ -7,7 +7,6 @@ let lookup id vars =
   with e -> id
 
 let rec g (exp : t) (vars : string Vars.t) : t =
-  print_endline ("match : " ^ to_s exp);
   match exp with
   | Unit | Bool _ | Int _ | Float _ -> exp
   | Add (e1, e2) -> Add (lookup e1 vars, lookup e2 vars)
@@ -17,7 +16,8 @@ let rec g (exp : t) (vars : string Vars.t) : t =
       match e1' with
       (* e1 is a single variable *)
       | Var (id') -> g e2 (Vars.add id id' vars)
-      | _ -> failwith "nyi"
+      (* e1 is a complex expression *)
+      | _ -> Let ((id, t), e1', g e2 vars)
     )
   | Var id -> Var (lookup id vars)
   | _ -> failwith "dunno"
