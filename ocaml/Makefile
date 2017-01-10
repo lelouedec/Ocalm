@@ -11,6 +11,7 @@ unit-test:
 
 clean:
 	rm -rf _build
+	rm -rf *.byte
 
 cleanest: clean
 	rm -f min-ml
