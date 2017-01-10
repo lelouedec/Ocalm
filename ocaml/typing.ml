@@ -56,4 +56,3 @@ let f exp =
 
   let eqs = generate exp Type.Unit in List.iter unify (eqs);
   exp
-

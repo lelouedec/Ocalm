@@ -28,7 +28,40 @@ type let_main = t
   
 type prog = let_fn list * let_main
 
-let rec to_string (prog : prog) = "to be impl for testing"
+let rec exp_to_string = function
+  | Unit -> "()"
+  | Bool b -> if b then "true" else "false"
+  | Int i -> string_of_int i
+  | Float f -> sprintf "%.2f" f
+  | Neg id -> sprintf "(- %s)" (Id.to_string id)
+  | Add (id1, id2) -> sprintf "(%s + %s)" (Id.to_string id1) (Id.to_string id2)
+  | Let ((id, t), e1, e2) ->
+          sprintf "(let (%s : %s) = %s in %s)\n" (Id.to_string id) (Type.to_string t) (exp_to_string e1) (exp_to_string e2)
+  | Var id -> Id.to_string id
+  | AppDir (label, args) ->
+    sprintf "apply_direct(%s)"
+      (String.concat ", " 
+        (["_" ^ label] @ args)
+      )
+  | _ -> failwith "nyi to_s"
+
+let fn_to_string fn =
+  let ((id, _), args, exp) = fn in
+  Printf.sprintf "let _%s %s =\n  %s"
+    id
+    (String.concat " " (List.map (fun arg -> let (id, _) = arg in id) args))
+    (exp_to_string exp)
+  
+let main_to_string main =
+  Printf.sprintf "let () =\n  %s" (exp_to_string main)
+
+let to_string (prog : prog) =
+  let (functions, main) = prog in
+  (String.concat
+    "\n"
+    (List.map fn_to_string functions)
+  ) ^ "\n\n" ^ main_to_string main
+
 
 let functions : let_fn list ref = ref []
 
@@ -41,12 +74,16 @@ let rec extract_main (exp : KNormal.t) : t =
   | KNormal.Neg id -> Neg id
   | KNormal.Add (id1, id2) -> Add (id1, id2)
   | KNormal.Let ((id, t), e1, e2) -> Let ((id, t), extract_main e1, extract_main e2)
+  | KNormal.Var id -> Var id
   | KNormal.LetRec (fn, e) ->
     let (fname, fargs, fbody) = KNormal.denormalize fn in
     let split_fn = (fname, fargs, extract_main fbody) in
     functions := [split_fn] @ !functions;
     extract_main e
-  | _ -> failwith "nyi" 
+  | KNormal.App (label, args) ->
+    (* assume no app closure for now *)
+    AppDir (label, args)
+  | _ -> failwith "nyi extract"
 
 let rec f (exp : KNormal.t) : prog =
   functions := [];
