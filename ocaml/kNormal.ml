@@ -16,7 +16,8 @@ type t =
   | FDiv of Id.t * Id.t
   | Eq of Id.t * Id.t
   | LE of Id.t * Id.t
-  | If of Id.t * t * t
+  | IfEq of Id.t * Id.t * t * t (* x == y , branch if , branch else *)
+  | IfLeq of Id.t * Id.t * t * t (* x <= y , branch if , branch else *)
   | Let of (Id.t * Type.t) * t * t
   | Var of Id.t
   | LetRec of fundef * t
@@ -35,8 +36,7 @@ let insert_let (e, t) k =
   match e with
   | Var x -> k x
   | _ ->
-      let x = Id.genid () in let e', t' = k x in
-      Typing.st := St.add x t !Typing.st;
+      let x = Id.genid () in let e', t' = k x in Typing.st := St.add x t !Typing.st;
       Let ((x, t), e, e'), t'
 
 let rec temporaries exp =
@@ -93,10 +93,10 @@ let rec temporaries exp =
 
 let rec to_string exp =
     match exp with
-  | Unit -> "()\n"
-  | Bool b -> if b then "true\n" else "false\n"
-  | Int i -> string_of_int i
-  | Float f -> sprintf "%.2f\n" f
+  | Unit -> "()"
+  | Bool b -> if b then "true" else "false"
+  | Int i -> string_of_int i ^ ""
+  | Float f -> sprintf "%.2f" f
   | Not id -> sprintf "(not %s)" (Id.to_string id)
   | Neg id -> sprintf "(- %s)" (Id.to_string id)
   | Add (id1, id2) -> sprintf "(%s + %s)" (Id.to_string id1) (Id.to_string id2)
@@ -108,14 +108,14 @@ let rec to_string exp =
   | FDiv (id1, id2) -> sprintf "(%s /. %s)" (Id.to_string id1) (Id.to_string id2)
   | Eq (id1, id2) -> sprintf "(%s = %s)" (Id.to_string id1) (Id.to_string id2)
   | Let ((id, t), e1, e2) ->
-          sprintf "(let (%s : %s) = %s in %s)\n" (Id.to_string id) (Type.to_string t) (to_string e1) (to_string e2)
+          sprintf "(let (%s : %s) = %s in \n%s)" (Id.to_string id) (Type.to_string t) (to_string e1) (to_string e2)
   | Var id -> Id.to_string id
   | App (id, args) ->
           sprintf "(%s %s)"
           (Id.to_string id)
           (String.concat " " (List.map (fun arg -> Id.to_string arg) args))
   | LetRec (fd, e) ->
-          sprintf "(let rec %s %s = %s in %s)"
+          sprintf "(let rec %s %s = %s in \n%s)"
           (let (x, _) = fd.name in (Id.to_string x))
           (String.concat " " (List.map (fun (arg, _) -> Id.to_string arg) fd.args))
           (to_string fd.body)
