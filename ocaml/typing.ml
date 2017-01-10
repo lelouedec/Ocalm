@@ -54,5 +54,5 @@ let f exp =
   st := St.empty; 
   st_ext := St.empty;
 
-  let eqs = generate exp (Type.Var (ref None)) in List.iter unify (eqs);
+  let eqs = generate exp Type.Unit in List.iter unify (eqs);
   exp
