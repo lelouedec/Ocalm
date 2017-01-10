@@ -13,7 +13,7 @@ type exp =
 	| Nop 
 	| LPexpRp of ( exp ) 
 	| Int 
-	| Ident of ident_or_imm
+	| Ident of Id.t
 	| Label of Id.t 
 	| Neg of Id.t
 	| FNeg of Id.t
@@ -37,7 +37,7 @@ let rec to_string exp =
  	| Nop ->" "
 	| LPexpRp e -> sprintf " ( %s )" ( to_string e )
 	| Int -> sprintf " :int "
-	| Ident i -> ident_or_imm_to_string i
+	| Ident i ->  i
 	| Label s -> sprintf "_ %s" s  
 	| Neg i -> i
 	| FNeg i -> i 
@@ -57,7 +57,7 @@ let rec to_string exp =
 	| CallClo  (id,t) -> sprintf " Call  %s %s" (id) (to_string t)
 
 
-type asmt =
+type asmt = 
 	| LpasmtRPAREN of asmt 
 	| LetIdentEq  of  Id.t * exp * asmt
 	| Exp of exp 
@@ -68,16 +68,16 @@ let rec asmt_to_string asmt =
 	| LetIdentEq (i,e2,a) -> sprintf "Let %s = %s in %s" (i) ( to_string e2) (asmt_to_string a)
 	| Exp e -> (to_string e)
 
-type forma_args =
-	| Identf  of Id.t * forma_args
-	| Ident of Id.t   
-	| Nil
+type forma_args = Id.t list
+	
 
-let rec form_to_string fa =
-	match fa with 
-	| Identf (i,f) -> sprintf " %s %s" (i) (form_to_string f)
-	| Ident i ->  i
-	| Nil -> " "
+
+let rec form_to_string (l : string list) : string =
+  match l with
+    [] -> ""
+  | x :: xs -> x ^ (form_to_string xs)
+
+	
 
 type fundefs =
 	| LetUnderscEQ of asmt (* Let _ =  *)
@@ -87,15 +87,15 @@ type fundefs =
 let rec fundefs_to_string fu =
 	match fu with 
 	| LetUnderscEQ a -> sprintf "Let _ = %s" (asmt_to_string a)
-	| LetLabeleqFloat (l,fl, fu) -> sprintf " Let _%s = %.2f %s in " (l) (fl) (fundefs_to_string fu)
-	| LetLabelEq (l,fo, a, fu) -> sprintf "Let _%s %s =  %s in  %s" (l) (form_to_string fo) (asmt_to_string a) (fundefs_to_string fu)
+	| LetLabeleqFloat (l,fl, fu) -> sprintf " Let _%s = %.2f \n %s " (l) (fl) (fundefs_to_string fu)
+	| LetLabelEq (l,fo, a, fu) -> sprintf "Let _%s %s =  %s \n \n%s" (l) (form_to_string fo) (asmt_to_string a) (fundefs_to_string fu)
 
 
-let test () =
+let test exp =
 	print_endline "Test";	
-	let exp2 =
-		LetLabelEq ("f",Ident "x", Exp( Add( "x" , Int (0) ) ), LetUnderscEQ(Exp ( CallLabel ( "f") ) )) in print_endline (fundefs_to_string (exp2) );
+	print_endline (fundefs_to_string (exp) );
 
+	(*Register_alloc.allocate exp2;*)
 
 
 
