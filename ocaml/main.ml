@@ -10,7 +10,10 @@ let file f =
         (Typing.f
           (Parser.exp Lexer.token _b)) in
     
-    print_endline ("var y : " ^ Type.to_string(St.find "y" !Typing.st));
+    (* print_endline ("var y : " ^ Type.to_string(St.find "y" !Typing.st)); *)
+    print_endline ("Typing:\n" ^
+      St.to_string Type.to_string !Typing.st );
+
     print_endline (KNormal.to_string _r);
 
     close_in inchan
