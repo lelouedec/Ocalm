@@ -125,3 +125,21 @@ let rec to_string exp =
 let f exp =
   let n, _ = temporaries exp in
   n
+
+let rec free_vars = function
+  | Unit | Bool _ | Int _ | Float _ -> Env.empty
+  | Not id | Neg id | FNeg id | Var id -> Env.singleton id
+  | Add (id1, id2) | Sub (id1, id2) -> Env.of_list [id1; id2]
+  | Let ((id, t), e1, e2) ->
+    let set1 = free_vars e1 in
+    let set2 = free_vars e2 in
+    Env.union set1 (Env.remove id set2)
+  | App (id, args) -> Env.add id (Env.of_list args)
+  | LetRec (fd, e) ->
+    let (label, _) = fd.name in
+    let set_body = free_vars fd.body in
+    let set_in = free_vars e in
+    let list_args = List.map (fun (id, _) -> id) fd.args in
+    let set_args = Env.of_list list_args in
+    Env.union (Env.diff set_body set_args) (Env.remove label set_in)
+  | _ -> Env.empty
