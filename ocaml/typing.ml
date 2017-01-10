@@ -18,9 +18,9 @@ let rec generate exp t =
   | FSub (e1, e2) -> generate e1 Type.Float @ generate e2 Type.Float @ [(Type.Float, t)]
   | FMul (e1, e2) -> generate e1 Type.Float @ generate e2 Type.Float @ [(Type.Float, t)]
   | FDiv (e1, e2) -> generate e1 Type.Float @ generate e2 Type.Float @ [(Type.Float, t)]
-  (*| Eq (e1, e2) -> 
-  | LE (e1, e2) ->   
-  | If (e1, e2, e3) -> *)
+  | Eq (e1, e2) -> generate e1 Type.Int @ generate e2 Type.Int @ [(Type.Bool, t)]
+  | LE (e1, e2) -> generate e1 Type.Int @ generate e2 Type.Int @ [(Type.Bool, t)]
+  | If (e1, e2, e3) -> generate e1 Type.Bool @ generate e2 t @ generate e3 t
   | Let ((id,tv), e1, e2) -> st := St.add id tv !st; generate e1 tv @ generate e2 t
   | Var (id) when St.mem id !st -> let t1 = St.find id !st in [(t1, t)]
   | Var (id) when St.mem id !st_ext -> let t1 = St.find id !st_ext in [(t1, t)]
