@@ -107,6 +107,16 @@ let rec to_string exp =
   | Let ((id, t), e1, e2) ->
           sprintf "(let (%s : %s) = %s in %s)\n" (Id.to_string id) (Type.to_string t) (to_string e1) (to_string e2)
   | Var id -> Id.to_string id
+  | App (id, args) ->
+          sprintf "(%s %s)"
+          (Id.to_string id)
+          (String.concat " " (List.map (fun arg -> Id.to_string arg) args))
+  | LetRec (fd, e) ->
+          sprintf "(let rec %s %s = %s in %s)"
+          (let (x, _) = fd.name in (Id.to_string x))
+          (String.concat " " (List.map (fun (arg, _) -> Id.to_string arg) fd.args))
+          (to_string fd.body)
+          (to_string e)
   | _ -> "to be defined"
 
 let f exp =
