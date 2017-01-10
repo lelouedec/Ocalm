@@ -35,6 +35,7 @@ let rec exp_to_string = function
   | Float f -> sprintf "%.2f" f
   | Neg id -> sprintf "(- %s)" (Id.to_string id)
   | Add (id1, id2) -> sprintf "(%s + %s)" (Id.to_string id1) (Id.to_string id2)
+  | Sub (id1, id2) -> sprintf "(%s - %s)" (Id.to_string id1) (Id.to_string id2)
   | Let ((id, t), e1, e2) ->
           sprintf "(let (%s : %s) = %s in %s)\n" (Id.to_string id) (Type.to_string t) (exp_to_string e1) (exp_to_string e2)
   | Var id -> Id.to_string id
@@ -73,10 +74,14 @@ let rec extract_main (exp : KNormal.t) : t =
   | KNormal.Float f -> Float f
   | KNormal.Neg id -> Neg id
   | KNormal.Add (id1, id2) -> Add (id1, id2)
+  | KNormal.Sub (id1, id2) -> Sub (id1, id2)
   | KNormal.Let ((id, t), e1, e2) -> Let ((id, t), extract_main e1, extract_main e2)
   | KNormal.Var id -> Var id
   | KNormal.LetRec (fn, e) ->
     let (fname, fargs, fbody) = KNormal.denormalize fn in
+    let list_args = List.map (fun (id, _) -> id) fargs in
+    let free_vars = Env.diff (KNormal.free_vars fbody) (Env.of_list list_args) in
+    (* TODO use free vars list to determine direct or closure call *)
     let split_fn = (fname, fargs, extract_main fbody) in
     functions := [split_fn] @ !functions;
     extract_main e
