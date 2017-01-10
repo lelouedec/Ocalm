@@ -23,13 +23,32 @@ type t =
   | AppDir of Id.t * Id.t list
   (* to be added *)
 
-type fn_args =
-  | Ident of Id.t * fn_args
-  | Nil
+type let_fn = (Id.t * Type.t) * (Id.t * Type.t) list * t
+type let_main = t
   
-type fundef = 
-  | LetFn of Id.t * fn_args * t * fundef
-  | LetMain of t
+type prog = let_fn list * let_main
 
-let rec f (exp : KNormal.t) : fundef =
-  LetMain ( Unit )
+let rec to_string (prog : prog) = "to be impl for testing"
+
+let functions : let_fn list ref = ref []
+
+let rec extract_main (exp : KNormal.t) : t =
+  match exp with
+  | KNormal.Unit -> Unit
+  | KNormal.Bool b -> Bool b
+  | KNormal.Int i -> Int i
+  | KNormal.Float f -> Float f
+  | KNormal.Neg id -> Neg id
+  | KNormal.Add (id1, id2) -> Add (id1, id2)
+  | KNormal.Let ((id, t), e1, e2) -> Let ((id, t), extract_main e1, extract_main e2)
+  | KNormal.LetRec (fn, e) ->
+    let (fname, fargs, fbody) = KNormal.denormalize fn in
+    let split_fn = (fname, fargs, extract_main fbody) in
+    functions := [split_fn] @ !functions;
+    extract_main e
+  | _ -> failwith "nyi" 
+
+let rec f (exp : KNormal.t) : prog =
+  functions := [];
+  let main_body = extract_main exp in
+  (!functions, main_body)
