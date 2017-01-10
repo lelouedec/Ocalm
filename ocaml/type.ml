@@ -15,7 +15,14 @@ let rec to_string = function
   | Bool -> "bool"
   | Int -> "int"
   | Float -> "float"
-  | Fun (l, t) -> "()"
+  | Fun (l, t) ->
+    Printf.sprintf "(%s -> %s)"
+      (
+        match l with
+        | [] -> "unit"
+        | _ -> String.concat " -> " (List.map (fun t -> to_string t) l)
+      )
+      (to_string t)
   | Tuple l -> "<tuple>"
   | Array t -> "<array>"
   | Var r -> match !r with
