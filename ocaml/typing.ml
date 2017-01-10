@@ -22,9 +22,9 @@ let rec generate exp t =
   | LE (e1, e2) ->   
   | If (e1, e2, e3) -> *)
   | Let ((id,tv), e1, e2) -> st := St.add id tv !st; generate e1 tv @ generate e2 t
-  | Var(id) when St.mem id !st -> let t1 = St.find id !st in [(t1, t)]
-  | Var(id) when St.mem id !st_ext -> let t1 = St.find id !st_ext in [(t1, t)]
-  | Var(id) ->
+  | Var (id) when St.mem id !st -> let t1 = St.find id !st in [(t1, t)]
+  | Var (id) when St.mem id !st_ext -> let t1 = St.find id !st_ext in [(t1, t)]
+  | Var (id) ->
         let t1 = Type.gentyp () in st_ext := St.add id t1 !st_ext;
         [t1, t]
   (*| App (e1, le2) -> 
@@ -39,13 +39,13 @@ let rec generate exp t =
 let rec unify eq = 
   match eq with
   | Type.Unit, Type.Unit | Type.Bool, Type.Bool | Type.Int, Type.Int | Type.Float, Type.Float -> ()
-  | Type.Var(t1), Type.Var(t2) when t1 == t2 -> ()
-  | Type.Var({ contents = Some(t1') }), _ -> let (_, t2) = eq in unify (t1', t2)
-  | _, Type.Var({ contents = Some(t2') }) -> let (t1, _) = eq in unify (t1, t2')
-  | Type.Var({ contents = None } as t1'), _ ->
+  | Type.Var (t1), Type.Var (t2) when t1 == t2 -> ()
+  | Type.Var ({ contents = Some(t1') }), _ -> let (_, t2) = eq in unify (t1', t2)
+  | _, Type.Var ({ contents = Some(t2') }) -> let (t1, _) = eq in unify (t1, t2')
+  | Type.Var ({ contents = None } as t1'), _ ->
       let (t1, t2) = eq in
       t1' := Some(t2)
-  | _, Type.Var({ contents = None } as t2') ->
+  | _, Type.Var ({ contents = None } as t2') ->
       let (t1, t2) = eq in
       t2' := Some(t1)
   | _ -> raise (failwith "mismatch types during unification")

@@ -7,7 +7,3 @@ let genid =
   fun () ->
     incr counter;
     Printf.sprintf "?v%d" !counter
-
-let gentmp = 
-  incr counter;
-  Printf.sprintf "tmp%d" !counter

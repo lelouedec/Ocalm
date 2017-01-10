@@ -6,10 +6,12 @@ let file f =
   try
     let _b = Lexing.from_channel inchan in
     let _r = 
-      Typing.f
-        (Parser.exp Lexer.token _b) in
+      KNormal.f
+        (Typing.f
+          (Parser.exp Lexer.token _b)) in
     
     print_endline ("var y : " ^ Type.to_string(St.find "y" !Typing.st));
+    print_endline (KNormal.to_string _r);
 
     close_in inchan
   with e -> (close_in inchan; raise e)
