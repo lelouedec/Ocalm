@@ -27,7 +27,7 @@ let case2 () =
       },
       KNormal.Let (
         ("y", Type.Int),
-        Int 1,
+        KNormal.Int 1,
         KNormal.App ("double", ["y"])
       )
     ) in
@@ -36,7 +36,44 @@ let case2 () =
   print_endline (to_string closured);
   ()
 
+let case3 () =
+  (* let rec make_adder x = (let rec adder y = x + y in adder) in
+    let t = 1 in
+    let z = make_adder t in
+    (z t) *)
+  let knormed =
+    KNormal.LetRec (
+      {
+        name = ("make_adder", Type.Fun ([Type.Int], Type.Fun ([Type.Int], Type.Int) )); (* fun int -> (fun int -> int) *)
+        args = [("x", Type.Int)];
+        body = KNormal.LetRec (
+          {
+            name = ("adder", Type.Fun ([Type.Int], Type.Int) ); (* fun int -> int *)
+            args = [("y", Type.Int)];
+            body = KNormal.Add ("x", "y")
+          },
+          KNormal.App ( "adder", [] )
+        )
+      },
+      KNormal.Let (
+        ("t", Type.Int),
+        KNormal.Int 1,
+        KNormal.Let (
+          ("z", Type.Fun ([Type.Int], Type.Int)),
+          KNormal.App ( "make_adder", ["t"] ),
+          KNormal.App ( "z", ["t"] )
+        )
+      )
+    ) in
+    let closured = f knormed in
+    print_endline ">> case 3";
+    print_endline (KNormal.to_string knormed);
+    print_endline "-- after --";
+    print_endline (to_string closured);
+    ()
+
 let () =
   print_endline "\n*****\nClosure conversion tests";
   case1 ();
   case2 ();
+  case3 ();
