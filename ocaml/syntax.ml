@@ -41,7 +41,7 @@ let rec to_string exp =
   | Int i -> string_of_int i
   | Float f -> sprintf "%.2f" f
   | Not e -> sprintf "(not %s)" (to_string e)
-  | Neg e -> sprintf "(- %s)" (to_string e)
+  | Neg e -> sprintf "(neg %s)" (to_string e)
   | Add (e1, e2) -> sprintf "(%s + %s)" (to_string e1) (to_string e2)
   | Sub (e1, e2) -> sprintf "(%s - %s)" (to_string e1) (to_string e2) 
   | FNeg e -> sprintf "(-. %s)" (to_string e)

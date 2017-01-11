@@ -6,7 +6,7 @@ let file f =
   try
     let _b = Lexing.from_channel inchan in
     let _r = 
-      (Letreduction.f
+      (Let.f
         (Beta.f
           (Alpha.f
             (KNormal.f

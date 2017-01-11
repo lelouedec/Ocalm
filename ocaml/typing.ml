@@ -2,6 +2,7 @@ open Syntax
 
 let st = ref St.empty
 let st_ext = ref St.empty
+let st_fn = ref St.empty
 
 let rec generate exp t =
   match exp with
@@ -27,9 +28,15 @@ let rec generate exp t =
   | Var (id) ->
         let t1 = Type.gentyp () in st_ext := St.add id t1 !st_ext;
         [t1, t]
-  (*| App (e1, le2) -> 
-  | LetRec (fd, e) -> 
-  | LetTuple (l, e1, e2)-> 
+  (*| App (e1, le2) ->
+      let fn = st.find e1 !st_fn in
+      let solved = List.map generate oaoze amfkzefù ... too hard *) 
+  | LetRec ({ name = (id, tv); args = largs; body = e }, e2) -> 
+      st := St.add id tv !st;
+      st_fn := St.add id largs !st_fn;
+      ignore(List.fold_left (fun st (idi, tvi) -> st := St.add idi tvi !st; st) st largs);
+      generate e tv @ generate e2 t
+  (*| LetTuple (l, e1, e2)-> 
   | Get (e1, e2) -> 
   | Put (e1, e2, e3) -> 
   | Tuple (l) -> 

@@ -5,4 +5,5 @@ let wtrue = true in
 let ntrue = not wtrue in
 let y = 1 in 
 let x = y + y - (-y) in
+let rec fn a = a in
 if (y <= x) then let z = 2 in _ else let z = 3 in _

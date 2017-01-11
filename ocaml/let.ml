@@ -1,10 +1,15 @@
 open KNormal
 
-let rec f exp =
-  match exp with
-  | Let(xt, e1, e2) ->
-      let rec reduce e = match e with
-	    | Let(yt, e3, e4) -> Let(yt, e3, reduce e4)
-	    | _ -> Let(xt, e, f e2) in reduce e1
-| _ -> exp
-
+let rec f exp = 
+	match exp with
+	| Let(xt, e1, e2) ->
+		let rec insert = function
+			| Let(yt, e3, e4) -> Let(yt, e3, insert e4)
+			| LetRec(fundefs, e) -> LetRec(fundefs, insert e)
+			| LetTuple(yts, z, e) ->LetTuple(yts, z, insert e)
+			| e -> Let(xt, e, f e2) in
+		insert (f e1)
+	| LetRec({ name = xt; args = yts; body = e1 }, e2) -> 
+		LetRec({ name = xt; args = yts; body = f e1 }, f e2)
+	| LetTuple(xts, y, e) -> LetTuple(xts, y, f e)
+	| e -> e
