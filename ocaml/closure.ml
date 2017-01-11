@@ -2,7 +2,6 @@ open Printf
 
 type t =
   | Unit
-  | Bool of bool
   | Int of int
   | Float of float
   | Not of Id.t
@@ -30,7 +29,6 @@ type prog = let_fn list * let_main
 
 let rec exp_to_string = function
   | Unit -> "()"
-  | Bool b -> if b then "true" else "false"
   | Int i -> string_of_int i
   | Float f -> sprintf "%.2f" f
   | Neg id -> sprintf "(- %s)" (Id.to_string id)
@@ -69,7 +67,6 @@ let functions : let_fn list ref = ref []
 let rec extract_main (exp : KNormal.t) : t =
   match exp with
   | KNormal.Unit -> Unit
-  | KNormal.Bool b -> Bool b
   | KNormal.Int i -> Int i
   | KNormal.Float f -> Float f
   | KNormal.Neg id -> Neg id
