@@ -16,7 +16,7 @@ type t =
   | Eq of Id.t * Id.t
   | LE of Id.t * Id.t
   | IfEq of Id.t * Id.t * t * t (* x == y , branch if , branch else *)
-  | IfLeq of Id.t * Id.t * t * t (* x <= y , branch if , branch else *)
+  | IfLE of Id.t * Id.t * t * t (* x <= y , branch if , branch else *)
   | Let of (Id.t * Type.t) * t * t
   | Var of Id.t
   | LetRec of fundef * t
@@ -41,7 +41,7 @@ let insert_let (e, t) k =
 let rec temporaries exp =
   match exp with
   | Syntax.Unit -> (Unit, Type.Unit)
-  | Syntax.Bool b -> if b = true then (Int (1), Type.Int) else (Int (0), Type.Int)
+  | Syntax.Bool b -> if b = true then (Int (1), Type.Bool) else (Int (0), Type.Bool)
   | Syntax.Int i -> (Int (i), Type.Int)
   | Syntax.Float f -> (Float (f), Type.Float)
   | Syntax.Not e -> insert_let (temporaries e) (fun x -> Not (x), Type.Bool)
@@ -73,9 +73,27 @@ let rec temporaries exp =
       insert_let (temporaries e1)
         (fun x -> insert_let (temporaries e2)
           (fun y -> FDiv (x, y), Type.Float))
-  (*| Syntax.Eq (e1, e2) -> 
-  | Syntax.LE (e1, e2) ->   
-  | Syntax.If (e1, e2, e3) -> *)
+  | Syntax.Eq (e1, e2) -> 
+      insert_let (temporaries e1)
+        (fun x -> insert_let (temporaries e2)
+          (fun y -> Eq (x, y), Type.Bool))
+  | Syntax.LE (e1, e2) ->  
+      insert_let (temporaries e1)
+        (fun x -> insert_let (temporaries e2)
+          (fun y -> LE (x, y), Type.Bool)) 
+  | Syntax.If (e1, e2, e3) -> 
+      let e2', t1 = temporaries e2 in
+      let e3', t2 = temporaries e3 in
+      (match e1 with
+      | Syntax.Eq (e4, e5) -> 
+        insert_let (temporaries e4)
+          (fun x -> insert_let (temporaries e5)
+            (fun y -> IfEq (x, y, e2', e3'), Type.Unit)) 
+      | Syntax.LE (e4, e5) -> 
+        insert_let (temporaries e4)
+          (fun x -> insert_let (temporaries e5)
+            (fun y -> IfLE (x, y, e2', e3'), Type.Unit))
+      | _ -> raise (failwith "incorrect if test expression"))
   | Syntax.Let ((id,t), e1, e2) ->
       let e1', t1 = temporaries e1 in
       let e2', t2 = temporaries e2 in
@@ -105,6 +123,9 @@ let rec to_string exp =
   | FMul (id1, id2) -> sprintf "(%s *. %s)" (Id.to_string id1) (Id.to_string id2)
   | FDiv (id1, id2) -> sprintf "(%s /. %s)" (Id.to_string id1) (Id.to_string id2)
   | Eq (id1, id2) -> sprintf "(%s = %s)" (Id.to_string id1) (Id.to_string id2)
+  | LE (id1, id2) -> sprintf "(%s <= %s)" (Id.to_string id1) (Id.to_string id2)
+  | IfEq (id1, id2, e1, e2) -> sprintf "(if %s = %s) then %s else %s" (Id.to_string id1) (Id.to_string id2) (to_string e1) (to_string e2)
+  | IfLE (id1, id2, e1, e2) -> sprintf "(if %s <= %s) then %s else %s" (Id.to_string id1) (Id.to_string id2) (to_string e1) (to_string e2)
   | Let ((id, t), e1, e2) ->
           sprintf "(let (%s : %s) = %s in \n%s)" (Id.to_string id) (Type.to_string t) (to_string e1) (to_string e2)
   | Var id -> Id.to_string id
