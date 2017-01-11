@@ -2,7 +2,6 @@ open Printf
 
 type t =
   | Unit
-  | Bool of bool
   | Int of int
   | Float of float
   | Not of Id.t
@@ -42,11 +41,11 @@ let insert_let (e, t) k =
 let rec temporaries exp =
   match exp with
   | Syntax.Unit -> (Unit, Type.Unit)
-  | Syntax.Bool b -> (Bool (b), Type.Bool)
+  | Syntax.Bool b -> if b = true then (Int (1), Type.Int) else (Int (0), Type.Int)
   | Syntax.Int i -> (Int (i), Type.Int)
   | Syntax.Float f -> (Float (f), Type.Float)
-  (*| Syntax.Not e -> 
-  | Syntax.Neg e -> *)
+  | Syntax.Not e -> insert_let (temporaries e) (fun x -> Not (x), Type.Bool)
+  | Syntax.Neg e -> insert_let (temporaries e) (fun x -> Neg (x), Type.Int)
   | Syntax.Add (e1, e2) ->
       insert_let (temporaries e1)
         (fun x -> insert_let (temporaries e2)
@@ -94,11 +93,10 @@ let rec temporaries exp =
 let rec to_string exp =
     match exp with
   | Unit -> "()"
-  | Bool b -> if b then "true" else "false"
   | Int i -> string_of_int i ^ ""
   | Float f -> sprintf "%.2f" f
   | Not id -> sprintf "(not %s)" (Id.to_string id)
-  | Neg id -> sprintf "(- %s)" (Id.to_string id)
+  | Neg id -> sprintf "(neg %s)" (Id.to_string id)
   | Add (id1, id2) -> sprintf "(%s + %s)" (Id.to_string id1) (Id.to_string id2)
   | Sub (id1, id2) -> sprintf "(%s - %s)" (Id.to_string id1) (Id.to_string id2)
   | FNeg id -> sprintf "(-. %s)" (Id.to_string id)
@@ -120,14 +118,14 @@ let rec to_string exp =
           (String.concat " " (List.map (fun (arg, _) -> Id.to_string arg) fd.args))
           (to_string fd.body)
           (to_string e)
-  | _ -> "to be defined"
+  | _ -> "unsupported knormal expression"
 
 let f exp =
   let n, _ = temporaries exp in
   n
 
 let rec free_vars = function
-  | Unit | Bool _ | Int _ | Float _ -> Env.empty
+  | Unit | Int _ | Float _ -> Env.empty
   | Not id | Neg id | FNeg id | Var id -> Env.singleton id
   | Add (id1, id2) | Sub (id1, id2) -> Env.of_list [id1; id2]
   | Let ((id, t), e1, e2) ->

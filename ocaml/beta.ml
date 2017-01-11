@@ -6,7 +6,8 @@ let lookup id vars =
 
 let rec g (exp : t) (vars : Id.t St.t) : t =
   match exp with
-  | Unit | Bool _ | Int _ | Float _ -> exp
+  | Unit | Int _ | Float _ -> exp
+  | Not id -> Not (lookup id vars)
   | Neg id -> Neg (lookup id vars)
   | Add (id1, id2) -> Add (lookup id1 vars, lookup id2 vars)
   | Sub (id1, id2) -> Sub (lookup id1 vars, lookup id2 vars)

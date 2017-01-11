@@ -7,9 +7,14 @@ let lookup id vars =
 let rec g (exp : t) (vars : Id.t St.t) : t =
   match exp with
   | Unit -> exp
-  | Bool b -> exp
   | Int i -> exp
   | Float f -> exp
+  | Not id -> 
+    let newid = lookup id vars in
+    Not (newid)
+  | Neg id -> 
+    let newid = lookup id vars in
+    Neg (newid)
   | Add (id1, id2) ->
     let newid1 = lookup id1 vars in
     let newid2 = lookup id2 vars in
