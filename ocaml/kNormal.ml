@@ -107,7 +107,7 @@ let rec temporaries exp =
         | [] -> App (f, ids), t
         | hd::tl ->
           insert_let (temporaries hd)
-            (fun x -> convert_args f tl ([x] @ ids))
+            (fun x -> convert_args f tl (ids @ [x]))
       ) in
       insert_let (label, t)
         (fun f -> convert_args f le2 [])
