@@ -30,6 +30,15 @@ let rec g (exp : t) (vars : Id.t St.t) : t =
       | _ -> Let ((id, t), e1', g e2 vars)
     )
   | Var id -> Var (lookup id vars)
-  | _ -> failwith "dunno"
+(* 
+  | App (id, args) ->
+  | LetRec (fd, e) ->
+  | LetTuple (l, e1, e2)-> 
+  | Get (e1, e2) -> 
+  | Put (e1, e2, e3) -> 
+  | Tuple (l) -> 
+  | Array (e1, e2) ->
+ *)
+  | _ -> failwith "no b-reduction defined for this yet"
 
 let rec f (exp : t) : t = g exp St.empty

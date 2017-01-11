@@ -170,6 +170,13 @@ let rec to_string exp =
           )
           (to_string fd.body)
           (to_string e)
+(*
+  | LetTuple (l, e1, e2)->
+  | Get (e1, e2) ->
+  | Put (e1, e2, e3) ->
+  | Tuple (l) ->
+  | Array (e1, e2) ->
+ *)
   | _ -> "unsupported knormal expression"
 
 let f exp =

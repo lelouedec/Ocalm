@@ -42,6 +42,15 @@ let rec g (exp : t) (vars : Id.t St.t) : t =
   | Var id ->
     let newid = lookup id vars
     in Var (newid)
-  | _ -> failwith "undef"
+(* 
+  | App (id, args) ->
+  | LetRec (fd, e) ->
+  | LetTuple (l, e1, e2)-> 
+  | Get (e1, e2) -> 
+  | Put (e1, e2, e3) -> 
+  | Tuple (l) -> 
+  | Array (e1, e2) ->
+ *)
+  | _ -> failwith "no a-conversion defined for this yet"
 
 let rec f (exp : t) : t = g exp St.empty
