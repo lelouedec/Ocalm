@@ -16,6 +16,10 @@ let rec g (exp : t) (vars : Id.t St.t) : t =
   | FSub (id1, id2) -> FSub (lookup id1 vars, lookup id2 vars)
   | FMul (id1, id2) -> FMul (lookup id1 vars, lookup id2 vars)
   | FDiv (id1, id2) -> FDiv (lookup id1 vars, lookup id2 vars)
+  | Eq (id1, id2) -> Eq (lookup id1 vars, lookup id2 vars)
+  | LE (id1, id2) -> LE (lookup id1 vars, lookup id2 vars)
+  | IfEq (id1, id2, e1, e2) -> IfEq (lookup id1 vars, lookup id2 vars, g e1 vars, g e2 vars)
+  | IfLE (id1, id2, e1, e2) -> IfLE (lookup id1 vars, lookup id2 vars, g e1 vars, g e2 vars)
   | Let ((id, t), e1, e2) ->
     let e1' = g e1 vars
     in (

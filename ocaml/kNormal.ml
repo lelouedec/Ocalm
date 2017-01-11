@@ -54,9 +54,7 @@ let rec temporaries exp =
       insert_let (temporaries e1)
         (fun x -> insert_let (temporaries e2)
           (fun y -> Sub (x, y), Type.Int))
-  | Syntax.FNeg e -> 
-      insert_let (temporaries e)
-        (fun x -> FNeg (x), Type.Float)
+  | Syntax.FNeg e -> insert_let (temporaries e) (fun x -> FNeg (x), Type.Float)
   | Syntax.FAdd (e1, e2) -> 
       insert_let (temporaries e1)
         (fun x -> insert_let (temporaries e2)
