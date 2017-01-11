@@ -97,8 +97,31 @@ let rec temporaries exp =
       let e2', t2 = temporaries e2 in
       Let ((id, t), e1', e2'), t2
   | Syntax.Var (id) when St.mem id !Typing.st -> Var (id), St.find id !Typing.st
-  (*| Syntax.App (e1, le2) -> 
-  | Syntax.LetRec (fd, e) -> 
+  | Syntax.App (e1, le2) ->
+      let label, t = ( match e1 with
+        | Syntax.Var (id) when St.mem id !Typing.st -> Var id, St.find id !Typing.st
+        | _ -> temporaries e1
+      ) in
+      (* insert_let (label, t)
+        (fun f -> App (f, []), t) *)
+      (* TODO make this work for any number of args *)
+      insert_let (label, t)
+        (fun f -> insert_let (temporaries
+          (List.nth le2 0))
+          (fun x -> App (f, [x]), t))
+  | Syntax.LetRec ({Syntax.name = (label, ft) ; Syntax.args = args ; Syntax.body = body}, e) -> 
+      List.iter 
+        (fun (x, t) -> Typing.st := St.add x t !Typing.st; ())
+        args;
+      let args_type = List.map (fun (_, t) -> t) args in
+      let body', ft' = temporaries body in
+      Typing.st := St.add
+        label
+        (Type.Fun (args_type, ft'))
+        !Typing.st;
+      let e', t = temporaries e in
+      LetRec ({name = (label, ft') ; args = args ; body = body'}, e'), t
+  (*
   | Syntax.LetTuple (l, e1, e2)-> 
   | Syntax.Get (e1, e2) -> 
   | Syntax.Put (e1, e2, e3) -> 
@@ -130,11 +153,19 @@ let rec to_string exp =
   | App (id, args) ->
           sprintf "(%s %s)"
           (Id.to_string id)
-          (String.concat " " (List.map (fun arg -> Id.to_string arg) args))
+          (
+            match args with
+            | [] -> "()"
+            | _ -> (String.concat " " (List.map (fun arg -> Id.to_string arg) args))
+          )
   | LetRec (fd, e) ->
           sprintf "(let rec %s %s = %s in \n%s)"
           (let (x, _) = fd.name in (Id.to_string x))
-          (String.concat " " (List.map (fun (arg, _) -> Id.to_string arg) fd.args))
+          (
+            match fd.args with
+            | [] -> "()"
+            | _ -> (String.concat " " (List.map (fun (arg, _) -> Id.to_string arg) fd.args))
+          )
           (to_string fd.body)
           (to_string e)
   | _ -> "unsupported knormal expression"
