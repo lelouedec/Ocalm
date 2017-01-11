@@ -38,6 +38,11 @@ class functions_register_hash =
 
 let function_has = new functions_register_hash
 
+let rec assign_ident_or_imm (l : ident_or_imm)  f =
+ match l  with 
+	| Ident i-> let fu = function_has#look_for f in fu#add i 
+	| Int i -> ()
+
 let rec assign_exp exp f =
  match exp with 
  	| Nop -> ()
@@ -47,18 +52,18 @@ let rec assign_exp exp f =
 	| Label s -> ()
 	| Neg i -> ()
 	| FNeg i -> () 
-	| Add (i,id) -> let fu = function_has#look_for f in fu#add i
-	| Sub (i,id) -> ()
-	| Ld (i,id) -> ()
-	| St (i1,id,i2) -> ()
-	| FAdd (i,id) -> ()
-	| FSub (i,id) -> ()
-	| FMul (i,id) -> ()
-	| FDiv (i,id) -> ()
+	| Add (i,id) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f 
+	| Sub (i,id) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f 
+	| Ld (i,id) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f 
+	| St (i1,id,i2) -> let fu = function_has#look_for f in fu#add i1 ; assign_ident_or_imm id f ;fu#add i2
+	| FAdd (i,id) -> let fu = function_has#look_for f in fu#add i ; fu#add id 
+	| FSub (i,id) -> let fu = function_has#look_for f in fu#add i ; fu#add id 
+	| FMul (i,id) -> let fu = function_has#look_for f in fu#add i ; fu#add id 
+	| FDiv (i,id) -> let fu = function_has#look_for f in fu#add i ; fu#add id 
 	| New i -> ()
-	| IfEq (i, id , t1, t2 ) -> ()
-	| IfLEq (i, id , t1, t2 ) -> ()
-	| IfGEq (i, id , t1, t2 ) -> ()
+	| IfEq (i, id , t1, t2 ) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f ; assign_exp t1 f; assign_exp t2 f 
+	| IfLEq (i, id , t1, t2 ) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f ; assign_exp t1 f; assign_exp t2 f 
+	| IfGEq (i, id , t1, t2 ) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f ; assign_exp t1 f; assign_exp t2 f 
 	| CallLabel e -> ()
 	| CallClo  (id,t) -> ()
 
@@ -89,4 +94,4 @@ let allocate exp =
 
 	Hashtbl.iter (fun x y  -> (printf "function : %s  \n"  x) ;  (Hashtbl.iter (printf "		variable %s , Register  %s. \n")  y#get_hast) )  function_has#get_hast;
 
-	function_has#get_hast
+	function_has

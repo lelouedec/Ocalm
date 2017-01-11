@@ -75,7 +75,7 @@ type forma_args = Id.t list
 let rec form_to_string (l : string list) : string =
   match l with
     [] -> ""
-  | x :: xs -> x ^ (form_to_string xs)
+  | x :: xs -> x ^" " ^ (form_to_string xs)
 
 	
 
@@ -92,6 +92,7 @@ let rec fundefs_to_string fu =
 
 
 let test exp =
+	print_endline "******************************************************************";	
 	print_endline "Test";	
 	print_endline (fundefs_to_string (exp) );
 

@@ -34,7 +34,7 @@ Asml.test exp3 ;
 let h2 = Register_alloc.allocate exp3 in () ;
 
 let exp4 =
-    LetLabelEq ("succ",["x"], LetIdentEq("t",Neg("1"),Exp( Add( "x" , Int(1)) )),  (* x +t *)
+    LetLabelEq ("succ",["x"], LetIdentEq("t",Neg("1"),Exp( Add( "x" , Ident "t" ))),  (* x +t *)
      LetUnderscEQ(LetIdentEq("y",Neg("1"),Exp (CallLabel("succ y")) )))   in  (*pb succ*)
 Asml.test exp4 ;
 let h3 = Register_alloc.allocate exp4 in ()
