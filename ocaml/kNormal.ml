@@ -102,13 +102,15 @@ let rec temporaries exp =
         | Syntax.Var (id) when St.mem id !Typing.st -> Var id, St.find id !Typing.st
         | _ -> temporaries e1
       ) in
-      (* insert_let (label, t)
-        (fun f -> App (f, []), t) *)
-      (* TODO make this work for any number of args *)
+      let rec convert_args (f : Id.t) (le : Syntax.t list) (ids : Id.t list) : t * Type.t = (
+        match le with
+        | [] -> App (f, ids), t
+        | hd::tl ->
+          insert_let (temporaries hd)
+            (fun x -> convert_args f tl ([x] @ ids))
+      ) in
       insert_let (label, t)
-        (fun f -> insert_let (temporaries
-          (List.nth le2 0))
-          (fun x -> App (f, [x]), t))
+        (fun f -> convert_args f le2 [])
   | Syntax.LetRec ({Syntax.name = (label, ft) ; Syntax.args = args ; Syntax.body = body}, e) -> 
       List.iter 
         (fun (x, t) -> Typing.st := St.add x t !Typing.st; ())
