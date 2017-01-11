@@ -5,7 +5,7 @@ open Asml
 
 type t = (string, string) Hashtbl.t;;
 
-class register_function = 
+class registers_function = 
 	object (self)
 	val mutable register_hash : t = Hashtbl.create 42;
 	val mutable counter = 0;
@@ -13,21 +13,41 @@ class register_function =
 	 if (Hashtbl.mem register_hash x) == false then	Hashtbl.replace register_hash x ("r"^ string_of_int counter) ;	counter <- counter + 1
 	method look_for x = 
 			Hashtbl.find_all register_hash x 
+	method get_hast =
+				register_hash
+	method clear =
+		Hashtbl.clear register_hash;
+		counter <- 0
+	end;;
+
+type z = (string, registers_function) Hashtbl.t;;
+
+class functions_register_hash = 
+	object (self)
+	val mutable functions_hash : z = Hashtbl.create 42;
+	method add x =
+	 if (Hashtbl.mem functions_hash x) == false then	(let func = new registers_function in  Hashtbl.replace functions_hash x  func ); 
+	method look_for x = 
+			Hashtbl.find functions_hash x 
+	method get_hast =
+				functions_hash
+	method clear =
+		Hashtbl.clear functions_hash;
 	end;;
 
 
-let registerf = new register_function  
+let function_has = new functions_register_hash
 
-let rec assign_exp exp =
+let rec assign_exp exp f =
  match exp with 
  	| Nop -> ()
 	| LPexpRp e -> ()
 	| Int -> ()
-	| Ident i -> registerf#add i 
+	| Ident i -> let fu = function_has#look_for f in fu#add i 
 	| Label s -> ()
 	| Neg i -> ()
 	| FNeg i -> () 
-	| Add (i,id) -> registerf#add i
+	| Add (i,id) -> let fu = function_has#look_for f in fu#add i
 	| Sub (i,id) -> ()
 	| Ld (i,id) -> ()
 	| St (i1,id,i2) -> ()
@@ -43,32 +63,30 @@ let rec assign_exp exp =
 	| CallClo  (id,t) -> ()
 
 
-let rec assign_asmt a =
+let rec assign_asmt a f =
 	match a with
-	| LpasmtRPAREN a -> assign_asmt a 
-	| LetIdentEq (i,e2,a) -> (); assign_exp e2  ; assign_asmt a 
+	| LpasmtRPAREN a -> assign_asmt a f
+	| LetIdentEq (i,e2,a) -> let fu = function_has#look_for f in fu#add i; assign_exp e2 f ; assign_asmt a f
 	| Exp e -> assign_exp e 
 
-let rec assign_form (l : string list) : unit =
+let rec assign_form (l : string list) f : unit =
   match l with
     [] -> ()
-  | x :: xs -> registerf#add x ;  assign_form xs
+  | x :: xs -> let fu = function_has#look_for f in fu#add x  ;  assign_form xs f 
 
-let rec assign_function fo  =
-	match fo with
-	| LetUnderscEQ a -> assign_asmt a (* Let _ =  *)
+let rec assign_function exp  =
+	match exp with
+	| LetUnderscEQ a -> function_has#add "_" ;assign_asmt a "_"(* Let _ =  *)
 	| LetLabeleqFloat (i,fl,fu) -> () ; () ; assign_function fu (*Let _label = 0.2 in *)
-	| LetLabelEq (i,fo,a,fu)-> () ; assign_form fo ; assign_asmt a ; assign_function fu  (* Let _label = something in ...*)
+	| LetLabelEq (i,f,a,fu)-> function_has#add i ; assign_form f i;  assign_asmt a i; assign_function fu  (* Let _label = something in ...*)
 
-let rec display_reg_var ( l : string list ): string = 
-	match l with
-    [] -> ""
-  | x :: xs -> x ^ (display_reg_var xs)
+
 
 let allocate exp =
+	function_has#clear;
 
+	assign_function exp;
 
-	assign_function exp ;
+	Hashtbl.iter (fun x y  -> (printf "function : %s  \n"  x) ;  (Hashtbl.iter (printf "		variable %s , Register  %s. \n")  y#get_hast) )  function_has#get_hast;
 
-	print_endline ( "x : " ^ display_reg_var( registerf#look_for "x" ))    ;
-	print_endline ( "y : " ^ display_reg_var( registerf#look_for "y" ));
+	function_has#get_hast
