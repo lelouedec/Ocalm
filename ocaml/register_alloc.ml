@@ -47,7 +47,7 @@ let rec assign_exp exp f =
  match exp with 
  	| Nop -> ()
 	| LPexpRp e -> ()
-	| Int -> ()
+	| Int i -> ()
 	| Ident i -> let fu = function_has#look_for f in fu#add i 
 	| Label s -> ()
 	| Neg i -> ()

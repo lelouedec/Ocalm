@@ -21,7 +21,7 @@ let rec form_to_string (l : string list) : string =
 type exp = 
 	| Nop 
 	| LPexpRp of ( exp ) 
-	| Int 
+	| Int of int 
 	| Ident of Id.t
 	| Label of Id.t 
 	| Neg of Id.t
@@ -50,7 +50,7 @@ let rec to_string exp =
  match exp with 
  	| Nop ->" "
 	| LPexpRp e -> sprintf " ( %s )" ( to_string e )
-	| Int -> sprintf " :int "
+	| Int i -> string_of_int i 
 	| Ident i ->  i
 	| Label s -> sprintf "_ %s" s  
 	| Neg i -> i

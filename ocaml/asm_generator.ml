@@ -1,5 +1,5 @@
 open Asml
-
+let Label_counter = 0 
 let rec ident_or_imm_to_asm (l : ident_or_imm)  reg  =
 match l  with 
 	| Ident i-> sprintf "%s " (reg#look_for i)
@@ -15,7 +15,7 @@ let rec exp_to_asm exp reg =
 	| Neg i -> "NEG %s" (reg#look_for i)
 	| FNeg i ->  
 	| Add (i,id) -> sprintf "ADD %s , %s " (reg#look_for i) (ident_or_imm_to_asm id)
-	| Sub (i,id) -> sprintf "ADD %s , %s " (reg#look_for i) (ident_or_imm_to_asm id)
+	| Sub (i,id) -> sprintf "SUB %s , %s " (reg#look_for i) (ident_or_imm_to_asm id)
 	| Ld (i,id) -> sprintf "LDR %s , [%s] " (reg#look_for i) (ident_or_imm_to_asm id)
 	| St (i1,id,i2) -> sprintf "STR %s, [%s, %s]" (reg#look_for i1) (ident_or_imm_to_asm id) (reg#look_for i2)
 	| FAdd (i,id) -> 
@@ -24,17 +24,17 @@ let rec exp_to_asm exp reg =
 	| FDiv (i,id) -> 
 	| New i -> 
 	| IfEq (i, id , t1, t2 ) -> sprintf "CMP %s , %s \n 
-										BEQ labeltrue%s \n 
+										BEQ labeltrue%d \n 
 										%s \n
-										BNE label_out%s  \n 
-										labeltrue%s %s  \n
-										label_out%s " (reg#look_for i) (ident_or_imm_to_asm id) (i) (exp_to_asm t2) (i) (i) (exp_to_asm t1) (i)
+										BNE label_out%d  \n 
+										labeltrue%d %s  \n
+										label_out%s " (reg#look_for i) (ident_or_imm_to_asm id) (Label_counter) (exp_to_asm t2) (Label_counter) (i) (exp_to_asm t1) (i);Label_counter <- Label_counter + 1
 	| IfLEq (i, id , t1, t2 ) -> sprintf "CMP %s , %s \n 
-										BLEQ labeltrue%s \n 
+										BLEQ labeltrue%d \n 
 										%s \n
-										BNE label_out%s  \n 
+										BNE label_out%d  \n 
 										labeltrue%s %s  \n
-										label_out%s " (reg#look_for i) (ident_or_imm_to_asm id) (i) (exp_to_asm t2) (i) (i) (exp_to_asm t1) (i)
+										label_out%s " (reg#look_for i) (ident_or_imm_to_asm id) (Label_counter) (exp_to_asm t2) (Label_counter) (i) (exp_to_asm t1) (i)
 	| IfGEq (i, id , t1, t2 ) -> sprintf "CMP %s , %s \n 
 										BGEQ labeltrue%s \n 
 										%s \n
