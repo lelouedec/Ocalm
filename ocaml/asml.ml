@@ -38,8 +38,13 @@ type exp =
 	| IfEq of Id.t * ident_or_imm * exp* exp
 	| IfLEq of Id.t * ident_or_imm * exp * exp
 	| IfGEq of Id.t * ident_or_imm * exp * exp
-	| CallLabel of Id.t * forma_args
+	| CallLabel of Id.t * ident_or_imm list
 	| CallClo of Id.t * forma_args
+
+let rec print_arg ( l : ident_or_imm list ): string = 
+	match l with
+    [] -> ""
+	  | x :: xs -> ident_or_imm_to_string x ^ " " ^(print_arg xs)
 
 let rec to_string exp =
  match exp with 
@@ -62,7 +67,7 @@ let rec to_string exp =
 	| IfEq (i, id , t1, t2 ) -> sprintf ("if %s = %s  then %s else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
 	| IfLEq (i, id , t1, t2 ) -> sprintf ("if %s <= %s then %s else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
 	| IfGEq (i, id , t1, t2 ) -> sprintf ("if %s >= %s then %s else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
-	| CallLabel (e,a)-> sprintf " Call %s %s " ( e) (form_to_string a)
+	| CallLabel (e,a)-> sprintf " Call %s %s " ( e) (print_arg a) 
 	| CallClo  (id,a) -> sprintf " Call  %s %s" (id) (form_to_string a)
 
 
