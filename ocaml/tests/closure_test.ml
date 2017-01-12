@@ -72,8 +72,21 @@ let case3 () =
     print_endline (to_string closured);
     ()
 
+let case4 () =
+  (* let z = 1 in print_int z *)
+  let knormed =
+    KNormal.Let (
+      ("z", Type.Int),
+      KNormal.Int 1,
+      KNormal.AppExt ("print_int", ["z"])
+    ) in
+  let closured = f knormed in
+  print_endline ">> case 4";
+  print_endline (to_string closured)
+
 let () =
   print_endline "\n*****\nClosure conversion tests";
   case1 ();
   case2 ();
   case3 ();
+  case4 ()

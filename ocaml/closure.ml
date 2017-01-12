@@ -85,6 +85,8 @@ let rec extract_main (exp : KNormal.t) : t =
   | KNormal.App (label, args) ->
     (* assume no app closure for now *)
     AppDir (label, args)
+  | KNormal.AppExt (label, args) ->
+    AppDir ("min_caml_" ^ label, args)
   | _ -> failwith "nyi extract"
 
 let rec f (exp : KNormal.t) : prog =
