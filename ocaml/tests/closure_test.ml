@@ -21,7 +21,7 @@ let case2 () =
   let knormed =
     KNormal.LetRec (
       {
-        KNormal.name = ("double", Type.Int);
+        KNormal.name = ("double", Type.Var (ref (Some Type.Int)));
         KNormal.args = [("x", Type.Int)];
         KNormal.body = KNormal.Add ("x", "x")
       },
@@ -44,11 +44,11 @@ let case3 () =
   let knormed =
     KNormal.LetRec (
       {
-        KNormal.name = ("f", Type.Fun ([Type.Int], Type.Fun ([Type.Int], Type.Int) )); (* fun int -> (fun int -> int) *)
+        KNormal.name = ("f", Type.Var (ref (Some (Type.Fun ([Type.Int], Type.Int))))); (* fun int -> (fun int -> int) *)
         KNormal.args = [("x", Type.Int)];
         KNormal.body = KNormal.LetRec (
           {
-            KNormal.name = ("g", Type.Fun ([Type.Int], Type.Int) ); (* fun int -> int *)
+            KNormal.name = ("g", Type.Var (ref (Some Type.Int))); (* fun int -> int *)
             KNormal.args = [("y", Type.Int)];
             KNormal.body = KNormal.Add ("x", "y")
           },
