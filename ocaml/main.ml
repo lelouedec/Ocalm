@@ -30,9 +30,9 @@ let () =
       (Printf.sprintf "usage: %s filenames" Sys.argv.(0));
     List.iter
       (fun f -> ignore (file f))
-      !files
+      !files; 
 
-  (* let exp2 =
+  let exp2 =
       LetLabelEq ("f",["x";"y"], Exp( Add( "x" , Int (0) ) ), LetUnderscEQ(Exp ( CallLabel ( "f",[Ident"x";Ident "y"]) ) )) in 
   Asml.test exp2 ;
 
@@ -56,4 +56,4 @@ let () =
       LetUnderscEQ(LetIdentEq("a",Neg("2"),
         LetIdentEq("b",Neg("1"),LetIdentEq("c",Neg("0"),Exp (IfEq("a",Ident "b",Add( "s" , Ident "a" ),Add( "s" , Ident "b" ))   ) )))) in 
   Asml.test exp5 ;
-  let h3 = Register_alloc.allocate exp5 in () ; *)
+  let h3 = Register_alloc.allocate exp5 in () ; 
