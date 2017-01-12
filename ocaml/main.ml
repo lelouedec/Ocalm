@@ -19,6 +19,8 @@ let file f =
     print_endline ("Typing:\n" ^
       St.to_string Type.to_string !Typing.st );
     print_endline (KNormal.to_string _r);
+    close_in inchan
+  with e -> (close_in inchan; raise e)
 
 let () = 
   let files = ref [] in
@@ -28,7 +30,7 @@ let () =
       (Printf.sprintf "usage: %s filenames" Sys.argv.(0));
     List.iter
       (fun f -> ignore (file f))
-      !files)
+      !files
 
   (* let exp2 =
       LetLabelEq ("f",["x";"y"], Exp( Add( "x" , Int (0) ) ), LetUnderscEQ(Exp ( CallLabel ( "f",[Ident"x";Ident "y"]) ) )) in 
