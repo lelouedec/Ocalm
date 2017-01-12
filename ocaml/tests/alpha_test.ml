@@ -44,10 +44,23 @@ let case2 () =
       )
     ) in
   let alpha_ed = Alpha.f knormed in
-  print_endline (KNormal.to_string alpha_ed);
-  ()
+  print_endline (KNormal.to_string alpha_ed)
+
+(* leave external function (name) unchanged *)
+let case3 () =
+  print_endline ">> case 3";
+  (* let x = 1 in print_int x *)
+  let knormed =
+    Let (
+      ( "x", Type.Var (ref (Some Type.Int)) ),
+      Int 1,
+      AppExt ("print_int", ["x"])
+    ) in
+  let alpha_ed = Alpha.f knormed in
+  print_endline (KNormal.to_string alpha_ed)
 
 let () =
   print_endline "Alpha-conversion tests";
   case1 ();
-  case2 ()
+  case2 ();
+  case3 ()

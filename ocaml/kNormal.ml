@@ -21,6 +21,7 @@ type t =
   | Var of Id.t
   | LetRec of fundef * t
   | App of Id.t * Id.t list
+  | AppExt of Id.t * Id.t list
   | Tuple of Id.t list
   | LetTuple of (Id.t * Type.t) list * Id.t * t
   | Array of Id.t * Id.t
@@ -100,11 +101,13 @@ let rec temporaries exp =
   | Syntax.App (e1, le2) ->
       let label, t = ( match e1 with
         | Syntax.Var (id) when St.mem id !Typing.st -> Var id, St.find id !Typing.st
+        | Syntax.Var (id) -> Var id, Type.Unit (* assume that all external functions are of type unit *)
         | _ -> temporaries e1
       ) in
       let rec convert_args (f : Id.t) (le : Syntax.t list) (ids : Id.t list) : t * Type.t = (
         match le with
-        | [] -> App (f, ids), t
+        | [] when St.mem f !Typing.st -> App (f, ids), t
+        | [] -> AppExt (f, ids), t
         | hd::tl ->
           insert_let (temporaries hd)
             (fun x -> convert_args f tl (ids @ [x]))
@@ -154,6 +157,14 @@ let rec to_string exp =
   | Var id -> Id.to_string id
   | App (id, args) ->
           sprintf "(%s %s)"
+          (Id.to_string id)
+          (
+            match args with
+            | [] -> "()"
+            | _ -> (String.concat " " (List.map (fun arg -> Id.to_string arg) args))
+          )
+  | AppExt (id, args) ->
+          sprintf "(_min_caml_%s %s)"
           (Id.to_string id)
           (
             match args with

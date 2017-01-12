@@ -35,6 +35,9 @@ let rec g (exp : t) (vars : Id.t St.t) : t =
   | App (id, args) ->
     let new_args = List.map (fun arg -> lookup arg vars) args in
     App (id, new_args)
+  | AppExt (id, args) ->
+    let new_args = List.map (fun arg -> lookup arg vars) args in
+    AppExt (id, new_args)
 
 (*
   | LetTuple (l, e1, e2)->
