@@ -25,7 +25,7 @@ let case1 () =
 (* replacement for let-rec *)
 let case2 () =
   print_endline ">> case 2";
-  (* let rec f x = (let y = 1 in x + y) in (let x = 2 in x)*)
+  (* let rec f x = (let y = 1 in x + y) in (let x = 2 in f x)*)
   let knormed =
     LetRec (
       {
@@ -40,7 +40,7 @@ let case2 () =
       Let (
         ( "x", Type.Var (ref (Some Type.Int)) ),
         Int 2,
-        Var "x"
+        App( "f", ["x"])
       )
     ) in
   let alpha_ed = Alpha.f knormed in
