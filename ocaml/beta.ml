@@ -30,13 +30,17 @@ let rec g (exp : t) (vars : Id.t St.t) : t =
       | _ -> Let ((id, t), e1', g e2 vars)
     )
   | Var id -> Var (lookup id vars)
-(* 
+  | LetRec ({name = (label, t); args = args; body = body}, e) ->
+    LetRec ({name = (label, t); args = args; body = g body vars}, g e vars)
   | App (id, args) ->
-  | LetRec (fd, e) ->
-  | LetTuple (l, e1, e2)-> 
-  | Get (e1, e2) -> 
-  | Put (e1, e2, e3) -> 
-  | Tuple (l) -> 
+    let new_args = List.map (fun arg -> lookup arg vars) args in
+    App (id, new_args)
+
+(*
+  | LetTuple (l, e1, e2)->
+  | Get (e1, e2) ->
+  | Put (e1, e2, e3) ->
+  | Tuple (l) ->
   | Array (e1, e2) ->
  *)
   | _ -> failwith "no b-reduction defined for this yet"

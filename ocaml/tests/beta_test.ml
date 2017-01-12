@@ -50,8 +50,32 @@ let case3 () =
   let beta_ed = Beta.f knormed in
   print_endline (KNormal.to_string beta_ed)
 
+let case4 () =
+  print_endline ">> case 4";
+  (* let f x = (let z = y in x + z) in (let v = t in f v) *)
+  let knormed =
+    LetRec (
+      {
+        name = ("f", Type.Fun ([Type.Int], Type.Int));
+        args = [("x", Type.Int)];
+        body = Let (
+          ("z", Type.Var (ref (Some Type.Int))),
+          Var "y",
+          Add ("x", "z")
+        )
+      },
+      Let (
+        ("v", Type.Var (ref (Some Type.Int))),
+        Var "t",
+        App ("f", ["t"])
+      )
+    ) in
+  let beta_ed = Beta.f knormed in
+  print_endline (KNormal.to_string beta_ed)
+
 let () =
   print_endline "Beta-reduction tests";
   case1 ();
   case2 ();
-  case3 ()
+  case3 ();
+  case4 ()
