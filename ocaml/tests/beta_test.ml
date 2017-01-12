@@ -56,7 +56,7 @@ let case4 () =
   let knormed =
     LetRec (
       {
-        name = ("f", Type.Fun ([Type.Int], Type.Int));
+        name = ("f", Type.Var (ref (Some Type.Int)));
         args = [("x", Type.Int)];
         body = Let (
           ("z", Type.Var (ref (Some Type.Int))),
