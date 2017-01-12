@@ -37,6 +37,7 @@ let case2 =
   assert((St.find "f" !Typing.st) = Type.Var(ref (Some Type.Float)))*)
 
 let _ =
+  print_endline " ***************************************************";
   case1;
   case2;
   print_endline "Type inference tests... passed";
