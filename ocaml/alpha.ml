@@ -42,9 +42,17 @@ let rec g (exp : t) (vars : Id.t St.t) : t =
   | Var id ->
     let newid = lookup id vars
     in Var (newid)
+  | LetRec ({name = (label, t); args = args; body = body}, e) ->
+    let new_label = Id.genid () in
+    let new_vars = St.add label new_label vars in
+    let new_vars_with_args = ref new_vars in
+    List.iter (fun (id, _) -> new_vars_with_args := St.add id (Id.genid ()) !new_vars_with_args) args;
+    let new_args = List.map (fun (id, t) -> (St.find id !new_vars_with_args), t) args in
+    let new_body = g body !new_vars_with_args in
+    let e' = g e new_vars in
+    LetRec ({name = (new_label, t); args = new_args; body = new_body}, e')
 (* 
   | App (id, args) ->
-  | LetRec (fd, e) ->
   | LetTuple (l, e1, e2)-> 
   | Get (e1, e2) -> 
   | Put (e1, e2, e3) -> 

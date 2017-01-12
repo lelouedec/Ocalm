@@ -22,6 +22,32 @@ let case1 () =
   print_endline (KNormal.to_string alpha_ed);
   assert (not (alpha_ed = knormed))
 
+(* replacement for let-rec *)
+let case2 () =
+  print_endline ">> case 2";
+  (* let rec f x = (let y = 1 in x + y) in (let x = 2 in x)*)
+  let knormed =
+    LetRec (
+      {
+        name = ( "f", Type.Fun ([Type.Int], Type.Int) );
+        args = [("x", Type.Int)];
+        body = Let (
+          ( "y", Type.Var (ref (Some Type.Int)) ),
+          Int 1,
+          Add ( "x", "y" )
+        )
+      },
+      Let (
+        ( "x", Type.Var (ref (Some Type.Int)) ),
+        Int 2,
+        Var "x"
+      )
+    ) in
+  let alpha_ed = Alpha.f knormed in
+  print_endline (KNormal.to_string alpha_ed);
+  ()
+
 let () =
   print_endline "Alpha-conversion tests";
-  case1 ()
+  case1 ();
+  case2 ()
