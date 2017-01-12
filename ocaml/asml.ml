@@ -9,6 +9,15 @@ match l  with
 	| Ident i-> sprintf " %s " i
 	| Int i -> string_of_int i
 
+type forma_args = Id.t list
+
+
+let rec form_to_string (l : string list) : string =
+  match l with
+    [] -> ""
+  | x :: xs -> x ^" " ^ (form_to_string xs)
+
+
 type exp = 
 	| Nop 
 	| LPexpRp of ( exp ) 
@@ -29,8 +38,8 @@ type exp =
 	| IfEq of Id.t * ident_or_imm * exp* exp
 	| IfLEq of Id.t * ident_or_imm * exp * exp
 	| IfGEq of Id.t * ident_or_imm * exp * exp
-	| CallLabel of Id.t
-	| CallClo of Id.t * exp
+	| CallLabel of Id.t * forma_args
+	| CallClo of Id.t * forma_args
 
 let rec to_string exp =
  match exp with 
@@ -53,8 +62,8 @@ let rec to_string exp =
 	| IfEq (i, id , t1, t2 ) -> sprintf ("if %s = %s  then %s else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
 	| IfLEq (i, id , t1, t2 ) -> sprintf ("if %s <= %s then %s else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
 	| IfGEq (i, id , t1, t2 ) -> sprintf ("if %s >= %s then %s else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
-	| CallLabel e -> sprintf " Call %s" ( e)
-	| CallClo  (id,t) -> sprintf " Call  %s %s" (id) (to_string t)
+	| CallLabel (e,a)-> sprintf " Call %s %s " ( e) (form_to_string a)
+	| CallClo  (id,a) -> sprintf " Call  %s %s" (id) (form_to_string a)
 
 
 type asmt = 
@@ -65,17 +74,11 @@ type asmt =
 let rec asmt_to_string asmt =
 	match asmt with 
 	| LpasmtRPAREN a -> sprintf " ( %s )" (asmt_to_string a)
-	| LetIdentEq (i,e2,a) -> sprintf "Let %s = %s in %s" (i) ( to_string e2) (asmt_to_string a)
+	| LetIdentEq (i,e2,a) -> sprintf "Let %s = %s in \n %s" (i) ( to_string e2) (asmt_to_string a)
 	| Exp e -> (to_string e)
 
-type forma_args = Id.t list
 	
 
-
-let rec form_to_string (l : string list) : string =
-  match l with
-    [] -> ""
-  | x :: xs -> x ^" " ^ (form_to_string xs)
 
 	
 

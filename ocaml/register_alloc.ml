@@ -12,7 +12,7 @@ class registers_function =
 	method add x =
 	 if (Hashtbl.mem register_hash x) == false then	Hashtbl.replace register_hash x ("r"^ string_of_int counter) ;	counter <- counter + 1
 	method look_for x = 
-			Hashtbl.find_all register_hash x 
+			Hashtbl.find register_hash x 
 	method get_hast =
 				register_hash
 	method clear =
@@ -64,7 +64,7 @@ let rec assign_exp exp f =
 	| IfEq (i, id , t1, t2 ) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f ; assign_exp t1 f; assign_exp t2 f 
 	| IfLEq (i, id , t1, t2 ) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f ; assign_exp t1 f; assign_exp t2 f 
 	| IfGEq (i, id , t1, t2 ) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f ; assign_exp t1 f; assign_exp t2 f 
-	| CallLabel e -> ()
+	| CallLabel (e,a) -> ()
 	| CallClo  (id,t) -> ()
 
 
