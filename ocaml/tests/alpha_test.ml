@@ -1,34 +1,20 @@
 open KNormal
 
 (* variable replacement expected if declared in let *)
-let case2 () =
-  print_endline ">> case 2";
+let case1 () =
+  print_endline ">> case 1";
   (* let x = 1 in (let _ = (let x = 2. in x + y) in x) *)
   let knormed =
     Let (
-      (
-        "x",
-        Type.Var (ref (Some Type.Int))
-      ),
+      ( "x", Type.Var (ref (Some Type.Int)) ),
       Int 1,
       Let (
-        (
-          "_",
-          Type.Var (ref (Some Type.Unit))
-        ),
-
+        ( "_", Type.Var (ref (Some Type.Unit)) ),
         Let (
-          (
-            "x",
-            Type.Var (ref (Some Type.Float))
-          ),
+          ( "x", Type.Var (ref (Some Type.Float)) ),
           Float 2.,
-          Add (
-            "x",
-            "y"
-          )
+          Add ( "x", "y" )
         ),
-
         Var "x"
       )
     ) in
@@ -38,4 +24,4 @@ let case2 () =
 
 let () =
   print_endline "Alpha-conversion tests";
-  case2 ()
+  case1 ()
