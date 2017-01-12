@@ -43,12 +43,12 @@ let rec form_to_asm (l : string list) f : unit =
 
 let rec function_to_asm exp  =
 	match exp with
-	| LetUnderscEQ a -> function_has#add "_" ;assign_asmt a "_"(* Let _ =  *)
+	| LetUnderscEQ a -> 
 	| LetLabeleqFloat (i,fl,fu) -> () ; () ; assign_function fu (*Let _label = 0.2 in *)
 	| LetLabelEq (i,f,a,fu)-> function_has#add i ; assign_form f i;  assign_asmt a i; assign_function fu  (* Let _label = something in ...*)
 
 let generate exp = 
 
-	let asm_code = function_to_asm
+	let asm_code = function_to_asm exp in asm_code
 
 

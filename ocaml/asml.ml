@@ -6,7 +6,7 @@ type ident_or_imm =
 
 let rec ident_or_imm_to_string l =
 match l  with 
-	| Ident i-> sprintf "ident : %s " i
+	| Ident i-> sprintf " %s " i
 	| Int i -> string_of_int i
 
 type exp = 
@@ -41,8 +41,8 @@ let rec to_string exp =
 	| Label s -> sprintf "_ %s" s  
 	| Neg i -> i
 	| FNeg i -> i 
-	| Add (i,id) -> sprintf "%s + %s "  (i)  (ident_or_imm_to_string  id)
-	| Sub (i,id) -> sprintf "%s + %s "  (i)  (ident_or_imm_to_string id)
+	| Add (i,id) -> sprintf " %s + %s "  (i)  (ident_or_imm_to_string  id)
+	| Sub (i,id) -> sprintf "%s - %s "  (i)  (ident_or_imm_to_string id)
 	| Ld (i,id) -> sprintf "%s + %s "  (i)  (ident_or_imm_to_string id)
 	| St (i1,id,i2) -> sprintf "mem(%s + %s ) <- %s "  (i1)  (ident_or_imm_to_string id) (i2) 	
 	| FAdd (i,id) -> sprintf "%s + %s "  (i)  (id)
@@ -50,9 +50,9 @@ let rec to_string exp =
 	| FMul (i,id) -> sprintf "%s + %s "  (i)  (id)
 	| FDiv (i,id) -> sprintf "%s + %s "  (i)  (id)
 	| New i -> sprintf "new %s in " (ident_or_imm_to_string	i)
-	| IfEq (i, id , t1, t2 ) -> sprintf ("if %s = %s  then %S else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
-	| IfLEq (i, id , t1, t2 ) -> sprintf ("if %s <= %s then %S else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
-	| IfGEq (i, id , t1, t2 ) -> sprintf ("if %s >= %s then %S else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
+	| IfEq (i, id , t1, t2 ) -> sprintf ("if %s = %s  then %s else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
+	| IfLEq (i, id , t1, t2 ) -> sprintf ("if %s <= %s then %s else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
+	| IfGEq (i, id , t1, t2 ) -> sprintf ("if %s >= %s then %s else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
 	| CallLabel e -> sprintf " Call %s" ( e)
 	| CallClo  (id,t) -> sprintf " Call  %s %s" (id) (to_string t)
 
@@ -93,7 +93,6 @@ let rec fundefs_to_string fu =
 
 let test exp =
 	print_endline "******************************************************************";	
-	print_endline "Test";	
 	print_endline (fundefs_to_string (exp) );
 
 	(*Register_alloc.allocate exp2;*)

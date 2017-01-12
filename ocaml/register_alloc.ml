@@ -52,8 +52,8 @@ let rec assign_exp exp f =
 	| Label s -> ()
 	| Neg i -> ()
 	| FNeg i -> () 
-	| Add (i,id) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f 
-	| Sub (i,id) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f 
+	| Add (i,id) ->  let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f 
+	| Sub (i,id) ->  let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f 
 	| Ld (i,id) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f 
 	| St (i1,id,i2) -> let fu = function_has#look_for f in fu#add i1 ; assign_ident_or_imm id f ;fu#add i2
 	| FAdd (i,id) -> let fu = function_has#look_for f in fu#add i ; fu#add id 
@@ -72,7 +72,7 @@ let rec assign_asmt a f =
 	match a with
 	| LpasmtRPAREN a -> assign_asmt a f
 	| LetIdentEq (i,e2,a) -> let fu = function_has#look_for f in fu#add i; assign_exp e2 f ; assign_asmt a f
-	| Exp e -> assign_exp e 
+	| Exp e -> assign_exp e f
 
 let rec assign_form (l : string list) f : unit =
   match l with
