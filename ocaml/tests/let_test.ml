@@ -25,7 +25,7 @@ let case1 () =
         "x3"
       )
 		) in
-	let letreduction_ed = Letreduction.f knormed in
+	let letreduction_ed = Let.f knormed in
 	print_endline (KNormal.to_string letreduction_ed)
 
 let () =
