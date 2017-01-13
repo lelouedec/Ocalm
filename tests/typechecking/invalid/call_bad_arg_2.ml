@@ -1,2 +1,2 @@
 let rec f x = x + 1 in
-f 1 2; ()
+ignore (f 1 2); ()

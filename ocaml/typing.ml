@@ -36,11 +36,16 @@ let rec generate exp t =
           let (args, rt) = (match fn with 
             | Type.Fun (args1, rt1) -> (args1, rt1)
             | _ -> raise (failwith "f")) in
-          let mp = List.map2 
-              (fun x y -> generate x y)
-              le2
-              args
-          in List.concat mp @ [(t1, fn)] @ [(rt, t)]
+          let nb_args = List.length args in
+          let nb_args_given = List.length le2 in
+          if nb_args = nb_args_given then
+            let mp = List.map2 
+                (fun x y -> generate x y)
+                le2
+                args
+            in List.concat mp @ [(t1, fn)] @ [(rt, t)]
+          else
+            raise (failwith (Printf.sprintf "The function expects %d argument(s) while %d are supplied" nb_args nb_args_given))
         (* unknown function label -- treated as external *)
         | Var id ->
           let list_of_list_eqs =
