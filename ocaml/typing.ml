@@ -35,7 +35,7 @@ let rec generate exp t =
           let fn = St.find id !st in print_endline ("fn : " ^ (Type.to_string fn));
           let (args, rt) = (match fn with 
             | Type.Fun (args1, rt1) -> (args1, rt1)
-            | _ -> raise (failwith "f")) in
+            | _ -> raise (failwith "invalid function type")) in
           let nb_args = List.length args in
           let nb_args_given = List.length le2 in
           if nb_args = nb_args_given then
@@ -56,7 +56,18 @@ let rec generate exp t =
             (fun res leqs -> res @ leqs)
             []
             list_of_list_eqs
-        | _ -> print_endline "app typing not supported in this case"; []);
+        | _ ->
+          (* TODO get type of function label and apply checking with arguments *)
+          let label_eqs = generate e1 (Type.gentyp ()) in
+          let list_of_args_eqs =
+            List.map
+              (fun arg -> generate arg (Type.gentyp ()))
+              le2 in
+          List.fold_left
+            (fun res leqs -> res @ leqs)
+            label_eqs
+            list_of_args_eqs
+      )
       (*let fn = St.find e1 !st in print_endline ("fn : " ^ (Type.to_string fn));*)
       (*let ls = List.map (fun x -> generate x (Type.Var (ref (None)))) le2 in List.concat ls *)
   | LetRec ({ name = (id, tv); args = largs; body = e }, e2) -> 
