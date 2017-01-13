@@ -2,7 +2,6 @@ open Syntax
 
 let st = ref St.empty
 let st_ext = ref St.empty
-let st_fn = ref St.empty
 
 let rec generate exp t =
   match exp with
@@ -26,14 +25,26 @@ let rec generate exp t =
   | Var (id) when St.mem id !st -> let t1 = St.find id !st in [(t1, t)]
   | Var (id) when St.mem id !st_ext -> let t1 = St.find id !st_ext in [(t1, t)]
   | Var (id) ->
-        let t1 = Type.gentyp () in st_ext := St.add id t1 !st_ext;
-        [t1, t]
-  (*| App (e1, le2) ->
-      let fn = st.find e1 !st_fn in
-      let solved = List.map generate oaoze amfkzefù ... too hard *) 
+      let t1 = Type.gentyp () in st_ext := St.add id t1 !st_ext;
+      [t1, t]
+  | App (e1, le2) -> print_endline (Syntax.to_string e1);
+      (*let t1 = Type.gentyp() in *)
+      (match e1 with
+        | Var id -> 
+          let fn = St.find id !st in print_endline ("fn : " ^ (Type.to_string fn));
+          let (args, rt) = (match fn with 
+            | Fun (args1, rt1) -> (args1, rt1)
+            | _ -> raise (failwith "f")) in
+          let mp = List.map2 
+              (fun x y -> generate x y)
+              le2
+              args
+          in List.concat mp
+        | _ -> print_endline "app typing not supported in this case"; []);
+      (*let fn = St.find e1 !st in print_endline ("fn : " ^ (Type.to_string fn));*)
+      (*let ls = List.map (fun x -> generate x (Type.Var (ref (None)))) le2 in List.concat ls *)
   | LetRec ({ name = (id, tv); args = largs; body = e }, e2) -> 
-      st := St.add id tv !st;
-      st_fn := St.add id largs !st_fn;
+      st := St.add id (Type.Fun(List.map (fun x -> snd x) largs, tv)) !st;
       ignore(List.fold_left (fun st (idi, tvi) -> st := St.add idi tvi !st; st) st largs);
       generate e tv @ generate e2 t
   (*| LetTuple (l, e1, e2)-> 
@@ -47,12 +58,13 @@ let rec unify eq =
   match eq with
   | Type.Unit, Type.Unit | Type.Bool, Type.Bool | Type.Int, Type.Int | Type.Float, Type.Float -> ()
   | Type.Var (t1), Type.Var (t2) when t1 == t2 -> ()
+  | Type.Var (t1), Type.Var (t2) -> t1 := Some(Type.Int); t2 := Some(Type.Int) (* unknown types : int *)
   | Type.Var ({ contents = Some(t1') }), _ -> let (_, t2) = eq in unify (t1', t2)
   | _, Type.Var ({ contents = Some(t2') }) -> let (t1, _) = eq in unify (t1, t2')
   | Type.Var ({ contents = None } as t1'), _ ->
       let (t1, t2) = eq in
       t1' := Some(t2)
-  | _, Type.Var ({ contents = None } as t2') ->
+  | _, Type.Var ({ contents = None } as t2') -> print_endline ("left : " ^ (Type.to_string (fst eq)) ^ ", right : " ^ (Type.to_string (Type.Var (t2'))));
       let (t1, t2) = eq in
       t2' := Some(t1)
   | _ -> raise (failwith "mismatch types during unification")

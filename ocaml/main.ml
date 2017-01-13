@@ -1,5 +1,3 @@
-open Asml
-
 let version = "0.0.1"
 
 let print_ast exp =
@@ -14,6 +12,7 @@ let file f flags =
       (* parse only *)
       ()
     else (
+      print_endline "typing..";
       let _t = Typing.f _p in
       if List.mem "-t" flags then
         (* type checking only *)
@@ -29,12 +28,19 @@ let file f flags =
           )
           in
         (* if List.mem "-d" flags then ( *)
-          print_endline ("Typing:\n" ^
-            St.to_string Type.to_string !Typing.st );
-          print_endline (KNormal.to_string _r)
+
+          print_endline ("Typing:\n" ^ St.to_string Type.to_string !Typing.st );
+          print_endline ("a/b/let rec :\n" ^ KNormal.to_string _r);
+          
+          let cls = Closure.f _r in
+          let vir = Virtual.f (snd cls) in
+          
+          print_endline ("Closure:\n" ^ Closure.to_string cls);
+          print_endline ("Asml:\n" ^ Asml.to_string vir);
         (* ) else () *)
       )
     );
+
     close_in inchan
   with e -> (close_in inchan; raise e)
 
