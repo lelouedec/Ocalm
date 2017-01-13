@@ -1,26 +1,52 @@
 open Closure
 
-let rec f cls = 
+let rec make_exp cls =
   match cls with
-  | Unit -> Asml.LPexpRp (Asml.Nop)
-  | Int i -> Asml.LPexpRp (Asml.Int(i))
+  | Unit -> Asml.Nop
+  | Int i -> Asml.Int(i)
   (*| Float f -> 
   | Not id -> *)
-  | Neg id -> Asml.LPexpRp (Asml.Neg(id))
-  | Add (id1, id2) -> Asml.LPexpRp (Asml.Add(id1, Asml.Ident(id2)))
-  | Sub (id1, id2) -> Asml.LPexpRp (Asml.Sub(id1, Asml.Ident(id2)))
-  | FNeg id -> Asml.LPexpRp (Asml.FNeg(id))
-  | FAdd (id1, id2) -> Asml.LPexpRp (Asml.FAdd(id1, id2))
-  | FSub (id1, id2) -> Asml.LPexpRp (Asml.FSub(id1, id2))
-  | FMul (id1, id2) -> Asml.LPexpRp (Asml.FMul(id1, id2))
-  | FDiv (id1, id2) -> Asml.LPexpRp (Asml.FDiv(id1, id2))
+  | Neg id -> Asml.Neg(id)
+  | Add (id1, id2) -> Asml.Add(id1, Asml.Ident(id2))
+  | Sub (id1, id2) -> Asml.Sub(id1, Asml.Ident(id2))
+  | FNeg id -> Asml.FNeg(id)
+  | FAdd (id1, id2) -> Asml.FAdd(id1, id2)
+  | FSub (id1, id2) -> Asml.FSub(id1, id2)
+  | FMul (id1, id2) -> Asml.FMul(id1, id2)
+  | FDiv (id1, id2) -> Asml.FDiv(id1, id2)
   (*| Eq (id1, id2) -> 
   | LE (id1, id2) -> 
   | IfEq (id1, id2, e1, e2) -> 
-  | IfLE (id1, id2, e1, e2) -> 
-  | Let of ((id, t), e1, e2)
-  | Var of id
-  | AppCls (id, args) -> 
+  | IfLE (id1, id2, e1, e2) -> *)
+  | Let ((id, t), e1, e2) -> make_exp(e1)
+  | Var id -> Asml.Ident(id)
+  (*| AppCls (id, args) -> 
   | AppDir (id, args) -> *)
-  | _ -> Asml.LPexpRp (Asml.Nop)
+  | _ -> Asml.Nop
 
+let rec tr cls = 
+  match cls with
+  | Unit -> Asml.Exp (Asml.Nop)
+  | Int i -> Asml.Exp (make_exp cls)
+  (*| Float f -> 
+  | Not id -> *)
+  | Neg id -> Asml.Exp (make_exp cls)
+  | Add (id1, id2) -> Asml.Exp (make_exp cls)
+  | Sub (id1, id2) -> Asml.Exp (make_exp cls)
+  | FNeg id -> Asml.Exp (make_exp cls)
+  | FAdd (id1, id2) -> Asml.Exp (make_exp cls)
+  | FSub (id1, id2) -> Asml.Exp (make_exp cls)
+  | FMul (id1, id2) -> Asml.Exp (make_exp cls)
+  | FDiv (id1, id2) -> Asml.Exp (make_exp cls)
+  (*| Eq (id1, id2) -> 
+  | LE (id1, id2) -> 
+  | IfEq (id1, id2, e1, e2) -> 
+  | IfLE (id1, id2, e1, e2) -> *)
+  | Let ((id, t), e1, e2) -> Asml.LetIdentEq (id, make_exp e1, tr e2)
+  | Var id -> Asml.Exp (make_exp cls)
+  (*| AppCls (id, args) -> 
+  | AppDir (id, args) -> *)
+  | _ -> Asml.Exp (Asml.Nop)
+
+let f cls =
+  Asml.LetUnderscEQ ( tr (cls) )

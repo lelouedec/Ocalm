@@ -7,7 +7,7 @@ let y = 1 in
 let x = y + y - (-y) in
 let rec fn a = a in
 if (y <= x) then let z = 2 in _ else let z = 3 in _*)
-let rec f x = x in let a = f 1.0 in _
+let a = 1 + 2 in _
 
 (*let rec f x =
   let rec g y = x + y in g

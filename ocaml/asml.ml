@@ -92,7 +92,6 @@ let rec fundefs_to_string fu =
 	| LetLabeleqFloat (l,fl, fu) -> sprintf " Let _%s = %.2f \n %s " (l) (fl) (fundefs_to_string fu)
 	| LetLabelEq (l,fo, a, fu) -> sprintf "Let _%s %s =  %s \n \n%s" (l) (form_to_string fo) (asmt_to_string a) (fundefs_to_string fu)
 
-
 let test exp =
 	print_endline "******************************************************************";	
 	print_endline (fundefs_to_string (exp) );
