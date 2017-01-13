@@ -26,26 +26,29 @@ let rec generate exp t =
   | Var (id) when St.mem id !st_ext -> let t1 = St.find id !st_ext in [(t1, t)]
   | Var (id) ->
       let t1 = Type.gentyp () in st_ext := St.add id t1 !st_ext;
-      [t1, t]
+      [(t1, t)]
   | App (e1, le2) -> print_endline (Syntax.to_string e1);
-      (*let t1 = Type.gentyp() in *)
+      let t1 = Type.gentyp() in 
       (match e1 with
         | Var id -> 
           let fn = St.find id !st in print_endline ("fn : " ^ (Type.to_string fn));
           let (args, rt) = (match fn with 
-            | Fun (args1, rt1) -> (args1, rt1)
+            | Type.Fun (args1, rt1) -> (args1, rt1)
             | _ -> raise (failwith "f")) in
           let mp = List.map2 
               (fun x y -> generate x y)
               le2
               args
-          in List.concat mp
+          in List.concat mp @ [(t1, fn)] @ [(rt, t)]
         | _ -> print_endline "app typing not supported in this case"; []);
       (*let fn = St.find e1 !st in print_endline ("fn : " ^ (Type.to_string fn));*)
       (*let ls = List.map (fun x -> generate x (Type.Var (ref (None)))) le2 in List.concat ls *)
   | LetRec ({ name = (id, tv); args = largs; body = e }, e2) -> 
-      st := St.add id (Type.Fun(List.map (fun x -> snd x) largs, tv)) !st;
-      ignore(List.fold_left (fun st (idi, tvi) -> st := St.add idi tvi !st; st) st largs);
+      let fn = Type.Fun(List.map (fun x -> snd x) largs, tv) in
+      List.iter (fun (idi, tvi) -> 
+        st := St.add idi tvi !st) largs;
+        st := St.add id (fn) !st;
+
       generate e tv @ generate e2 t
   (*| LetTuple (l, e1, e2)-> 
   | Get (e1, e2) -> 
@@ -58,20 +61,26 @@ let rec unify eq =
   match eq with
   | Type.Unit, Type.Unit | Type.Bool, Type.Bool | Type.Int, Type.Int | Type.Float, Type.Float -> ()
   | Type.Var (t1), Type.Var (t2) when t1 == t2 -> ()
-  | Type.Var (t1), Type.Var (t2) -> t1 := Some(Type.Int); t2 := Some(Type.Int) (* unknown types : int *)
+  | Type.Var (t1), Type.Var (t2) -> (*t1 := Some(Type.Int); t2 := Some(Type.Int);*) () (* unknown types : int *)
   | Type.Var ({ contents = Some(t1') }), _ -> let (_, t2) = eq in unify (t1', t2)
   | _, Type.Var ({ contents = Some(t2') }) -> let (t1, _) = eq in unify (t1, t2')
   | Type.Var ({ contents = None } as t1'), _ ->
       let (t1, t2) = eq in
       t1' := Some(t2)
-  | _, Type.Var ({ contents = None } as t2') -> print_endline ("left : " ^ (Type.to_string (fst eq)) ^ ", right : " ^ (Type.to_string (Type.Var (t2'))));
+  | _, Type.Var ({ contents = None } as t2') ->
       let (t1, t2) = eq in
       t2' := Some(t1)
+  | Type.Fun(t1s, t1'), Type.Fun(t2s, t2') ->
+      List.iter2 (fun x y -> unify (x, y)) t1s t2s;
+      unify (t1', t2')
   | _ -> raise (failwith "mismatch types during unification")
+
+let print_equations eq = 
+  List.iter (fun (x, y) -> print_endline ("[left : " ^ Type.to_string x ^ ", right : " ^ Type.to_string y ^ "]")) eq 
 
 let f exp = 
   st := St.empty; 
   st_ext := St.empty;
 
-  let eqs = generate exp Type.Unit in List.iter unify (eqs);
+  let eqs = generate exp Type.Unit in (print_equations eqs); List.iter unify (eqs); print_equations eqs;
   exp

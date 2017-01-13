@@ -8,6 +8,7 @@ type t =
   | Array of t
   | Var of t option ref
 
+let typenum = ref 0
 let gentyp () = Var(ref None)
 
 let rec to_string = function
