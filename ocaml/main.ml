@@ -34,10 +34,15 @@ let file f flags =
           
           let cls = Closure.f _r in
           let vir = Virtual.f (snd cls) in
-          
+         
           print_endline ("Closure:\n" ^ Closure.to_string cls);
-          print_endline ("Asml:\n" ^ Asml.fundefs_to_string vir);
-          let reg = Register_alloc.allocate vir in Asm_generator.generate vir reg;
+
+          if List.mem "-asml" flags then ( 
+            print_endline ("Asml:\n" ^ Asml.fundefs_to_string vir);
+            let reg = Register_alloc.allocate vir in Asm_generator.generate vir reg 
+          )
+          else ();
+          
         (* ) else () *)
       )
     );
