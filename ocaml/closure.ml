@@ -15,7 +15,8 @@ type t =
   | FDiv of Id.t * Id.t
   | Eq of Id.t * Id.t
   | LE of Id.t * Id.t
-  | If of Id.t * t * t
+  | IfEq of Id.t * Id.t * t * t
+  | IfLE of Id.t * Id.t * t * t
   | Let of (Id.t * Type.t) * t * t
   | Var of Id.t
   | AppCls of Id.t * Id.t list

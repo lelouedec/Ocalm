@@ -12,10 +12,10 @@ MINCAMLC=ocaml/mincamlc
 # TODO extends this script to run test in subdirectories
 # 
 
-for test_case in tests/syntax/valid/*.ml
+for test_case in tests/typechecking/valid/*.ml
 do
-    echo "testing parser on: $test_case"
-    if $MINCAMLC -p "$test_case" 2> /dev/null 1> /dev/null
+    echo "testing type checking on: $test_case"
+    if $MINCAMLC -t "$test_case" 2> /dev/null 1> /dev/null
     then
         echo "OK"
     else 
@@ -23,10 +23,10 @@ do
     fi
 done
 
-for test_case in tests/syntax/invalid/*.ml
+for test_case in tests/typechecking/invalid/*.ml
 do
-    echo "testing parser on: $test_case"
-    if $MINCAMLC -p "$test_case" 2> /dev/null 1> /dev/null
+    echo "testing type checking on: $test_case"
+    if $MINCAMLC -t "$test_case" 2> /dev/null 1> /dev/null
     then
         echo "OK"
     else 

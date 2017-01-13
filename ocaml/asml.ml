@@ -50,7 +50,7 @@ let rec to_string exp =
  match exp with 
  	| Nop ->" "
 	| LPexpRp e -> sprintf " ( %s )" ( to_string e )
-	| Int i -> string_of_int i 
+	| Int i -> sprintf "%d :int " i
 	| Ident i ->  i
 	| Label s -> sprintf "_ %s" s  
 	| Neg i -> i
@@ -70,7 +70,6 @@ let rec to_string exp =
 	| CallLabel (e,a)-> sprintf " Call %s %s " ( e) (form_to_string a) 
 	| CallClo  (id,a) -> sprintf " Call  %s %s" (id) (form_to_string a)
 
-
 type asmt = 
 	| LpasmtRPAREN of asmt 
 	| LetIdentEq  of  Id.t * exp * asmt
@@ -81,11 +80,6 @@ let rec asmt_to_string asmt =
 	| LpasmtRPAREN a -> sprintf " ( %s )" (asmt_to_string a)
 	| LetIdentEq (i,e2,a) -> sprintf "Let %s = %s in \n %s" (i) ( to_string e2) (asmt_to_string a)
 	| Exp e -> (to_string e)
-
-	
-
-
-	
 
 type fundefs =
 	| LetUnderscEQ of asmt (* Let _ =  *)
