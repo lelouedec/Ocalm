@@ -50,14 +50,14 @@ let rec to_string exp =
  match exp with 
  	| Nop ->" "
 	| LPexpRp e -> sprintf " ( %s )" ( to_string e )
-	| Int i -> sprintf "%d :int " i
+	| Int i -> sprintf "%d  " i
 	| Ident i ->  i
 	| Label s -> sprintf "_ %s" s  
 	| Neg i -> i
 	| FNeg i -> i 
 	| Add (i,id) -> sprintf " %s + %s "  (i)  (ident_or_imm_to_string  id)
 	| Sub (i,id) -> sprintf "%s - %s "  (i)  (ident_or_imm_to_string id)
-	| Ld (i,id) -> sprintf "%s + %s "  (i)  (ident_or_imm_to_string id)
+	| Ld (i,id) -> sprintf " mem (%s + %s )"  (i)  (ident_or_imm_to_string id)
 	| St (i1,id,i2) -> sprintf "mem(%s + %s ) <- %s "  (i1)  (ident_or_imm_to_string id) (i2) 	
 	| FAdd (i,id) -> sprintf "%s + %s "  (i)  (id)
 	| FSub (i,id) -> sprintf "%s + %s "  (i)  (id)
