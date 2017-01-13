@@ -86,8 +86,8 @@ let case4 () =
               IfEq (
                 "a",
                 Ident "b",
-                Add("s", Ident "a"),
-                Add("s", Ident "b")
+                Add("c", Ident "a"),
+                Add("c", Ident "b")
               )   
             ) 
           )
@@ -97,8 +97,32 @@ let case4 () =
   Asml.test e ;
   ignore(Register_alloc.allocate e)
 
+
 let case5 () =
   print_endline ">> case 5";
+  let e =
+    LetLabelEq (
+      "Sum",
+      ["x";"y";"z"],
+      LetIdentEq("a",Add( "x" , Ident "y"),Exp (Add( "a" , Ident "z"))),
+        LetLabelEq(
+          "Diff",
+          ["x";"y"],
+          Exp (Sub("x",Ident "y")),
+            LetUnderscEQ (LetIdentEq("a",Neg("10"),
+              LetIdentEq ("x",Neg("1"),LetIdentEq("y",Neg("2"),LetIdentEq("z",Neg("3"),
+                LetIdentEq("u",CallLabel ( "f",["x";"y"]),Exp ( CallLabel ( "diff",["a"; "u"]) ) ) ) )))))) in 
+  Asml.test e ;
+ignore(Register_alloc.allocate e)
+
+
+
+
+
+
+
+let case6 () =
+  print_endline ">> case 6";
   let e =
 	  LetUnderscEQ ( 
       LetIdentEq (
@@ -116,5 +140,6 @@ let () =
   case2 ();
   case3 ();
   case4 ();
-  case5 ()
+  case5();
+  case6 ()
 
