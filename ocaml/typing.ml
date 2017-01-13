@@ -30,7 +30,8 @@ let rec generate exp t =
   | App (e1, le2) -> print_endline (Syntax.to_string e1);
       let t1 = Type.gentyp() in 
       (match e1 with
-        | Var id -> 
+        (* known function label *)
+        | Var id when St.mem id !st ->
           let fn = St.find id !st in print_endline ("fn : " ^ (Type.to_string fn));
           let (args, rt) = (match fn with 
             | Type.Fun (args1, rt1) -> (args1, rt1)
@@ -40,6 +41,16 @@ let rec generate exp t =
               le2
               args
           in List.concat mp @ [(t1, fn)] @ [(rt, t)]
+        (* unknown function label -- treated as external *)
+        | Var id ->
+          let list_of_list_eqs =
+            List.map
+              (fun arg -> generate arg (Type.gentyp ()))
+              le2 in
+          List.fold_left
+            (fun res leqs -> res @ leqs)
+            []
+            list_of_list_eqs
         | _ -> print_endline "app typing not supported in this case"; []);
       (*let fn = St.find e1 !st in print_endline ("fn : " ^ (Type.to_string fn));*)
       (*let ls = List.map (fun x -> generate x (Type.Var (ref (None)))) le2 in List.concat ls *)
