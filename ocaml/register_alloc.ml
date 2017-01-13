@@ -8,7 +8,7 @@ type t = (string, string) Hashtbl.t;;
 class registers_function = 
 	object (self)
 	val mutable register_hash : t = Hashtbl.create 42;
-	val mutable counter = 0;
+	val mutable counter = 3;
 	method add x =
 	 if (Hashtbl.mem register_hash x) == false then	Hashtbl.replace register_hash x ("r"^ string_of_int counter) ;	counter <- counter + 1
 	method look_for x = 
