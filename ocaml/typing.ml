@@ -30,17 +30,44 @@ let rec generate exp t =
   | App (e1, le2) -> print_endline (Syntax.to_string e1);
       let t1 = Type.gentyp() in 
       (match e1 with
-        | Var id -> 
+        (* known function label *)
+        | Var id when St.mem id !st ->
           let fn = St.find id !st in print_endline ("fn : " ^ (Type.to_string fn));
           let (args, rt) = (match fn with 
             | Type.Fun (args1, rt1) -> (args1, rt1)
-            | _ -> raise (failwith "f")) in
-          let mp = List.map2 
-              (fun x y -> generate x y)
-              le2
-              args
-          in List.concat mp @ [(t1, fn)] @ [(rt, t)]
-        | _ -> print_endline "app typing not supported in this case"; []);
+            | _ -> raise (failwith "invalid function type")) in
+          let nb_args = List.length args in
+          let nb_args_given = List.length le2 in
+          if nb_args = nb_args_given then
+            let mp = List.map2 
+                (fun x y -> generate x y)
+                le2
+                args
+            in List.concat mp @ [(t1, fn)] @ [(rt, t)]
+          else
+            raise (failwith (Printf.sprintf "The function expects %d argument(s) while %d are supplied" nb_args nb_args_given))
+        (* unknown function label -- treated as external *)
+        | Var id ->
+          let list_of_list_eqs =
+            List.map
+              (fun arg -> generate arg (Type.gentyp ()))
+              le2 in
+          List.fold_left
+            (fun res leqs -> res @ leqs)
+            []
+            list_of_list_eqs
+        | _ ->
+          (* TODO get type of function label and apply checking with arguments *)
+          let label_eqs = generate e1 (Type.gentyp ()) in
+          let list_of_args_eqs =
+            List.map
+              (fun arg -> generate arg (Type.gentyp ()))
+              le2 in
+          List.fold_left
+            (fun res leqs -> res @ leqs)
+            label_eqs
+            list_of_args_eqs
+      )
       (*let fn = St.find e1 !st in print_endline ("fn : " ^ (Type.to_string fn));*)
       (*let ls = List.map (fun x -> generate x (Type.Var (ref (None)))) le2 in List.concat ls *)
   | LetRec ({ name = (id, tv); args = largs; body = e }, e2) -> 

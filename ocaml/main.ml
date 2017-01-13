@@ -30,13 +30,14 @@ let file f flags =
         (* if List.mem "-d" flags then ( *)
 
           print_endline ("Typing:\n" ^ St.to_string Type.to_string !Typing.st );
-          print_endline ("a/b/let rec :\n" ^ KNormal.to_string _r);
+          print_endline ("a/b/let reductions :\n" ^ KNormal.to_string _r);
           
           let cls = Closure.f _r in
           let vir = Virtual.f (snd cls) in
           
           print_endline ("Closure:\n" ^ Closure.to_string cls);
-          print_endline ("Asml:\n" ^ Asml.to_string vir);
+          print_endline ("Asml:\n" ^ Asml.fundefs_to_string vir);
+          let reg = Register_alloc.allocate vir in Asm_generator.generate vir reg;
         (* ) else () *)
       )
     );

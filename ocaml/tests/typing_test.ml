@@ -36,8 +36,25 @@ let case2 =
   assert((St.find "x" !Typing.st) = Type.Var(ref (Some Type.Float)))(*;
   assert((St.find "f" !Typing.st) = Type.Var(ref (Some Type.Float)))*)
 
+(* let x = 1. in print_int (x + 1) *)
+let case3 =
+  let e =
+    Let (
+      ("x", Type.Var (ref None)),
+      Float 1.,
+      App (
+        Var "print_int",
+        [Add (Var("x"), Int(1))]
+      )
+    ) in
+  try
+    let _exp = f e in
+    assert false
+  with e -> print_endline "type error as expected"
+
 let _ =
   print_endline " ***************************************************";
   case1;
   case2;
+  case3;
   print_endline "Type inference tests... passed";

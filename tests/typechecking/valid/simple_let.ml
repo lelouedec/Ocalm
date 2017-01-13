@@ -1,2 +1,2 @@
 let x = 1
-in x; ()
+in ignore x; ()
