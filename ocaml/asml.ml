@@ -53,7 +53,7 @@ let rec to_string exp =
 	| Int i -> sprintf "%d  " i
 	| Ident i ->  i
 	| Label s -> sprintf "_ %s" s  
-	| Neg i -> i
+	| Neg i -> sprintf "-%s" i
 	| FNeg i -> i 
 	| Add (i,id) -> sprintf " %s + %s "  (i)  (ident_or_imm_to_string  id)
 	| Sub (i,id) -> sprintf "%s - %s "  (i)  (ident_or_imm_to_string id)
