@@ -12,10 +12,14 @@ match l  with
 	| Ident i-> sprintf "%s " (regf#look_for i)
 	| Int i ->  "#"^ string_of_int (i)
 
+let prologue = sprintf " stmfd  sp!, {fp, lr} \n add fp, sp, #4 \n sub sp, #n \n"
+
+let epilogue = "sub sp, fp, #4 \n ldmfd  sp!, {fp, lr} \n bx lr \n"
+
 let rec exp_to_asm exp regf =
  match exp with 
  	| Nop -> sprintf " "
-	| LPexpRp e -> sprintf " "
+	| LPexpRp e -> sprintf "(%s)" exp_to_asm exp regf
 	| Int i -> sprintf "MOV R1 , #%d" i 
 	| Ident i ->  sprintf " "
 	| Label s -> sprintf " "
