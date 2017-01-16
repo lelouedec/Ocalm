@@ -1,6 +1,6 @@
 open KNormal
 
-let threshold = ref 0
+let threshold = ref 7
 
 let rec size exp = 
   match exp with
