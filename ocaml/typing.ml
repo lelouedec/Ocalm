@@ -11,15 +11,13 @@ let rec generate exp t =
   | Float (_) -> [(Type.Float, t)]
   | Not e -> generate e Type.Bool @ [(Type.Bool, t)]
   | Neg e -> generate e Type.Int @ [(Type.Int, t)]
-  | Add (e1, e2) -> generate e1 Type.Int @ generate e2 Type.Int @ [(Type.Int, t)]
-  | Sub (e1, e2) -> generate e1 Type.Int @ generate e2 Type.Int @ [(Type.Int, t)]
+  | Add (e1, e2) | Sub (e1, e2) ->
+    generate e1 Type.Int @ generate e2 Type.Int @ [(Type.Int, t)]
   | FNeg e -> generate e Type.Float @ [(Type.Float, t)]
-  | FAdd (e1, e2) -> generate e1 Type.Float @ generate e2 Type.Float @ [(Type.Float, t)]
-  | FSub (e1, e2) -> generate e1 Type.Float @ generate e2 Type.Float @ [(Type.Float, t)]
-  | FMul (e1, e2) -> generate e1 Type.Float @ generate e2 Type.Float @ [(Type.Float, t)]
-  | FDiv (e1, e2) -> generate e1 Type.Float @ generate e2 Type.Float @ [(Type.Float, t)]
-  | Eq (e1, e2) -> generate e1 Type.Int @ generate e2 Type.Int @ [(Type.Bool, t)]
-  | LE (e1, e2) -> generate e1 Type.Int @ generate e2 Type.Int @ [(Type.Bool, t)]
+  | FAdd (e1, e2) | FSub (e1, e2) | FMul (e1, e2) | FDiv (e1, e2) ->
+    generate e1 Type.Float @ generate e2 Type.Float @ [(Type.Float, t)]
+  | Eq (e1, e2) | LE (e1, e2) ->
+    generate e1 Type.Int @ generate e2 Type.Int @ [(Type.Bool, t)]
   | If (e1, e2, e3) -> generate e1 Type.Bool @ generate e2 t @ generate e3 t
   | Let ((id,tv), e1, e2) -> st := St.add id tv !st; generate e1 tv @ generate e2 t
   | Var (id) when St.mem id !st -> let t1 = St.find id !st in [(t1, t)]
