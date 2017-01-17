@@ -46,7 +46,6 @@ let rec generate exp t =
       let t1 = Type.gentyp () in st_ext := St.add id t1 !st_ext;
       [(t1, t)], t
   | App (e1, le2) ->
-      let t1 = Type.gentyp() in 
       (match e1 with
         (* known function label *)
         | Var id when St.mem id !st ->
@@ -77,9 +76,8 @@ let rec generate exp t =
             list_of_list_eqs in
           eqs, Type.Unit
         | _ ->
-          (* TODO get type of function label and apply checking with arguments *)
-          let label_eqs, t = generate e1 (Type.gentyp ()) in
-          let (args, rt) = (match t with 
+          let label_eqs, fun_t = generate e1 (Type.gentyp ()) in
+          let (args, rt) = (match fun_t with
             | Type.Fun (args1, rt1) -> (args1, rt1)
             | _ -> raise (failwith "invalid function type")) in
           let nb_args = List.length args in
@@ -89,7 +87,7 @@ let rec generate exp t =
                 (fun x y -> fst (generate x y))
                 le2
                 args
-            in List.concat mp @ [(t1, t)] @ [(rt, t)], rt
+            in List.concat mp @ [(rt, t)], rt
           else
             raise (failwith (Printf.sprintf "The function expects %d argument(s) while %d are supplied" nb_args nb_args_given))
       )
