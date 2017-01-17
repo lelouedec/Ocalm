@@ -53,8 +53,8 @@ let case3 =
   with e -> print_endline "type error as expected"
 
 let _ =
-  print_endline " ***************************************************";
+  print_string "Type inference tests...";
   case1;
   case2;
   case3;
-  print_endline "Type inference tests... passed";
+  print_endline "passed"
