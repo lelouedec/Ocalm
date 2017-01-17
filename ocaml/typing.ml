@@ -39,7 +39,7 @@ let rec generate exp t =
     let eqs1, t1 = generate e1 tv in
     st := St.add id t1 !st;
     let eqs2, t2 = generate e2 t in
-    eqs1 @ eqs2, t2
+    eqs1 @ eqs2 @ [(tv, t1)], t2
   | Var (id) when St.mem id !st -> let t1 = St.find id !st in [(t1, t)], t1
   | Var (id) when St.mem id !st_ext -> let t1 = St.find id !st_ext in [(t1, t)], t1
   | Var (id) ->
@@ -112,7 +112,6 @@ let rec unify eq =
   match eq with
   | Type.Unit, Type.Unit | Type.Bool, Type.Bool | Type.Int, Type.Int | Type.Float, Type.Float -> ()
   | Type.Var (t1), Type.Var (t2) when t1 == t2 -> ()
-  | Type.Var (t1), Type.Var (t2) -> (*t1 := Some(Type.Int); t2 := Some(Type.Int);*) () (* unknown types : int *)
   | Type.Var ({ contents = Some(t1') }), _ -> let (_, t2) = eq in unify (t1', t2)
   | _, Type.Var ({ contents = Some(t2') }) -> let (t1, _) = eq in unify (t1, t2')
   | Type.Var ({ contents = None } as t1'), _ ->
