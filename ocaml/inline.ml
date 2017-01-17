@@ -1,32 +1,37 @@
 open KNormal
 
+(* Threshold is set by user *)
 let threshold = ref 7
 
+(* Helper function: Inline.size to compute the size of expression *)
 let rec size exp = 
   match exp with
-  | IfEq(_, _, e1, e2) | IfLE(_, _, e1, e2)
-  | Let(_, e1, e2) | LetRec({ body = e1 }, e2) -> 1 + size e1 + size e2
-  | LetTuple(_, _, e) -> 1 + size e
+  | IfEq (id1, id2, e1, e2) -> 1 + size e1 + size e2
+  | IfLE (id1, id2, e1, e2) -> 1 + size e1 + size e2
+  | Let ((id, t), e1, e2) -> 1 + size e1 + size e2
+  | LetRec ({ body = e1 }, e2) -> 1 + size e1 + size e2
+  | LetTuple (l, e1, e2) -> 1 + size e2
   | _ -> 1
 
-let rec g env = function 
-  | IfEq(x, y, e1, e2) -> IfEq(x, y, g env e1, g env e2)
-  | IfLE(x, y, e1, e2) -> IfLE(x, y, g env e1, g env e2)
-  | Let(xt, e1, e2) -> Let(xt, g env e1, g env e2)
-  | LetRec({ name = (x, t); args = yts; body = e1 }, e2) -> 
-      let env = if size e1 > !threshold then env else St.add x (yts, e1) env in
-      LetRec({ name = (x, t); args = yts; body = g env e1}, g env e2)
-  | App(x, ys) when St.mem x env -> 
-      let (zs, e) = St.find x env in
-      Format.eprintf "inlining %s@." x;
-      let env' =
+let rec g exp vars = 
+  match exp with 
+  | IfEq (id1, id2, e1, e2) -> IfEq (id1, id2, g e1 vars , g e2 vars)
+  | IfLE (id1, id2, e1, e2) -> IfLE (id1, id2, g e1 vars, g e2 vars)
+  | Let ((id, t), e1, e2) -> Let ((id, t), g e1 vars, g e2 vars)
+  | LetRec ({ name = (label, t); args = args; body = body }, e) -> 
+      let vars = if size body > !threshold then vars else St.add label (args, body) vars in
+      LetRec ({ name = (label, t); args = args; body = g body vars}, g e vars)
+  | App (x, ys) when St.mem x vars -> 
+      let (zs, e) = St.find x vars in
+      (* Format.eprintf "inlining %s@." x; *)
+      let vars' =
         List.fold_left2
-          (fun env' (z, t) y -> St.add z y env')
+          (fun vars' (z, t) y -> St.add z y vars')
           St.empty
           zs
           ys in
-      Alpha.g e env'
-  | LetTuple(xts, y, e) -> LetTuple(xts, y, g env e)
+      Alpha.g e vars'
+  | LetTuple (l, e1, e2) -> LetTuple (l, e1, g e2 vars)
   | e -> e
 
-let rec f e = g St.empty e
+let rec f exp = g exp St.empty

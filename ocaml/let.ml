@@ -2,17 +2,17 @@ open KNormal
 
 let rec f exp = 
 	match exp with
-	| IfEq(x, y, e1, e2) -> IfEq(x, y, f e1, f e2) 
-	| IfLE(x, y, e1, e2) -> IfLE(x, y, f e1, f e2) 
-	| Let(xt, e1, e2) ->
-		let rec insert e = 
-			match e with
-			| Let(yt, e3, e4) -> Let(yt, e3, insert e4)
-			| LetRec(fundefs, e) -> LetRec(fundefs, insert e)
-			| LetTuple(yts, z, e) -> LetTuple(yts, z, insert e)
-			| e -> Let(xt, e, f e2) in
+	| Let ((id, t), e1, e2) ->
+		let rec insert exp2 = 
+			match exp2 with
+			| Let (id, e3, e4) -> Let (id, e3, insert e4)
+			| LetRec (fd, e) -> LetRec (fd, insert e)
+			| LetTuple (l, e1, e2) -> LetTuple (l, e1, insert e2)
+			| e -> Let ((id, t), e, f e2) in
 		insert (f e1)
-	| LetRec({ name = xt; args = yts; body = e1 }, e2) -> 
-		LetRec({ name = xt; args = yts; body = f e1 }, f e2)
-	| LetTuple(xts, y, e) -> LetTuple(xts, y, f e)
+	| LetRec ({ name = (label, t); args = args; body = body }, e) -> 
+		LetRec ({ name = (label, t); args = args; body = f body }, f e)
+	| LetTuple (l, e1, e2) -> LetTuple (l, e1, f e2)
+	| IfEq (id1, id2, e1, e2) -> IfEq (id1, id2, f e1, f e2) 
+	| IfLE (id1, id2, e1, e2) -> IfLE (id1, id2, f e1, f e2) 
 	| e -> e

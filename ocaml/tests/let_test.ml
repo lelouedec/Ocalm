@@ -1,5 +1,17 @@
 open KNormal
 
+(* x + y  *)
+let case0 () = 
+	print_endline ">> case 0";
+	let knormed = 
+			Add (
+        "x",
+        "y"
+      ) in
+	let letreduction_ed = Let.f knormed in
+	print_endline (KNormal.to_string letreduction_ed)
+
+
 (* let x = (let y = v1 + v2 in x2) in x + x2  *)
 let case1 () = 
 	print_endline ">> case 1";
@@ -15,8 +27,8 @@ let case1 () =
 					Type.Var (ref (Some Type.Int))
 				),
 				Add (
-          "x",
-          "y"
+          "v1",
+          "v2"
         ),
         Var "x2"
 			),
@@ -41,7 +53,7 @@ let case2 () =
 			Let (
 				(
 					"y",
-					Type.Var (ref (Some Type.Int))
+					Type.Var (ref (Some Type.Float))
 				),
 				Let (
 					(
@@ -52,7 +64,7 @@ let case2 () =
 					Let (
 						(
 						"v2",
-							Type.Var (ref (Some Type.Int))
+							Type.Var (ref (Some Type.Float))
 						),
 						Int 2,
 						Add ( "v1", "v2" )
@@ -106,6 +118,7 @@ let case3 () =
 
 let () =
   print_endline "Nested let reduction tests";
+	case0 ();
   case1 ();
   case2 ();
   case3 ()
