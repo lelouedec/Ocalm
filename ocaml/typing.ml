@@ -87,7 +87,7 @@ let rec generate exp t =
                 (fun x y -> fst (generate x y))
                 le2
                 args
-            in List.concat mp @ [(rt, t)], rt
+            in (List.concat mp) @ label_eqs @ [(rt, t)], rt
           else
             raise (failwith (Printf.sprintf "The function expects %d argument(s) while %d are supplied" nb_args nb_args_given))
       )
