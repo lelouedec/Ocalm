@@ -98,13 +98,17 @@ let rec temporaries exp =
   | Syntax.App (e1, le2) ->
       let label, t = ( match e1 with
         | Syntax.Var (id) when St.mem id !Typing.st -> Var id, St.find id !Typing.st
-        | Syntax.Var (id) -> Var id, Type.Unit (* assume that all external functions are of type unit *)
+        | Syntax.Var (id) -> Var id, Type.Fun ([Type.gentyp ()], Type.Unit) (* assume that all external functions return unit *)
         | _ -> temporaries e1
+      ) in
+      let rt = (match t with
+        | Type.Fun (_, rt') -> rt'
+        | _ -> raise (failwith "not a function")
       ) in
       let rec convert_args (f : Id.t) (le : Syntax.t list) (ids : Id.t list) : t * Type.t = (
         match le with
-        | [] when St.mem f !Typing.st -> App (f, ids), t
-        | [] -> AppExt (f, ids), t
+        | [] when St.mem f !Typing.st -> App (f, ids), rt
+        | [] -> AppExt (f, ids), rt
         | hd::tl ->
           insert_let (temporaries hd)
             (fun x -> convert_args f tl (ids @ [x]))
