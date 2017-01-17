@@ -76,7 +76,7 @@ let rec extract_main (exp : KNormal.t) : t =
   | KNormal.Let ((id, t), e1, e2) -> Let ((id, t), extract_main e1, extract_main e2)
   | KNormal.Var id -> Var id
   | KNormal.LetRec (fn, e) ->
-    let (fname, fargs, fbody) = KNormal.denormalize fn in
+    let ({ KNormal.name = fname; KNormal.args = fargs; KNormal.body = fbody }) = fn in
     let list_args = List.map (fun (id, _) -> id) fargs in
     let free_vars = Env.diff (KNormal.free_vars fbody) (Env.of_list list_args) in
     (* TODO use free vars list to determine direct or closure call *)

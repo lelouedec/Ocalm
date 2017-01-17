@@ -29,9 +29,6 @@ type t =
   | Put of Id.t * Id.t * Id.t
 and fundef = { name : Id.t * Type.t; args : (Id.t * Type.t) list; body : t }
 
-(* extract fundef content for usage in other modules *)
-let denormalize fundef = (fundef.name, fundef.args, fundef.body)
-
 let insert_let (e, t) k =
   match e with
   | Var x -> k x
