@@ -36,7 +36,7 @@ let rec exp_to_string = function
   | Add (id1, id2) -> sprintf "(%s + %s)" (Id.to_string id1) (Id.to_string id2)
   | Sub (id1, id2) -> sprintf "(%s - %s)" (Id.to_string id1) (Id.to_string id2)
   | Let ((id, t), e1, e2) ->
-          sprintf "(let (%s : %s) = %s in %s)\n" (Id.to_string id) (Type.to_string t) (exp_to_string e1) (exp_to_string e2)
+          sprintf "(let (%s : %s) = %s in \n %s)" (Id.to_string id) (Type.to_string t) (exp_to_string e1) (exp_to_string e2)
   | Var id -> Id.to_string id
   | AppDir (label, args) ->
     sprintf "apply_direct(%s)"
@@ -47,13 +47,13 @@ let rec exp_to_string = function
 
 let fn_to_string fn =
   let ((id, _), args, exp) = fn in
-  Printf.sprintf "let _%s %s =\n  %s"
+  Printf.sprintf "let _%s %s = \n %s"
     id
     (String.concat " " (List.map (fun arg -> let (id, _) = arg in id) args))
     (exp_to_string exp)
   
 let main_to_string main =
-  Printf.sprintf "let () =\n  %s" (exp_to_string main)
+  Printf.sprintf "let () =  \n %s" (exp_to_string main)
 
 let to_string (prog : prog) =
   let (functions, main) = prog in

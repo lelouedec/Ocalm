@@ -19,7 +19,7 @@ let epilogue = "sub sp, fp, #4 \n ldmfd  sp!, {fp, lr} \n bx lr \n"
 let rec exp_to_asm exp regf =
  match exp with 
  	| Nop -> sprintf " "
-	| LPexpRp e -> sprintf "(%s)" exp_to_asm exp regf
+	| LPexpRp e -> sprintf "(%s)" (exp_to_asm exp regf)
 	| Int i -> sprintf "MOV R1 , #%d" i 
 	| Ident i ->  sprintf " "
 	| Label s -> sprintf " "
