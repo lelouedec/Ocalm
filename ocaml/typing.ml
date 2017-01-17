@@ -5,32 +5,52 @@ let st_ext = ref St.empty
 
 let rec generate exp t =
   match exp with
-  | Unit -> [(Type.Unit, t)]
-  | Bool (_) -> [(Type.Bool, t)]
-  | Int (_) -> [(Type.Int, t)]
-  | Float (_) -> [(Type.Float, t)]
-  | Not e -> generate e Type.Bool @ [(Type.Bool, t)]
-  | Neg e -> generate e Type.Int @ [(Type.Int, t)]
+  | Unit -> [(Type.Unit, t)], Type.Unit
+  | Bool (_) -> [(Type.Bool, t)], Type.Bool
+  | Int (_) -> [(Type.Int, t)], Type.Int
+  | Float (_) -> [(Type.Float, t)], Type.Float
+  | Not e ->
+    let eqs, _ = generate e Type.Bool in
+    eqs @ [(Type.Bool, t)], Type.Bool
+  | Neg e ->
+    let eqs, _ = generate e Type.Int in
+    eqs @ [(Type.Int, t)], Type.Int
   | Add (e1, e2) | Sub (e1, e2) ->
-    generate e1 Type.Int @ generate e2 Type.Int @ [(Type.Int, t)]
-  | FNeg e -> generate e Type.Float @ [(Type.Float, t)]
+    let eqs1, _ = generate e1 Type.Int in
+    let eqs2, _ = generate e2 Type.Int in
+    eqs1 @ eqs2 @ [(Type.Int, t)], Type.Int
+  | FNeg e ->
+    let eqs, _ = generate e Type.Float in
+    eqs @ [(Type.Float, t)], Type.Float
   | FAdd (e1, e2) | FSub (e1, e2) | FMul (e1, e2) | FDiv (e1, e2) ->
-    generate e1 Type.Float @ generate e2 Type.Float @ [(Type.Float, t)]
+    let eqs1, _ = generate e1 Type.Float in
+    let eqs2, _ = generate e2 Type.Float in
+    eqs1 @ eqs2 @ [(Type.Float, t)], Type.Float
   | Eq (e1, e2) | LE (e1, e2) ->
-    generate e1 Type.Int @ generate e2 Type.Int @ [(Type.Bool, t)]
-  | If (e1, e2, e3) -> generate e1 Type.Bool @ generate e2 t @ generate e3 t
-  | Let ((id,tv), e1, e2) -> st := St.add id tv !st; generate e1 tv @ generate e2 t
-  | Var (id) when St.mem id !st -> let t1 = St.find id !st in [(t1, t)]
-  | Var (id) when St.mem id !st_ext -> let t1 = St.find id !st_ext in [(t1, t)]
+    let eqs1, _ = generate e1 Type.Int in
+    let eqs2, _ = generate e2 Type.Int in
+    eqs1 @ eqs2 @ [(Type.Bool, t)], Type.Bool
+  | If (e1, e2, e3) ->
+    let eqs1, _ = generate e1 Type.Bool in
+    let eqs2, _ = generate e2 t in
+    let eqs3, _ = generate e3 t in
+    eqs1 @ eqs2 @ eqs3, t
+  | Let ((id,tv), e1, e2) ->
+    let eqs1, t1 = generate e1 tv in
+    st := St.add id t1 !st;
+    let eqs2, t2 = generate e2 t in
+    eqs1 @ eqs2, t2
+  | Var (id) when St.mem id !st -> let t1 = St.find id !st in [(t1, t)], t1
+  | Var (id) when St.mem id !st_ext -> let t1 = St.find id !st_ext in [(t1, t)], t1
   | Var (id) ->
       let t1 = Type.gentyp () in st_ext := St.add id t1 !st_ext;
-      [(t1, t)]
-  | App (e1, le2) -> print_endline (Syntax.to_string e1);
+      [(t1, t)], t
+  | App (e1, le2) ->
       let t1 = Type.gentyp() in 
       (match e1 with
         (* known function label *)
         | Var id when St.mem id !st ->
-          let fn = St.find id !st in print_endline ("fn : " ^ (Type.to_string fn));
+          let fn = St.find id !st in
           let (args, rt) = (match fn with 
             | Type.Fun (args1, rt1) -> (args1, rt1)
             | _ -> raise (failwith "invalid function type")) in
@@ -38,49 +58,57 @@ let rec generate exp t =
           let nb_args_given = List.length le2 in
           if nb_args = nb_args_given then
             let mp = List.map2 
-                (fun x y -> generate x y)
+                (fun x y -> fst (generate x y))
                 le2
                 args
-            in List.concat mp @ [(t1, fn)] @ [(rt, t)]
+            in
+            List.concat mp @ [(rt, t)], rt
           else
             raise (failwith (Printf.sprintf "The function expects %d argument(s) while %d are supplied" nb_args nb_args_given))
         (* unknown function label -- treated as external *)
         | Var id ->
           let list_of_list_eqs =
             List.map
-              (fun arg -> generate arg (Type.gentyp ()))
+              (fun arg -> fst (generate arg (Type.gentyp ())))
               le2 in
-          List.fold_left
+          let eqs = List.fold_left
             (fun res leqs -> res @ leqs)
             []
-            list_of_list_eqs
+            list_of_list_eqs in
+          eqs, Type.Unit
         | _ ->
           (* TODO get type of function label and apply checking with arguments *)
-          let label_eqs = generate e1 (Type.gentyp ()) in
-          let list_of_args_eqs =
-            List.map
-              (fun arg -> generate arg (Type.gentyp ()))
-              le2 in
-          List.fold_left
-            (fun res leqs -> res @ leqs)
-            label_eqs
-            list_of_args_eqs
+          let label_eqs, t = generate e1 (Type.gentyp ()) in
+          let (args, rt) = (match t with 
+            | Type.Fun (args1, rt1) -> (args1, rt1)
+            | _ -> raise (failwith "invalid function type")) in
+          let nb_args = List.length args in
+          let nb_args_given = List.length le2 in
+          if nb_args = nb_args_given then
+            let mp = List.map2 
+                (fun x y -> fst (generate x y))
+                le2
+                args
+            in List.concat mp @ [(t1, t)] @ [(rt, t)], rt
+          else
+            raise (failwith (Printf.sprintf "The function expects %d argument(s) while %d are supplied" nb_args nb_args_given))
       )
       (*let fn = St.find e1 !st in print_endline ("fn : " ^ (Type.to_string fn));*)
       (*let ls = List.map (fun x -> generate x (Type.Var (ref (None)))) le2 in List.concat ls *)
   | LetRec ({ name = (id, tv); args = largs; body = e }, e2) -> 
-      let fn = Type.Fun(List.map (fun x -> snd x) largs, tv) in
       List.iter (fun (idi, tvi) -> 
         st := St.add idi tvi !st) largs;
-        st := St.add id (fn) !st;
-
-      generate e tv @ generate e2 t
+      let eqs_body, t_body = generate e (Type.gentyp ()) in
+      let fn = Type.Fun (List.map (fun x -> snd x) largs, t_body) in
+      st := St.add id fn !st;
+      let eqs2, t2 = generate e2 t in
+      [(fn, tv)] @ eqs_body @ eqs2, t2
   (*| LetTuple (l, e1, e2)-> 
   | Get (e1, e2) -> 
   | Put (e1, e2, e3) -> 
   | Tuple (l) -> 
   | Array (e1, e2) -> *)
-  | _ -> [(Type.Unit, Type.Unit)]
+  | _ -> [(Type.Unit, Type.Unit)], Type.Unit
 
 let rec unify eq = 
   match eq with
@@ -98,7 +126,9 @@ let rec unify eq =
   | Type.Fun(t1s, t1'), Type.Fun(t2s, t2') ->
       List.iter2 (fun x y -> unify (x, y)) t1s t2s;
       unify (t1', t2')
-  | _ -> raise (failwith "mismatch types during unification")
+  | _ ->
+      let t1, t2 = eq in
+      raise (failwith (Printf.sprintf "mismatch types during unification: %s vs %s" (Type.to_string t1) (Type.to_string t2)))
 
 let print_equations eq = 
   List.iter (fun (x, y) -> print_endline ("[left : " ^ Type.to_string x ^ ", right : " ^ Type.to_string y ^ "]")) eq 
@@ -107,5 +137,9 @@ let f exp =
   st := St.empty; 
   st_ext := St.empty;
 
-  let eqs = generate exp Type.Unit in (print_equations eqs); List.iter unify (eqs); print_equations eqs;
+  let eqs, _ = generate exp Type.Unit in
+  print_equations eqs;
+  print_endline "----->";
+  List.iter (fun (eq1, eq2) -> unify (eq1, eq2)) eqs;
+  print_equations eqs;
   exp
