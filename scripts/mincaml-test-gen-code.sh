@@ -15,7 +15,7 @@ MINCAMLC=ocaml/mincamlc
 for test_case in tests/gen-code/*.ml
 do
     echo "testing Code generation on: $test_case"
-    if $MINCAMLC -t "$test_case" 2> /dev/null 1> /dev/null
+    if $MINCAMLC -asml "$test_case" 2> /dev/null 1> /dev/null
     then
         echo "OK"
     else 
