@@ -172,15 +172,23 @@ let rec to_string exp =
             | _ -> (String.concat " " (List.map (fun arg -> Id.to_string arg) args))
           )
   | LetRec (fd, e) ->
-          sprintf "(let rec %s %s = %s in \n%s)"
-          (let (x, _) = fd.name in (Id.to_string x))
-          (
-            match fd.args with
-            | [] -> "()"
-            | _ -> (String.concat " " (List.map (fun (arg, _) -> Id.to_string arg) fd.args))
-          )
-          (to_string fd.body)
-          (to_string e)
+          let (x, fun_t) = fd.name in
+          sprintf "(let rec %s %s : %s = %s in \n%s)"
+            (Id.to_string x)
+            (
+              match fd.args with
+              | [] -> "()"
+              | _ -> (String.concat
+                " "
+                (List.map
+                  (fun (arg, t) -> sprintf "(%s : %s)" (Id.to_string arg) (Type.to_string t))
+                  fd.args
+                )
+              )
+            )
+            (Type.to_string fun_t)
+            (to_string fd.body)
+            (to_string e)
 (*
   | LetTuple (l, e1, e2)->
   | Get (e1, e2) ->
