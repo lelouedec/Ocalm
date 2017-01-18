@@ -33,11 +33,7 @@ let file f flags =
           let vir = Virtual.f (snd cls) in
 
           if List.mem "-asml" flags then ( 
-            let reg = Register_alloc.allocate vir in 
-            print_endline (Asm_generator.generate vir reg)
-            (*let asm_o = "../ARM/result.s"  in let ofile = open_out asm_file in
-            fprintf ofile "%s" asm ;  
-            close_out ofile;*)
+            let reg = Register_alloc.allocate vir in  print_endline (Asm_generator.generate vir reg)
           )
           else ();
           
