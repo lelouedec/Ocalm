@@ -72,8 +72,6 @@ let case3 () =
     ) in
     let closured = f knormed in
     print_endline ">> case 3";
-    print_endline (KNormal.to_string knormed);
-    print_endline "-- after --";
     print_endline (to_string closured);
     ()
 
@@ -89,9 +87,36 @@ let case4 () =
   print_endline ">> case 4";
   print_endline (to_string closured)
 
+let case5 () =
+  (* let x = 1 in
+    let rec f y = x + y in
+    let t = 2 in
+    f t *)
+  let knormed =
+    KNormal.Let (
+      ("x", Type.Int),
+      KNormal.Int 1,
+      KNormal.LetRec (
+        {
+          KNormal.name = ("f", Type.Fun ([Type.Int], Type.Int));
+          KNormal.args = [("y", Type.Int)];
+          KNormal.body = KNormal.Add ("x", "y")
+        },
+        KNormal.Let (
+          ("t", Type.Int),
+          KNormal.Int 2,
+          KNormal.App ("f", ["t"])
+        )
+      )
+    ) in
+  let closured = f knormed in
+  print_endline ">> case 5";
+  print_endline (to_string closured)
+
 let () =
   print_endline "\n*****\nClosure conversion tests";
   case1 ();
   case2 ();
   case3 ();
-  case4 ()
+  case4 ();
+  case5 ()

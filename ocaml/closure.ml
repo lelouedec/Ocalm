@@ -132,7 +132,10 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
   | KNormal.App (label, args) when Env.mem label known ->
     AppDir (label, args)
   | KNormal.App (id, args) ->
-    AppCls (id, args)
+    let id' = if St.mem id cls_names then
+      St.find id cls_names
+    else id in
+    AppCls (id', args)
   | KNormal.AppExt (label, args) ->
     AppDir ("min_caml_" ^ label, args)
   | _ -> failwith ("nyi extract" ^ KNormal.to_string exp)
