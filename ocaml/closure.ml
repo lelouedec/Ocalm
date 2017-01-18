@@ -91,7 +91,7 @@ let rec free_vars = function
 
 let functions : let_fn list ref = ref []
 
-let rec extract_main (exp : KNormal.t) (known : Env.t) : t =
+let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) : t =
   match exp with
   | KNormal.Unit -> Unit
   | KNormal.Int i -> Int i
@@ -99,28 +99,35 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) : t =
   | KNormal.Neg id -> Neg id
   | KNormal.Add (id1, id2) -> Add (id1, id2)
   | KNormal.Sub (id1, id2) -> Sub (id1, id2)
-  | KNormal.Let ((id, t), e1, e2) -> Let ((id, t), extract_main e1 known, extract_main e2 known)
-  | KNormal.Var id -> Var id
+  | KNormal.Let ((id, t), e1, e2) -> Let ((id, t), extract_main e1 known cls_names, extract_main e2 known cls_names)
+  | KNormal.Var id ->
+    if St.mem id cls_names then
+      Var (St.find id cls_names)
+    else
+      Var id
   | KNormal.LetRec (fn, e) ->
     let ({ KNormal.name = (fname, ftype); KNormal.args = fargs; KNormal.body = fbody }) = fn in
     (* assume fname is a known function -- no free variables *)
     let known' = Env.add fname known in
-    let fbody' = extract_main fbody known' in
+    let fbody' = extract_main fbody known' cls_names in
     let list_args = List.map (fun (id, _) -> id) fargs in
     let free_vars = Env.diff (free_vars fbody') (Env.of_list list_args) in
 
     if Env.is_empty free_vars then
       let split_fn = ((fname, ftype), fargs, [], fbody') in
       functions := [split_fn] @ !functions;
-      extract_main e known'
+      extract_main e known' cls_names
     else (
-      let fbody' = extract_main fbody known in
-      let e' = extract_main e known in
+      let fbody' = extract_main fbody known cls_names in
       (* TODO lookup type of free variable somewhere instead of assuming as int *)
       let free_args = List.map (fun x -> (x, Type.Int)) (Env.elements free_vars) in
       let split_fn = ((fname, ftype), fargs, free_args, fbody') in
       functions := [split_fn] @ !functions;
-      MakeCls ((fname, ftype), fname, Env.elements free_vars, e')
+      let newid = Id.genid () in
+      (* add mapping between function label and variable that stores the closure *)
+      let cls_names' = St.add fname newid cls_names in
+      let e' = extract_main e known cls_names' in
+      MakeCls ((newid, ftype), fname, Env.elements free_vars, e')
     )
   | KNormal.App (label, args) when Env.mem label known ->
     AppDir (label, args)
@@ -132,5 +139,5 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) : t =
 
 let rec f (exp : KNormal.t) : prog =
   functions := [];
-  let main_body = extract_main exp Env.empty in
+  let main_body = extract_main exp Env.empty St.empty in
   (!functions, main_body)
