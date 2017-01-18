@@ -1,5 +1,7 @@
 open Closure
 
+let word_size = 4
+
 let rec make_exp cls =
   match cls with
   | Unit -> Asml.Nop
@@ -29,10 +31,35 @@ let rec tr cls =
   | Var id -> Asml.Exp (make_exp cls)
   | AppCls (id, args) -> Asml.Exp (make_exp cls)
   | AppDir (id, args) -> Asml.Exp (make_exp cls)
+  | MakeCls ((id, t), label, free_vars, e) ->
+    let size = List.length free_vars in
+    let addr_id = "addr_" ^ label in
+    let rec alloc_mem_for_free_vars free_vars ?(counter = 1) fbody =
+      match free_vars with
+      | [] -> tr fbody
+      | hd :: tl ->
+        Asml.LetIdentEq (
+          Id.genid (),
+          Asml.St (id, Asml.Int (counter * word_size), hd),
+          alloc_mem_for_free_vars tl ~counter:(counter + 1) fbody
+        ) in
+
+    Asml.LetIdentEq (
+      id,
+      Asml.New (Asml.Int ((size + 1) * word_size)),
+      Asml.LetIdentEq (
+        addr_id,
+        Asml.Label (label), (* or Ident, not sure for now *)
+        Asml.LetIdentEq (
+          Id.genid (),
+          Asml.St (id, Asml.Int (0), addr_id),
+          alloc_mem_for_free_vars free_vars e
+        )
+      )
+    )
   | _ -> Asml.Exp (make_exp cls)
 
 let rec generate_fun_body fargs ?(counter = 1) fbody =
-  let word_size = 4 in
   match fargs with
   | [] -> tr fbody
   | hd :: tl ->
