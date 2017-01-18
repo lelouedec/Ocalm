@@ -12,18 +12,18 @@ match l  with
 	| Ident i-> sprintf "%s " (regf#look_for i)
 	| Int i ->  "#"^ string_of_int (i)
 
-let prologue = sprintf " stmfd  sp!, {fp, lr} \n add fp, sp, #4 \n sub sp, #n \n"
+let prologue i = sprintf " stmfd  R13!, {R11, R11} \n add R11, R13, #4 \n sub R13, #%d \n" (i)
 
-let epilogue = "sub sp, fp, #4 \n ldmfd  sp!, {fp, lr} \n bx lr \n"
+let epilogue = sprintf "sub R13, R11, #4 \n ldmfd  R13!, {R11, R11} \n bx R11 \n"
 
 let rec exp_to_asm exp regf =
  match exp with 
- 	| Nop -> sprintf " "
+ 	| Nop -> sprintf " MOV R0, R0 "
 	| LPexpRp e -> sprintf "(%s)" (exp_to_asm exp regf)
 	| Int i -> sprintf "MOV R1 , #%d" (i) 
 	| Ident i ->  sprintf "%s" (regf#look_for i)
 	| Label s -> sprintf " %s" (s)
-	| Neg i -> sprintf " "
+	| Neg i -> sprintf " MOV R1, #%s \n NEG R1, R1 " i 
 	| FNeg i ->  sprintf " "
 	| Add (i,id) -> sprintf "ADD %s , %s , %s " (regf#look_for i) (regf#look_for i) (ident_or_imm_to_asm id regf)
 	| Sub (i,id) -> sprintf "SUB %s , %s " (regf#look_for i) (ident_or_imm_to_asm id regf )
@@ -52,7 +52,7 @@ let rec exp_to_asm exp regf =
 										BNE label_out%d  \n 
 										labeltrue%d %s  \n
 										label_out%s " (regf#look_for i) (ident_or_imm_to_asm id regf ) (label_counter) (exp_to_asm t2 regf) (label_counter) (label_counter)  (exp_to_asm t1 regf ) (i)
-	| CallLabel (i,l)-> sprintf " BNE %s" i
+	| CallLabel (i,l)-> sprintf " BL %s" i
 	| CallClo  (id,t) -> sprintf "	"
 
 
@@ -69,9 +69,9 @@ let rec form_to_asm (l : string list)  reg : string =
 
 let rec function_to_asm exp reg =
 	match exp with
-	| LetUnderscEQ a -> sprintf " _main : %s " ( asmt_to_asm a (reg#look_for "_") ); 
+	| LetUnderscEQ a -> sprintf " _start: %s " ( asmt_to_asm a (reg#look_for "_") ); 
 	| LetLabeleqFloat (i,fl,fu) -> sprintf " "
-	| LetLabelEq (i,f,a,fu)-> sprintf " "
+	| LetLabelEq (i,f,a,fu)-> sprintf "%s: " i
 
 let generate exp reg = 
 	print_endline "***************ASSEMBLY ******************";
