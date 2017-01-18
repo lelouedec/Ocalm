@@ -12,7 +12,11 @@ let case1 =
 			Unit) in
 
   let _exp = f e in
-  assert((St.find "x" !Typing.st) = Type.Var(ref (Some Type.Int)))
+  let t = St.find "x" !Typing.st in
+  assert(
+    t = Type.Var(ref (Some Type.Int))
+    || t = Type.Int
+  )
 
 let case2 = 
   let e = 
@@ -29,12 +33,16 @@ let case2 =
           body =
             FAdd ( Var ("x"), Var ("y") )
         },
-			  Unit)) in
+        Unit)) in
 
   let _exp = f e in
-  assert((St.find "y" !Typing.st) = Type.Var(ref (Some Type.Float)));
-  assert((St.find "x" !Typing.st) = Type.Var(ref (Some Type.Float)))(*;
-  assert((St.find "f" !Typing.st) = Type.Var(ref (Some Type.Float)))*)
+  let ty = St.find "y" !Typing.st in
+  let tx = St.find "x" !Typing.st in
+  let tf = St.find "f" !Typing.st in
+  assert((Type.to_string ty) = "float");
+  assert((Type.to_string tx) = "float");
+  assert((Type.to_string tf) = "(float -> float)");
+  ()
 
 (* let x = 1. in print_int (x + 1) *)
 let case3 =
