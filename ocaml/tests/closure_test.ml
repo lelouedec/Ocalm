@@ -89,9 +89,12 @@ let case4 () =
 
 let case5 () =
   (* let x = 1 in
-    let rec f y = x + y in
-    let t = 2 in
-    f t *)
+    let rec f y z =
+      let v = x + z in
+      v - y in
+    let t1 = 2 in
+    let t2 = 3 in
+    f t1 t2 *)
   let knormed =
     KNormal.Let (
       ("x", Type.Int),
@@ -99,13 +102,21 @@ let case5 () =
       KNormal.LetRec (
         {
           KNormal.name = ("f", Type.Fun ([Type.Int], Type.Int));
-          KNormal.args = [("y", Type.Int)];
-          KNormal.body = KNormal.Add ("x", "y")
+          KNormal.args = [("y", Type.Int); ("z", Type.Int)];
+          KNormal.body = KNormal.Let (
+            ("v", Type.Int),
+            KNormal.Add ("x", "z"),
+            KNormal.Sub ("v", "y")
+          )
         },
         KNormal.Let (
-          ("t", Type.Int),
+          ("t1", Type.Int),
           KNormal.Int 2,
-          KNormal.App ("f", ["t"])
+          KNormal.Let (
+            ("t2", Type.Int),
+            KNormal.Int 3,
+            KNormal.App ("f", ["t1"; "t2"])
+          )
         )
       )
     ) in
