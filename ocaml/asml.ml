@@ -35,18 +35,28 @@ type exp =
 	| FMul of Id.t * Id.t 
 	| FDiv of Id.t * Id.t 
 	| New of ident_or_imm
-	| IfEq of Id.t * ident_or_imm * exp* exp
-	| IfLEq of Id.t * ident_or_imm * exp * exp
-	| IfGEq of Id.t * ident_or_imm * exp * exp
+	| IfEq of Id.t * ident_or_imm * asmt * asmt
+	| IfLEq of Id.t * ident_or_imm * asmt * asmt
+	| IfGEq of Id.t * ident_or_imm * asmt * asmt
 	| CallLabel of Id.t * forma_args
 	| CallClo of Id.t * forma_args
+and asmt = 
+	| LpasmtRPAREN of asmt 
+	| LetIdentEq  of  Id.t * exp * asmt
+	| Exp of exp 
 
 let rec print_arg ( l : ident_or_imm list ): string = 
 	match l with
     [] -> ""
 	  | x :: xs -> ident_or_imm_to_string x ^ " " ^(print_arg xs)
 
-let rec to_string exp =
+let rec asmt_to_string asmt =
+	match asmt with 
+	| LpasmtRPAREN a -> sprintf " ( %s )" (asmt_to_string a)
+	| LetIdentEq (i,e2,a) -> sprintf "Let %s = %s in \n %s" (i) ( to_string e2) (asmt_to_string a)
+	| Exp e -> (to_string e)
+
+and to_string exp =
  match exp with 
  	| Nop ->" "
 	| LPexpRp e -> sprintf " ( %s )" ( to_string e )
@@ -64,22 +74,15 @@ let rec to_string exp =
 	| FMul (i,id) -> sprintf "%s + %s "  (i)  (id)
 	| FDiv (i,id) -> sprintf "%s + %s "  (i)  (id)
 	| New i -> sprintf "new %s in " (ident_or_imm_to_string	i)
-	| IfEq (i, id , t1, t2 ) -> sprintf ("if %s = %s  then %s else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
-	| IfLEq (i, id , t1, t2 ) -> sprintf ("if %s <= %s then %s else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
-	| IfGEq (i, id , t1, t2 ) -> sprintf ("if %s >= %s then %s else %s ") (i) (ident_or_imm_to_string id) ( to_string t1) (to_string t1 )
-	| CallLabel (e,a)-> sprintf " Call %s %s " ( e) (form_to_string a) 
+	| IfEq (i, id , t1, t2 ) -> sprintf ("if %s = %s  then %s else %s ") (i) (ident_or_imm_to_string id) ( asmt_to_string t1) (asmt_to_string t1 )
+	| IfLEq (i, id , t1, t2 ) -> sprintf ("if %s <= %s then %s else %s ") (i) (ident_or_imm_to_string id) ( asmt_to_string t1) (asmt_to_string t1 )
+	| IfGEq (i, id , t1, t2 ) -> sprintf ("if %s >= %s then %s else %s ") (i) (ident_or_imm_to_string id) ( asmt_to_string t1) (asmt_to_string t1 )
+	| CallLabel (e,a)-> sprintf " Call %s %s " (e) (form_to_string a) 
 	| CallClo  (id,a) -> sprintf " Call  %s %s" (id) (form_to_string a)
 
-type asmt = 
-	| LpasmtRPAREN of asmt 
-	| LetIdentEq  of  Id.t * exp * asmt
-	| Exp of exp 
+	
 
-let rec asmt_to_string asmt =
-	match asmt with 
-	| LpasmtRPAREN a -> sprintf " ( %s )" (asmt_to_string a)
-	| LetIdentEq (i,e2,a) -> sprintf "Let %s = %s in \n %s" (i) ( to_string e2) (asmt_to_string a)
-	| Exp e -> (to_string e)
+
 
 type fundefs =
 	| LetUnderscEQ of asmt (* Let _ =  *)

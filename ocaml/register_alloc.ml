@@ -10,7 +10,7 @@ class registers_function =
 	val mutable register_hash : t = Hashtbl.create 42;
 	val mutable counter = 4;
 	method add x =
-	 if (Hashtbl.mem register_hash x)  then ()  else (Hashtbl.replace register_hash x ("r"^ string_of_int counter) ;	counter <- counter + 1)
+	 if (Hashtbl.mem register_hash x)  then ()  else (Hashtbl.replace register_hash x ("R"^ string_of_int counter) ;	counter <- counter + 1)
 	method look_for x = 
 			Hashtbl.find register_hash x 
 	method get_hast =
@@ -61,14 +61,12 @@ let rec assign_exp exp f =
 	| FMul (i,id) -> let fu = function_has#look_for f in fu#add i ; fu#add id 
 	| FDiv (i,id) -> let fu = function_has#look_for f in fu#add i ; fu#add id 
 	| New i -> ()
-	| IfEq (i, id , t1, t2 ) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f ; assign_exp t1 f; assign_exp t2 f 
-	| IfLEq (i, id , t1, t2 ) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f ; assign_exp t1 f; assign_exp t2 f 
-	| IfGEq (i, id , t1, t2 ) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f ; assign_exp t1 f; assign_exp t2 f 
+	| IfEq (i, id , t1, t2 ) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f ; assign_asmt t1 f; assign_asmt t2 f 
+	| IfLEq (i, id , t1, t2 ) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f ; assign_asmt t1 f; assign_asmt t2 f 
+	| IfGEq (i, id , t1, t2 ) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f ; assign_asmt t1 f; assign_asmt t2 f 
 	| CallLabel (e,a) -> ()
 	| CallClo  (id,t) -> ()
-
-
-let rec assign_asmt a f =
+and assign_asmt a f =
 	match a with
 	| LpasmtRPAREN a -> assign_asmt a f
 	| LetIdentEq (i,e2,a) -> let fu = function_has#look_for f in fu#add i; assign_exp e2 f ; assign_asmt a f
@@ -91,5 +89,5 @@ let allocate exp =
 	function_has#clear;
 	assign_function exp;
 
-	(*Hashtbl.iter (fun x y  -> (printf "function : %s  \n"  x) ;  (Hashtbl.iter (printf "		variable %s , Register  %s. \n")  y#get_hast) )  function_has#get_hast;*)
+	Hashtbl.iter (fun x y  -> (printf "function : %s  \n"  x) ;  (Hashtbl.iter (printf "		variable %s , Register  %s. \n")  y#get_hast) )  function_has#get_hast;
 	function_has
