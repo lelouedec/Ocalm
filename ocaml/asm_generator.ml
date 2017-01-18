@@ -21,8 +21,8 @@ let rec exp_to_asm exp regf =
  	| Nop -> sprintf " "
 	| LPexpRp e -> sprintf "(%s)" exp_to_asm exp regf
 	| Int i -> sprintf "MOV R1 , #%d" i 
-	| Ident i ->  sprintf " "
-	| Label s -> sprintf " "
+	| Ident i ->  sprintf "%s" (regf#look_for i)
+	| Label s -> sprintf " %s" label
 	| Neg i -> sprintf " "
 	| FNeg i ->  sprintf " "
 	| Add (i,id) -> sprintf "ADD %s , %s , %s " (regf#look_for i) (regf#look_for i) (ident_or_imm_to_asm id regf)
