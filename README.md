@@ -70,5 +70,12 @@ At the end of execution, the test runner also prints out the number of failed te
 
 Type checking test runner works in the same manner as with syntax test runner
 
+#### Executing ML file
+```
+./compile_and_run.sh
+```
+
+Taking a mincaml file as parameter, this script first transforms the program into ARM assembly code, then compiles it into a binary using qemu. The executable file is then executed. (Interesting features would be to make sure that the result obtained is the same than with the OCaml interpreter.
+
 #### Other tests to be added
 _The mechanism is likely to be totally different from the 2 previous runners._

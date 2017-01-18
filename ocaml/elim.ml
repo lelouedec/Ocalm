@@ -32,14 +32,12 @@ let rec f exp =
     if (side_effect el1 || present el2 id) then 
       Let ((id, t), el1, el2)
     else (
-      print_endline ("removing " ^ id);
       el2 )
   | LetRec ({name = (label, t); args = args; body = body}, e) -> 
     let el = f e in
       if (present el label) then
       LetRec ({name = (label, t); args = args; body = f body}, el)
     else (
-      print_endline ("removing " ^ label);
       el )
   (*| LetTuple (l, e1, e2)-> *)
   | _ -> exp

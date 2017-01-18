@@ -74,9 +74,5 @@ let rec function_to_asm exp reg =
 	| LetLabelEq (i,f,a,fu)-> sprintf "%s: " i
 
 let generate exp reg = 
-	print_endline "***************ASSEMBLY ******************";
-	let asm_code = function_to_asm exp reg in  
-	print_endline asm_code;
-	print_endline "******************************************";
-	asm_code
+	function_to_asm exp reg
 

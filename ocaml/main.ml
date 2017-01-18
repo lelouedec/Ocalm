@@ -14,7 +14,6 @@ let file f flags =
       (* parse only *)
       ()
     else (
-      print_endline "typing..";
       let _t = Typing.f _p in
       if List.mem "-t" flags then
         (* type checking only *)
@@ -30,22 +29,15 @@ let file f flags =
                       (KNormal.f _t))))))) in
         (* if List.mem "-d" flags then ( *)
 
-          print_endline ("Typing:\n" ^ St.to_string Type.to_string !Typing.st );
-          print_endline ("a/b/let/inline reductions :\n" ^ KNormal.to_string _r);
-          
           let cls = Closure.f _r in
           let vir = Virtual.f (snd cls) in
-         
-          print_endline ("Closure:\n" ^ Closure.to_string cls);
 
           if List.mem "-asml" flags then ( 
-            print_endline ("Asml:\n" ^ Asml.fundefs_to_string vir);
             let reg = Register_alloc.allocate vir in 
-            let asm = Asm_generator.generate vir reg  in 
-            let asm_file = "../ARM/result.s"  in
-            let oc = open_out asm_file in
-            fprintf oc "%s" asm ;  
-            close_out oc;
+            print_endline (Asm_generator.generate vir reg)
+            (*let asm_o = "../ARM/result.s"  in let ofile = open_out asm_file in
+            fprintf ofile "%s" asm ;  
+            close_out ofile;*)
           )
           else ();
           
