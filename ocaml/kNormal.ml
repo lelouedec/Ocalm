@@ -165,7 +165,7 @@ let rec to_string exp =
             | _ -> (String.concat " " (List.map (fun arg -> Id.to_string arg) args))
           )
   | AppExt (id, args) ->
-          sprintf "(_min_caml_%s %s)"
+          sprintf "(min_caml_%s %s)"
           (Id.to_string id)
           (
             match args with

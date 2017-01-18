@@ -4,7 +4,6 @@ type t =
   | Unit
   | Int of int
   | Float of float
-  | Not of Id.t
   | Neg of Id.t
   | Add of Id.t * Id.t
   | Sub of Id.t * Id.t
@@ -13,8 +12,6 @@ type t =
   | FSub of Id.t * Id.t
   | FMul of Id.t * Id.t
   | FDiv of Id.t * Id.t
-  | Eq of Id.t * Id.t
-  | LE of Id.t * Id.t
   | IfEq of Id.t * Id.t * t * t
   | IfLE of Id.t * Id.t * t * t
   | Let of (Id.t * Type.t) * t * t
@@ -42,7 +39,7 @@ let rec exp_to_string = function
   | AppDir (label, args) ->
     sprintf "apply_direct(%s)"
       (String.concat ", " 
-        (("_" ^ label) :: args)
+        ((label) :: args)
       )
   | AppCls (id, args) ->
     sprintf "apply_closure(%s)"
@@ -59,7 +56,7 @@ let rec exp_to_string = function
 
 let fn_to_string fn =
   let ((id, _), args, free_args, exp) = fn in
-  Printf.sprintf "let _%s %s %s = \n %s\n"
+  Printf.sprintf "let %s %s %s = \n %s\n"
     id
     (String.concat " " (List.map fst args))
     (String.concat " " (List.map fst free_args))
@@ -77,7 +74,7 @@ let to_string (prog : prog) =
 
 let rec free_vars = function
   | Unit | Int _ | Float _ -> Env.empty
-  | Not id | Neg id | FNeg id | Var id -> Env.singleton id
+  | Neg id | FNeg id | Var id -> Env.singleton id
   | Add (id1, id2) | Sub (id1, id2) -> Env.of_list [id1; id2]
   | Let ((id, t), e1, e2) ->
     let set1 = free_vars e1 in

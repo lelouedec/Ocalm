@@ -133,8 +133,5 @@ let f exp =
   st_ext := St.empty;
 
   let eqs, _ = generate exp Type.Unit in
-  print_equations eqs;
-  print_endline "----->";
   List.iter (fun (eq1, eq2) -> unify (eq1, eq2)) eqs;
-  print_equations eqs;
   exp

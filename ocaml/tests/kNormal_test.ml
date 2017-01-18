@@ -23,6 +23,6 @@ let case1 =
 (* TODO case IfEq / IfLE *)
 
 let _ =
-  print_string "K-Normalization tests...";
+  print_string "K-Normalization tests... ";
   case1;
   print_endline "passed"

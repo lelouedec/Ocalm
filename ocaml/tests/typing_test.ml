@@ -13,10 +13,7 @@ let case1 =
 
   let _exp = f e in
   let t = St.find "x" !Typing.st in
-  assert(
-    t = Type.Var(ref (Some Type.Int))
-    || t = Type.Int
-  )
+  assert((Type.to_string t) = "int")
 
 let case2 = 
   let e = 
@@ -41,8 +38,7 @@ let case2 =
   let tf = St.find "f" !Typing.st in
   assert((Type.to_string ty) = "float");
   assert((Type.to_string tx) = "float");
-  assert((Type.to_string tf) = "(float -> float)");
-  ()
+  assert((Type.to_string tf) = "(float -> float)")
 
 (* let x = 1. in print_int (x + 1) *)
 let case3 =
@@ -58,10 +54,10 @@ let case3 =
   try
     let _exp = f e in
     assert false
-  with e -> print_endline "type error as expected"
+  with e -> () (* Type error as expected *)
 
 let _ =
-  print_string "Type inference tests...";
+  print_string "Type inference tests... ";
   case1;
   case2;
   case3;

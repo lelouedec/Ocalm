@@ -132,7 +132,7 @@ let case6 () =
 	    )
 	  ) in 
   Asml.test e;
-  let reg = Register_alloc.allocate e in Asm_generator.generate e reg
+  let reg = Register_alloc.allocate e in ignore(Asm_generator.generate e reg)
 
 let () = 
   print_endline "Register allocation tests";
