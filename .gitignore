@@ -19,5 +19,9 @@ _build/
 setup.data
 setup.log
 
+# asm files
+*.s
+*.arm
+
 ocaml/mincamlc
 .DS_Store

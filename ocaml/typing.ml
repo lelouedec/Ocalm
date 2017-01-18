@@ -91,8 +91,6 @@ let rec generate exp t =
           else
             raise (failwith (Printf.sprintf "The function expects %d argument(s) while %d are supplied" nb_args nb_args_given))
       )
-      (*let fn = St.find e1 !st in print_endline ("fn : " ^ (Type.to_string fn));*)
-      (*let ls = List.map (fun x -> generate x (Type.Var (ref (None)))) le2 in List.concat ls *)
   | LetRec ({ name = (id, tv); args = largs; body = e }, e2) -> 
       List.iter (fun (idi, tvi) -> 
         st := St.add idi tvi !st) largs;

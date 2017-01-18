@@ -17,8 +17,8 @@ let rec present exp i =
   | IfEq (id1, id2, e1, e2) -> present e1 i || present e2 i
   | IfLE (id1, id2, e1, e2) -> present e1 i || present e2 i
   | Let ((id, t), e1, e2) -> present e1 i || present e2 i
-  | LetRec ({name = (label, t); args = args; body = body}, e) -> present body i || present e i
-  | App (id, args) -> i = id || (List.mem i args)
+  | LetRec ({name = (label, t); args = args; body = body}, e) -> present body i || present e i || List.mem i (List.map (fun (x, y) -> x) args)
+  | App (id, args) | AppExt (id, args) -> i = id || (List.mem i args)
   | Var (id) -> i = id
   | _ -> false
 
@@ -29,10 +29,17 @@ let rec f exp =
   | Let ((id, t), e1, e2) ->
     let el1 = f e1 in
     let el2 = f e2 in
-    if (side_effect el1) || (present el2 id) then Let ((id, t), el1, el2)
-    else el2
-  (*| LetRec ({name = (label, t); args = args; body = body}, e) -> 
-  | App (id, args) -> 
-  | AppExt (id, args) -> 
-  | LetTuple (l, e1, e2)-> *)
+    if (side_effect el1 || present el2 id) then 
+      Let ((id, t), el1, el2)
+    else (
+      print_endline ("removing " ^ id);
+      el2 )
+  | LetRec ({name = (label, t); args = args; body = body}, e) -> 
+    let el = f e in
+      if (present el label) then
+      LetRec ({name = (label, t); args = args; body = f body}, el)
+    else (
+      print_endline ("removing " ^ label);
+      el )
+  (*| LetTuple (l, e1, e2)-> *)
   | _ -> exp
