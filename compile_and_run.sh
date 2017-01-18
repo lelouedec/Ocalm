@@ -3,6 +3,10 @@
 MINCAMLC=ocaml/mincamlc
 EBI=./ARM/`basename $1`
 
+cd ./ocaml
+make
+cd ..
+
 echo "Compiling $1..."
 $MINCAMLC -asml $1 > $EBI.s
 
