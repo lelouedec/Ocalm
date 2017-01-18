@@ -1,3 +1,5 @@
+open Printf
+
 let version = "0.0.1"
 
 let print_ast exp =
@@ -38,7 +40,12 @@ let file f flags =
 
           if List.mem "-asml" flags then ( 
             print_endline ("Asml:\n" ^ Asml.fundefs_to_string vir);
-            let reg = Register_alloc.allocate vir in Asm_generator.generate vir reg 
+            let reg = Register_alloc.allocate vir in 
+            let asm = Asm_generator.generate vir reg  in 
+            let asm_file = "../ARM/result.S"  in
+            let oc = open_out asm_file in
+            fprintf oc "%s " asm ;  
+            close_out oc;
           )
           else ();
           

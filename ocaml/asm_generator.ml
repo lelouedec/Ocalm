@@ -77,5 +77,6 @@ let generate exp reg =
 	print_endline "***************ASSEMBLY ******************";
 	let asm_code = function_to_asm exp reg in  
 	print_endline asm_code;
-	print_endline "******************************************"
+	print_endline "******************************************";
+	asm_code
 
