@@ -77,7 +77,7 @@ let rec temporaries exp =
       insert_let (temporaries e1)
         (fun x -> insert_let (temporaries e2)
           (fun y -> LE (x, y), Type.Bool)) 
-  | Syntax.If (e1, e2, e3) -> 
+  | Syntax.If (e1, e2, e3) ->
       let e2', t1 = temporaries e2 in
       let e3', t2 = temporaries e3 in
       (match e1 with
@@ -89,6 +89,7 @@ let rec temporaries exp =
         insert_let (temporaries e4)
           (fun x -> insert_let (temporaries e5)
             (fun y -> IfLE (x, y, e2', e3'), Type.Unit))
+      | Syntax.Not (e) -> temporaries (Syntax.If(e, e3, e2))
       | _ -> raise (failwith "incorrect if test expression"))
   | Syntax.Let ((id,t), e1, e2) ->
       let e1', t1 = temporaries e1 in
@@ -101,6 +102,7 @@ let rec temporaries exp =
         | Syntax.Var (id) -> Var id, Type.Fun ([Type.gentyp ()], Type.Unit) (* assume that all external functions return unit *)
         | _ -> temporaries e1
       ) in
+
       let rt = (match t with
         | Type.Fun (_, rt') -> rt'
         | _ -> raise (failwith "not a function")

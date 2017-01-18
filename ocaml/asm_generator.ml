@@ -53,7 +53,7 @@ let rec exp_to_asm exp regf =
 										\nlabeltrue%d %s  \n
 										label_out%s " (regf#look_for i) (ident_or_imm_to_asm id regf ) (label_counter) (exp_to_asm t2 regf) (label_counter) (label_counter)  (exp_to_asm t1 regf ) (i)
 	| CallLabel (i,l)-> sprintf "ADD R0, R0, %s \n BL %s" (regf#look_for (List.hd l) ) (i)
-	| CallClo  (id,t) -> sprintf "	"
+	| CallClo  (id,t) -> sprintf "  "
 
 
 let rec asmt_to_asm a reg =
@@ -71,7 +71,7 @@ let rec function_to_asm exp reg =
 	match exp with
 	| LetUnderscEQ a -> sprintf "  .text   \n  .global _start \n_start: \n%s\n" ( asmt_to_asm a (reg#look_for "_") ); 
 	| LetLabeleqFloat (i,fl,fu) -> sprintf " "
-	| LetLabelEq (i,f,a,fu)-> let nb = 0 in  if (List.length f > 4) then (nb = List.length f) else  ( nb  = 0) ; sprintf "  %s \n  BL %s \n  %s" (prologue (nb) )  (i) (epilogue)
+	| LetLabelEq (i,f,a,fu)-> sprintf "%s:\n %s \n%s" (i) (asmt_to_asm a (reg#look_for i)) (function_to_asm fu reg)
 
 let generate exp reg = 
 	function_to_asm exp reg

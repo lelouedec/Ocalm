@@ -19,18 +19,26 @@ let file f flags =
         (* type checking only *)
         ()
       else (
+        print_endline (Syntax.to_string _p);
         let _r =
-          (Elim.f
-            (Constant.f
-              (Inline.f
+          (*(Elim.f*)
+            (*(Constant.f
+              (Inline.f*)
                 (Let.f
                   (Beta.f
                     (Alpha.f
-                      (KNormal.f _t))))))) in
+                      (KNormal.f _t)))) in
         (* if List.mem "-d" flags then ( *)
+          
 
           let cls = Closure.f _r in
           let vir = Virtual.f cls in
+
+          if List.mem "-s" flags then (
+            print_endline ((Asml.fundefs_to_string vir) ^ "\n\n");
+            print_endline ((KNormal.to_string _r) ^ "\n\n");
+          )
+          else ();
 
           if List.mem "-asml" flags then ( 
             let reg = Register_alloc.allocate vir in  print_endline (Asm_generator.generate vir reg)
@@ -66,6 +74,7 @@ let () =
     ("-asml", Arg.Unit (fun () -> flags := "-asml" :: !flags), "output ASML");
     ("-wo", Arg.Unit (fun () -> flags := "-wo" :: !flags), "without optimizations");
     ("-d", Arg.Unit (fun () -> flags := "-d" :: !flags), "debug mode");
+    ("-s", Arg.Unit (fun () -> flags := "-s" :: !flags), "print closure and asml")
   ] in
   let files = ref [] in
     Arg.parse
