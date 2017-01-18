@@ -30,7 +30,7 @@ let file f flags =
         (* if List.mem "-d" flags then ( *)
 
           let cls = Closure.f _r in
-          let vir = Virtual.f (snd cls) in
+          let vir = Virtual.f cls in
 
           if List.mem "-asml" flags then ( 
             let reg = Register_alloc.allocate vir in  print_endline (Asm_generator.generate vir reg)

@@ -30,4 +30,16 @@ let rec tr cls =
   | _ -> Asml.Exp (make_exp cls)
 
 let f cls =
-  Asml.LetUnderscEQ ( tr (cls) )
+  let cls_fns, cls_main = cls in
+  let rec transform functions =
+    match functions with
+    | [] -> Asml.LetUnderscEQ (tr cls_main)
+    | hd :: tl ->
+      (* assume no float function *)
+      let ((fname, ftype), args, fargs, body) = hd in
+      let asml_args =
+        (List.map fst args)
+        @ (List.map fst fargs) in
+      let asml_body = tr body in
+      Asml.LetLabelEq (fname, asml_args, asml_body, transform tl) in
+  transform cls_fns
