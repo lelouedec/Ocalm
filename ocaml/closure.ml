@@ -50,7 +50,7 @@ let rec exp_to_string = function
         (id :: args)
       )
   | MakeCls ((id, t), label, free_vars, e) ->
-    sprintf "let %s = make_closure(%s, [%s]) in %s"
+    sprintf "let %s = make_closure(%s, %s) in %s"
       (Id.to_string id)
       (Id.to_string label)
       (String.concat ", " (List.map Id.to_string free_vars))
@@ -110,16 +110,18 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) : t =
     let free_vars = Env.diff (free_vars fbody') (Env.of_list list_args) in
 
     if Env.is_empty free_vars then
-      let split_fn = ((fname, ftype), fargs, [], extract_main fbody known) in
+      let split_fn = ((fname, ftype), fargs, [], fbody') in
       functions := [split_fn] @ !functions;
       extract_main e known'
-    else
+    else (
       let fbody' = extract_main fbody known in
       let e' = extract_main e known in
+      (* TODO lookup type of free variable somewhere instead of assuming as int *)
       let free_args = List.map (fun x -> (x, Type.Int)) (Env.elements free_vars) in
       let split_fn = ((fname, ftype), fargs, free_args, fbody') in
       functions := [split_fn] @ !functions;
       MakeCls ((fname, ftype), fname, Env.elements free_vars, e')
+    )
   | KNormal.App (label, args) when Env.mem label known ->
     AppDir (label, args)
   | KNormal.App (id, args) ->
