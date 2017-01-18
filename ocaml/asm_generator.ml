@@ -12,9 +12,9 @@ match l  with
 	| Ident i-> sprintf "%s " (regf#look_for i)
 	| Int i ->  "#"^ string_of_int (i)
 
-let prologue i = sprintf " stmfd  R13!, {R11, R11} \n add R11, R13, #4 \n sub R13, #%d \n" (i)
+let prologue i = sprintf " stmfd  R13!, {R11,R14} \n add R11, R13, #4 \n sub R13, #4 \n" 
 
-let epilogue = sprintf "sub R13, R11, #4 \n ldmfd  R13!, {R11, R11} \n bx R11 \n"
+let epilogue = sprintf "sub R13, R11, #4 \n ldmfd  R13!, {R11, R14} \n bx R14 \n"
 
 let rec exp_to_asm exp regf =
  match exp with 
@@ -52,7 +52,7 @@ let rec exp_to_asm exp regf =
 										\nBNE label_out%d  
 										\nlabeltrue%d %s  \n
 										label_out%s " (regf#look_for i) (ident_or_imm_to_asm id regf ) (label_counter) (exp_to_asm t2 regf) (label_counter) (label_counter)  (exp_to_asm t1 regf ) (i)
-	| CallLabel (i,l)-> let nb = 0 in  if (List.length l > 4) then (nb = List.length l) else  ( nb  = 0) ; sprintf "  %s \n  BL %s \n  %s" (prologue (nb) )  (i) (epilogue)	
+	| CallLabel (i,l)-> sprintf "ADD R0, R0, %s \n BL %s" (regf#look_for (List.hd l) ) (i)
 	| CallClo  (id,t) -> sprintf "	"
 
 
@@ -71,7 +71,7 @@ let rec function_to_asm exp reg =
 	match exp with
 	| LetUnderscEQ a -> sprintf "  .text   \n  .global _start \n_start: \n%s\n" ( asmt_to_asm a (reg#look_for "_") ); 
 	| LetLabeleqFloat (i,fl,fu) -> sprintf " "
-	| LetLabelEq (i,f,a,fu)-> sprintf "%s: " i
+	| LetLabelEq (i,f,a,fu)-> let nb = 0 in  if (List.length f > 4) then (nb = List.length f) else  ( nb  = 0) ; sprintf "  %s \n  BL %s \n  %s" (prologue (nb) )  (i) (epilogue)
 
 let generate exp reg = 
 	function_to_asm exp reg
