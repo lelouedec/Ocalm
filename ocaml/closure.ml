@@ -36,7 +36,7 @@ let rec exp_to_string = function
   | Add (id1, id2) -> sprintf "(%s + %s)" (Id.to_string id1) (Id.to_string id2)
   | Sub (id1, id2) -> sprintf "(%s - %s)" (Id.to_string id1) (Id.to_string id2)
   | Let ((id, t), e1, e2) ->
-          sprintf "(let (%s : %s) = %s in %s)\n" (Id.to_string id) (Type.to_string t) (exp_to_string e1) (exp_to_string e2)
+          sprintf "(let (%s : %s) = %s in \n %s)" (Id.to_string id) (Type.to_string t) (exp_to_string e1) (exp_to_string e2)
   | Var id -> Id.to_string id
   | AppDir (label, args) ->
     sprintf "apply_direct(%s)"
@@ -47,13 +47,13 @@ let rec exp_to_string = function
 
 let fn_to_string fn =
   let ((id, _), args, exp) = fn in
-  Printf.sprintf "let _%s %s =\n  %s"
+  Printf.sprintf "let _%s %s = \n %s"
     id
     (String.concat " " (List.map (fun arg -> let (id, _) = arg in id) args))
     (exp_to_string exp)
   
 let main_to_string main =
-  Printf.sprintf "let () =\n  %s" (exp_to_string main)
+  Printf.sprintf "let () =  \n %s" (exp_to_string main)
 
 let to_string (prog : prog) =
   let (functions, main) = prog in
@@ -76,7 +76,7 @@ let rec extract_main (exp : KNormal.t) : t =
   | KNormal.Let ((id, t), e1, e2) -> Let ((id, t), extract_main e1, extract_main e2)
   | KNormal.Var id -> Var id
   | KNormal.LetRec (fn, e) ->
-    let (fname, fargs, fbody) = KNormal.denormalize fn in
+    let ({ KNormal.name = fname; KNormal.args = fargs; KNormal.body = fbody }) = fn in
     let list_args = List.map (fun (id, _) -> id) fargs in
     let free_vars = Env.diff (KNormal.free_vars fbody) (Env.of_list list_args) in
     (* TODO use free vars list to determine direct or closure call *)

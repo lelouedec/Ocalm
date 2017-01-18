@@ -29,9 +29,6 @@ type t =
   | Put of Id.t * Id.t * Id.t
 and fundef = { name : Id.t * Type.t; args : (Id.t * Type.t) list; body : t }
 
-(* extract fundef content for usage in other modules *)
-let denormalize fundef = (fundef.name, fundef.args, fundef.body)
-
 let insert_let (e, t) k =
   match e with
   | Var x -> k x
@@ -101,13 +98,17 @@ let rec temporaries exp =
   | Syntax.App (e1, le2) ->
       let label, t = ( match e1 with
         | Syntax.Var (id) when St.mem id !Typing.st -> Var id, St.find id !Typing.st
-        | Syntax.Var (id) -> Var id, Type.Unit (* assume that all external functions are of type unit *)
+        | Syntax.Var (id) -> Var id, Type.Fun ([Type.gentyp ()], Type.Unit) (* assume that all external functions return unit *)
         | _ -> temporaries e1
+      ) in
+      let rt = (match t with
+        | Type.Fun (_, rt') -> rt'
+        | _ -> raise (failwith "not a function")
       ) in
       let rec convert_args (f : Id.t) (le : Syntax.t list) (ids : Id.t list) : t * Type.t = (
         match le with
-        | [] when St.mem f !Typing.st -> App (f, ids), t
-        | [] -> AppExt (f, ids), t
+        | [] when St.mem f !Typing.st -> App (f, ids), rt
+        | [] -> AppExt (f, ids), rt
         | hd::tl ->
           insert_let (temporaries hd)
             (fun x -> convert_args f tl (ids @ [x]))
@@ -172,15 +173,23 @@ let rec to_string exp =
             | _ -> (String.concat " " (List.map (fun arg -> Id.to_string arg) args))
           )
   | LetRec (fd, e) ->
-          sprintf "(let rec %s %s = %s in \n%s)"
-          (let (x, _) = fd.name in (Id.to_string x))
-          (
-            match fd.args with
-            | [] -> "()"
-            | _ -> (String.concat " " (List.map (fun (arg, _) -> Id.to_string arg) fd.args))
-          )
-          (to_string fd.body)
-          (to_string e)
+          let (x, fun_t) = fd.name in
+          sprintf "(let rec %s %s : %s = %s in \n%s)"
+            (Id.to_string x)
+            (
+              match fd.args with
+              | [] -> "()"
+              | _ -> (String.concat
+                " "
+                (List.map
+                  (fun (arg, t) -> sprintf "(%s : %s)" (Id.to_string arg) (Type.to_string t))
+                  fd.args
+                )
+              )
+            )
+            (Type.to_string fun_t)
+            (to_string fd.body)
+            (to_string e)
 (*
   | LetTuple (l, e1, e2)->
   | Get (e1, e2) ->

@@ -19,18 +19,16 @@ let file f flags =
         ()
       else (
         let _r =
-          (Let.f
-            (Beta.f
-              (Alpha.f
-                (KNormal.f _t)
-              )
-            )
-          )
-          in
+          (Elim.f
+            (Inline.f
+              (Let.f
+                (Beta.f
+                  (Alpha.f
+                    (KNormal.f _t)))))) in
         (* if List.mem "-d" flags then ( *)
 
           print_endline ("Typing:\n" ^ St.to_string Type.to_string !Typing.st );
-          print_endline ("a/b/let reductions :\n" ^ KNormal.to_string _r);
+          print_endline ("a/b/let/inline reductions :\n" ^ KNormal.to_string _r);
           
           let cls = Closure.f _r in
           let vir = Virtual.f (snd cls) in

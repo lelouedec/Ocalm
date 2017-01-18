@@ -12,24 +12,43 @@ MINCAMLC=ocaml/mincamlc
 # TODO extends this script to run test in subdirectories
 # 
 
+nb_cases=0
+nb_failures=0
+
+echo "--------------------"
+echo "testing valid scripts"
 for test_case in tests/syntax/valid/*.ml
 do
+    nb_cases=$((nb_cases + 1))
     echo "testing parser on: $test_case"
     if $MINCAMLC -p "$test_case" 2> /dev/null 1> /dev/null
     then
         echo "OK"
-    else 
+    else
+        nb_failures=$((nb_cases + 1))
+        echo "KO ~~~~~~~~~~ OK expected!!!"
+    fi
+done
+
+echo "--------------------"
+echo "testing invalid scripts"
+for test_case in tests/syntax/invalid/*.ml
+do
+    nb_cases=$((nb_cases + 1))
+    echo "testing parser on: $test_case"
+    if $MINCAMLC -p "$test_case" 2> /dev/null 1> /dev/null
+    then
+        nb_failures=$((nb_failures + 1))
+        echo "OK ~~~~~~~~~~ KO expected!!!"
+    else
         echo "KO"
     fi
 done
 
-for test_case in tests/syntax/invalid/*.ml
-do
-    echo "testing parser on: $test_case"
-    if $MINCAMLC -p "$test_case" 2> /dev/null 1> /dev/null
-    then
-        echo "OK"
-    else 
-        echo "KO"
-    fi
-done
+echo "run $nb_cases tests"
+if test $nb_failures -gt $((0))
+then
+    echo "$nb_failures/$nb_cases tests failed!"
+else
+    echo "all passed!"
+fi
