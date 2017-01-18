@@ -42,9 +42,9 @@ let file f flags =
             print_endline ("Asml:\n" ^ Asml.fundefs_to_string vir);
             let reg = Register_alloc.allocate vir in 
             let asm = Asm_generator.generate vir reg  in 
-            let asm_file = "../ARM/result.S"  in
+            let asm_file = "../ARM/result.s"  in
             let oc = open_out asm_file in
-            fprintf oc "%s " asm ;  
+            fprintf oc "%s" asm ;  
             close_out oc;
           )
           else ();
