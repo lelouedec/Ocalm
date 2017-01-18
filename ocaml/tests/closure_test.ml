@@ -38,30 +38,35 @@ let case2 () =
 
 let case3 () =
   (* let rec f x = (let rec g y = x + y in g) in
-    let t = 1 in
-    let z = f t in
-    (z t) *)
+    let t1 = 1 in
+    let t2 = 2 in
+    let z = f t1 in
+    (z t2) *)
   let knormed =
     KNormal.LetRec (
       {
-        KNormal.name = ("f", Type.Var (ref (Some (Type.Fun ([Type.Int], Type.Int))))); (* fun int -> (fun int -> int) *)
+        KNormal.name = ("f", Type.Fun ([Type.Int], Type.Fun ([Type.Int], Type.Int))); (* fun int -> (fun int -> int) *)
         KNormal.args = [("x", Type.Int)];
         KNormal.body = KNormal.LetRec (
           {
-            KNormal.name = ("g", Type.Var (ref (Some Type.Int))); (* fun int -> int *)
+            KNormal.name = ("g", Type.Fun ([Type.Int], Type.Int)); (* fun int -> int *)
             KNormal.args = [("y", Type.Int)];
             KNormal.body = KNormal.Add ("x", "y")
           },
-          KNormal.App ( "g", [] )
+          KNormal.Var ( "g" )
         )
       },
       KNormal.Let (
-        ("t", Type.Int),
+        ("t1", Type.Int),
         KNormal.Int 1,
         KNormal.Let (
-          ("z", Type.Fun ([Type.Int], Type.Int)),
-          KNormal.App ( "f", ["t"] ),
-          KNormal.App ( "z", ["t"] )
+          ("t2", Type.Int),
+          KNormal.Int 2,
+          KNormal.Let (
+            ("z", Type.Fun ([Type.Int], Type.Int)),
+            KNormal.App ( "f", ["t1"] ),
+            KNormal.App ( "z", ["t2"] )
+          )
         )
       )
     ) in
