@@ -20,11 +20,12 @@ let file f flags =
       else (
         let _r =
           (Elim.f
-            (Inline.f
-              (Let.f
-                (Beta.f
-                  (Alpha.f
-                    (KNormal.f _t)))))) in
+            (Constant.f
+              (Inline.f
+                (Let.f
+                  (Beta.f
+                    (Alpha.f
+                      (KNormal.f _t))))))) in
         (* if List.mem "-d" flags then ( *)
 
           print_endline ("Typing:\n" ^ St.to_string Type.to_string !Typing.st );
@@ -68,6 +69,7 @@ let () =
     ("-t", Arg.Unit (fun () -> flags := "-t" :: !flags), "type check only");
     ("-p", Arg.Unit (fun () -> flags := "-p" :: !flags), "parse only");
     ("-asml", Arg.Unit (fun () -> flags := "-asml" :: !flags), "output ASML");
+    ("-wo", Arg.Unit (fun () -> flags := "-wo" :: !flags), "without optimizations");
     ("-d", Arg.Unit (fun () -> flags := "-d" :: !flags), "debug mode");
   ] in
   let files = ref [] in

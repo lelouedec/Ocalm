@@ -47,7 +47,7 @@ let rec exp_to_string = function
 
 let fn_to_string fn =
   let ((id, _), args, exp) = fn in
-  Printf.sprintf "let _%s %s = \n %s"
+  Printf.sprintf "let _%s %s = \n %s\n"
     id
     (String.concat " " (List.map (fun arg -> let (id, _) = arg in id) args))
     (exp_to_string exp)
@@ -60,7 +60,7 @@ let to_string (prog : prog) =
   (String.concat
     "\n"
     (List.map fn_to_string functions)
-  ) ^ "\n\n" ^ main_to_string main
+  ) ^ main_to_string main
 
 
 let functions : let_fn list ref = ref []
