@@ -19,7 +19,6 @@ let file f flags =
         (* type checking only *)
         ()
       else (
-        print_endline (Syntax.to_string _p);
         let _r =
           (*(Elim.f*)
             (*(Constant.f

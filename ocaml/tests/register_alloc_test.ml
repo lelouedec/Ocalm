@@ -136,7 +136,7 @@ let case7() =
                 IfEq("x",
                       Int(0),
                       Exp(Int(0)),
-                      LetIdentEq("x", CallLabel("f",["x"]),Exp(Nop))
+                      LetIdentEq("x", Sub("x",Int(1)),  LetIdentEq("x",Add("x",Ident"x"),Exp(CallLabel("f",["x"]))))
                 )
             ),
             LetUnderscEQ(

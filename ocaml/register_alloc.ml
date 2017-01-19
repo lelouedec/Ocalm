@@ -89,5 +89,4 @@ let allocate exp =
 	function_has#clear;
 	assign_function exp;
 
-	Hashtbl.iter (fun x y  -> (printf "function : %s  \n"  x) ;  (Hashtbl.iter (printf "		variable %s , Register  %s. \n")  y#get_hast) )  function_has#get_hast;
 	function_has
