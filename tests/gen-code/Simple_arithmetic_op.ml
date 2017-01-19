@@ -1,4 +1,4 @@
-let a=1 in 
-	let b = 2 
- 		in a+b=3;
+let a = 2 in
+let b = 4 in
+  let c= a+b in ()
 
