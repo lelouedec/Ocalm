@@ -96,10 +96,19 @@ let rec temporaries exp =
       let e2', t2 = temporaries e2 in
       Let ((id, t), e1', e2'), t2
   | Syntax.Var (id) when St.mem id !Typing.st -> Var (id), St.find id !Typing.st
+  | Syntax.App (Syntax.Var (id), le2) when not (St.mem id !Typing.st) ->
+    let rec convert_args (f : Id.t) (le : Syntax.t list) (ids : Id.t list) : t * Type.t = (
+      match le with
+      | [] -> AppExt (f, ids), Type.Unit (* assume that external functions return unit *)
+      | hd :: tl ->
+        insert_let (temporaries hd)
+          (fun x -> convert_args f tl (ids @ [x]))
+    ) in
+    insert_let (Var id, Type.Unit)
+      (fun x -> convert_args x le2 [])
   | Syntax.App (e1, le2) ->
       let label, t = ( match e1 with
         | Syntax.Var (id) when St.mem id !Typing.st -> Var id, St.find id !Typing.st
-        | Syntax.Var (id) -> Var id, Type.Fun ([Type.gentyp ()], Type.Unit) (* assume that all external functions return unit *)
         | _ -> temporaries e1
       ) in
 
@@ -109,8 +118,7 @@ let rec temporaries exp =
       ) in
       let rec convert_args (f : Id.t) (le : Syntax.t list) (ids : Id.t list) : t * Type.t = (
         match le with
-        | [] when St.mem f !Typing.st -> App (f, ids), rt
-        | [] -> AppExt (f, ids), rt
+        | [] -> App (f, ids), rt
         | hd::tl ->
           insert_let (temporaries hd)
             (fun x -> convert_args f tl (ids @ [x]))
