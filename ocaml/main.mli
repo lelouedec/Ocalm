@@ -1,1 +1,1 @@
-val file : string -> string list -> unit
+val file : string -> string list -> string

@@ -5,7 +5,8 @@ let version = "0.0.1"
 let print_ast exp =
   print_string (Syntax.to_string (exp)); print_newline ()
 
-let file f flags =
+let file f flags : string =
+  let result = ref "" in
   let inchan = open_in f in
   try
     let _b = Lexing.from_channel inchan in
@@ -39,7 +40,8 @@ let file f flags =
           )
           else ();
 
-          if List.mem "-asml" flags then ( 
+          if List.mem "-asml" flags then (
+            result := Asml.fundefs_to_string vir;
             let reg = Register_alloc.allocate vir in  print_endline (Asm_generator.generate vir reg)
           )
           else ();
@@ -48,11 +50,9 @@ let file f flags =
       )
     );
 
-    close_in inchan
+    close_in inchan;
+    !result
   with e -> (close_in inchan; raise e)
-
-let output f =
-  print_endline ("Output: " ^ f)
 
 let help () =
   print_endline (Printf.sprintf "usage: %s filenames" Sys.argv.(0));
@@ -64,8 +64,9 @@ let version () =
 
 let () =
   let flags = ref [] in
+  let output = ref "a.out" in
   let options = [
-    ("-o", Arg.String output, "<filename> set output file");
+    ("-o", Arg.String (fun fname -> output := fname), "<filename> set output file");
     ("-h", Arg.Unit help, "display help");
     ("-v", Arg.Unit version, "display version");
     ("-t", Arg.Unit (fun () -> flags := "-t" :: !flags), "type check only");
@@ -80,6 +81,9 @@ let () =
       options
       (fun s -> files := !files @ [s])
       (Printf.sprintf "usage: %s filenames" Sys.argv.(0));
-    List.iter
-      (fun f -> ignore (file f !flags))
-      !files
+    let results = List.map
+      (fun f -> file f !flags)
+      !files in
+    let ochan = open_out !output in
+    List.iter (fun res -> Printf.fprintf ochan "%s\n" res) results;
+    close_out ochan
