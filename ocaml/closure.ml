@@ -128,7 +128,7 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
     let known' = Env.add fname known in
     let fbody' = extract_main fbody known' cls_names in
     let list_args = List.map (fun (id, _) -> id) fargs in
-    let free_vars = Env.diff (free_vars fbody') (Env.of_list list_args) in
+    let free_vars = Env.diff (free_vars fbody') (Env.of_list (fname :: list_args)) in
 
     if Env.is_empty free_vars then
       let split_fn = ((fname, ftype), fargs, [], fbody') in
