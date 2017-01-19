@@ -15,8 +15,6 @@ let rec make_exp cls =
   | FSub (id1, id2) -> Asml.FSub(id1, id2)
   | FMul (id1, id2) -> Asml.FMul(id1, id2)
   | FDiv (id1, id2) -> Asml.FDiv(id1, id2)
-  | IfEq (id1, id2, e1, e2) -> Asml.IfEq(id1, Asml.Ident(id2), Asml.Exp(Nop), Asml.Exp(Nop))
-  | IfLE (id1, id2, e1, e2) -> Asml.IfLEq(id1, Asml.Ident(id2), Asml.Exp(Nop), Asml.Exp(Nop))
   | Let ((id, t), e1, e2) -> make_exp(e1)
   | Var id -> Asml.Ident(id)
   | AppCls (id, args) -> Asml.CallClo(id, args)
@@ -27,6 +25,8 @@ let rec tr cls =
   match cls with
   | Unit -> Asml.Exp (Asml.Nop)
   (*| Float f -> *)
+  | IfEq (id1, id2, e1, e2) -> Asml.Exp (Asml.IfEq(id1, Asml.Ident(id2), tr e1, tr e2))
+  | IfLE (id1, id2, e1, e2) -> Asml.Exp (Asml.IfLEq(id1, Asml.Ident(id2), tr e1, tr e2))
   | Let ((id, t), e1, e2) -> Asml.LetIdentEq (id, make_exp e1, tr e2)
   | Var id -> Asml.Exp (make_exp cls)
   | AppCls (id, args) -> Asml.Exp (make_exp cls)

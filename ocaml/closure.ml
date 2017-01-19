@@ -33,6 +33,18 @@ let rec exp_to_string = function
   | Neg id -> sprintf "(- %s)" (Id.to_string id)
   | Add (id1, id2) -> sprintf "(%s + %s)" (Id.to_string id1) (Id.to_string id2)
   | Sub (id1, id2) -> sprintf "(%s - %s)" (Id.to_string id1) (Id.to_string id2)
+  | IfEq (id1, id2, e1, e2) ->
+          sprintf "if %s = %s then\n  %s\nelse\n  %s\n"
+          (Id.to_string id1)
+          (Id.to_string id2)
+          (exp_to_string e1)
+          (exp_to_string e2)
+  | IfLE (id1, id2, e1, e2) ->
+          sprintf "if %s <= %s then\n  %s\nelse\n  %s\n"
+          (Id.to_string id1)
+          (Id.to_string id2)
+          (exp_to_string e1)
+          (exp_to_string e2)
   | Let ((id, t), e1, e2) ->
           sprintf "(let (%s : %s) = %s in \n %s)" (Id.to_string id) (Type.to_string t) (exp_to_string e1) (exp_to_string e2)
   | Var id -> Id.to_string id
@@ -76,6 +88,10 @@ let rec free_vars = function
   | Unit | Int _ | Float _ -> Env.empty
   | Neg id | FNeg id | Var id -> Env.singleton id
   | Add (id1, id2) | Sub (id1, id2) -> Env.of_list [id1; id2]
+  | IfEq (id1, id2, e1, e2) | IfLE (id1, id2, e1, e2) ->
+    let free1 = free_vars e1 in
+    let free2 = free_vars e2 in
+    Env.add id1 (Env.add id2 (Env.union free1 free2))
   | Let ((id, t), e1, e2) ->
     let set1 = free_vars e1 in
     let set2 = free_vars e2 in
@@ -96,6 +112,10 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
   | KNormal.Neg id -> Neg id
   | KNormal.Add (id1, id2) -> Add (id1, id2)
   | KNormal.Sub (id1, id2) -> Sub (id1, id2)
+  | KNormal.IfEq (id1, id2, e1, e2) ->
+    IfEq (id1, id2, extract_main e1 known cls_names, extract_main e2 known cls_names)
+  | KNormal.IfLE (id1, id2, e1, e2) ->
+    IfLE (id1, id2, extract_main e1 known cls_names, extract_main e2 known cls_names)
   | KNormal.Let ((id, t), e1, e2) -> Let ((id, t), extract_main e1 known cls_names, extract_main e2 known cls_names)
   | KNormal.Var id ->
     if St.mem id cls_names then
@@ -135,7 +155,7 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
     AppCls (id', args)
   | KNormal.AppExt (label, args) ->
     AppDir ("min_caml_" ^ label, args)
-  | _ -> failwith ("nyi extract" ^ KNormal.to_string exp)
+  | _ -> failwith ("nyi extract\nexp: " ^ KNormal.to_string exp)
 
 let rec f (exp : KNormal.t) : prog =
   functions := [];
