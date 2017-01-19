@@ -20,8 +20,8 @@ let file f flags =
         ()
       else (
         let _r =
-          (*(Elim.f*)
-            (*(Constant.f
+          (*(Elim.f
+            (Constant.f
               (Inline.f*)
                 (Let.f
                   (Beta.f
