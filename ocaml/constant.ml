@@ -66,13 +66,13 @@ let rec g exp vars =
       Let ((id, t), new_e1, new_e2)
   | LetRec ({ name = (label, t); args = args; body = body }, e) ->
       LetRec ({ name = (label, t); args = args; body = g body vars }, g e vars)
-  | LetTuple (l, e1, e2) when is_tuple e1 vars ->
+  (* | LetTuple (l, e1, e2) when is_tuple e1 vars ->
       List.fold_left2
         (fun e' xt z -> Let (xt, Var (z), e'))
         (g e2 vars)
         l
         (find_tuple e1 vars)
-  | LetTuple (l, e1, e2) -> LetTuple (l, e1, g e2 vars)
+  | LetTuple (l, e1, e2) -> LetTuple (l, e1, g e2 vars) *)
   | _ -> exp
 
 let rec f exp = g exp St.empty

@@ -31,7 +31,7 @@ let rec g exp vars =
           zs
           ys in
       Alpha.g e vars'
-  | LetTuple (l, e1, e2) -> LetTuple (l, e1, g e2 vars)
+  (* | LetTuple (l, e1, e2) -> LetTuple (l, e1, g e2 vars) *)
   | e -> e
 
 let rec f exp = g exp St.empty
