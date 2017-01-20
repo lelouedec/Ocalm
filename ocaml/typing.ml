@@ -49,25 +49,40 @@ let rec generate exp t =
       (match e1 with
         (* known function label *)
         | Var id when St.mem id !st ->
-          let fn = St.find id !st in
-          let (args, rt) = (match fn with 
-            | Type.Fun (args1, rt1) -> (args1, rt1)
+          let fn = St.find id !st in (
+            match fn with
+            | Type.Fun (args, rt) | Type.Var ({ contents = Some (Type.Fun (args, rt)) })->
+              let nb_args = List.length args in
+              let nb_args_given = List.length le2 in
+              if nb_args = nb_args_given then
+                let mp = List.map2 
+                    (fun x y -> fst (generate x y))
+                    le2
+                    args
+                in
+                List.concat mp @ [(rt, t)], rt
+              else
+                raise (failwith (Printf.sprintf "The function expects %d argument(s) while %d are supplied" nb_args nb_args_given))
+
+            (* function type not resolved yet *)
+            | Type.Var ({ contents = None }) ->
+              let list_of_list_eqs =
+                List.map
+                  (fun arg -> fst (generate arg (Type.gentyp ())))
+                  le2 in
+              let eqs = List.fold_left
+                (fun res leqs -> res @ leqs)
+                []
+                list_of_list_eqs in
+              eqs, Type.gentyp ()
+
             | _ -> raise (failwith (
               Printf.sprintf "invalid function type %s for label %s"
                 (Type.to_string fn)
                 (Id.to_string id)
-            ))) in
-          let nb_args = List.length args in
-          let nb_args_given = List.length le2 in
-          if nb_args = nb_args_given then
-            let mp = List.map2 
-                (fun x y -> fst (generate x y))
-                le2
-                args
-            in
-            List.concat mp @ [(rt, t)], rt
-          else
-            raise (failwith (Printf.sprintf "The function expects %d argument(s) while %d are supplied" nb_args nb_args_given))
+            ))
+          )
+
         (* unknown function label -- treated as external *)
         | Var id ->
           let list_of_list_eqs =
@@ -141,6 +156,7 @@ let f exp =
   st := St.empty; 
   st_ext := St.empty;
 
+  (* TODO might need to perform multiple passes *)
   let eqs, _ = generate exp Type.Unit in
   List.iter (fun (eq1, eq2) -> unify (eq1, eq2)) eqs;
   exp

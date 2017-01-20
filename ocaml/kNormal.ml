@@ -113,8 +113,8 @@ let rec temporaries exp =
       ) in
 
       let rt = (match t with
-        | Type.Fun (_, rt') -> rt'
-        | _ -> raise (failwith "not a function")
+        | Type.Fun (_, rt') | Type.Var ({ contents = Some (Type.Fun (_, rt'))}) -> rt'
+        | _ -> raise (failwith ("not a function -- " ^ (Syntax.to_string e1)))
       ) in
       let rec convert_args (f : Id.t) (le : Syntax.t list) (ids : Id.t list) : t * Type.t = (
         match le with
