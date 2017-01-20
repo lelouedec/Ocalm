@@ -35,6 +35,8 @@ do
     fi
 done
 
+rm a.out
+
 echo "run $nb_cases tests"
 if test $nb_failures -gt $((0))
 then
