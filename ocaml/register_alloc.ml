@@ -12,7 +12,9 @@ class registers_function =
 	method add x =
 	 if (Hashtbl.mem register_hash x)  then ()  else (Hashtbl.replace register_hash x ("R"^ string_of_int counter) ;	counter <- counter + 1)
 	method look_for x = 
-			Hashtbl.find register_hash x 
+			 
+			try Hashtbl.find register_hash x with
+			Not_found -> sprintf "Variable not found in register table" 
 	method get_hast =
 				register_hash
 	method clear =
