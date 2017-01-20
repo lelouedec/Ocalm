@@ -21,10 +21,9 @@ let rec g exp vars =
   | LetRec ({ name = (label, t); args = args; body = body }, e) -> 
     let new_vars = 
     (
-      if size body <= !threshold then 
-        St.add label (args, body) vars
-      else 
-        vars
+      match size body - !threshold with
+      | z when (z <= 0) -> St.add label (args, body) vars
+      | _ -> vars
     ) in
     LetRec ({ name = (label, t); args = args; body = g body new_vars}, g e new_vars)
   | App (e1, le2) when St.mem e1 vars -> 
