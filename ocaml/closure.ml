@@ -104,6 +104,11 @@ let rec free_vars = function
 
 let functions : let_fn list ref = ref []
 
+let fname_to_cls f cls_names =
+  try
+    St.find f cls_names
+  with e -> f
+
 let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) : t =
   match exp with
   | KNormal.Unit -> Unit
@@ -118,10 +123,7 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
     IfLE (id1, id2, extract_main e1 known cls_names, extract_main e2 known cls_names)
   | KNormal.Let ((id, t), e1, e2) -> Let ((id, t), extract_main e1 known cls_names, extract_main e2 known cls_names)
   | KNormal.Var id ->
-    if St.mem id cls_names then
-      Var (St.find id cls_names)
-    else
-      Var id
+    Var (fname_to_cls id cls_names)
   | KNormal.LetRec (fn, e) ->
     let ({ KNormal.name = (fname, ftype); KNormal.args = fargs; KNormal.body = fbody }) = fn in
     (* assume fname is a known function -- no free variables *)
@@ -147,12 +149,12 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
       MakeCls ((newid, ftype), fname, Env.elements free_vars, e')
     )
   | KNormal.App (label, args) when Env.mem label known ->
-    AppDir (label, args)
+    let args' = List.map (fun arg -> fname_to_cls arg cls_names) args in
+    AppDir (label, args')
   | KNormal.App (id, args) ->
-    let id' = if St.mem id cls_names then
-      St.find id cls_names
-    else id in
-    AppCls (id', args)
+    let id' = fname_to_cls id cls_names in
+    let args' = List.map (fun arg -> fname_to_cls arg cls_names) args in
+    AppCls (id', args')
   | KNormal.AppExt (label, args) ->
     AppDir ("min_caml_" ^ label, args)
   | _ -> failwith ("nyi extract\nexp: " ^ KNormal.to_string exp)
