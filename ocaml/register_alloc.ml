@@ -1,26 +1,37 @@
 
 open Printf
 open Asml
+open Array
 
+class variable =
+object(self)
+val mutable register : string = "";
+val mutable lifetime : int = 0;
+method get_reg =
+	register
+method get_lifetime =
+	lifetime
+method set_register x = 
+	register <- x 
+method incr_lifetime y = 
+	lifetime <- lifetime + y
+end ;; 
 
-type t = (string, string) Hashtbl.t;;
+type t = (string, variable ) Hashtbl.t;;
 
 class registers_function = 
 	object (self)
 	val mutable register_hash : t = Hashtbl.create 42;
 	val mutable counter = 4;
 	val mutable reg_to_save : string list = [];
-	method add_saved_register value =
-		reg_to_save <- reg_to_save @ value
 	method get_reg_used = 
 		reg_to_save
 	method add x =
-	 if (Hashtbl.mem register_hash x)  then ()  else (Hashtbl.replace register_hash x ("R"^ string_of_int counter) ;	counter <- counter + 1);
+	 if (Hashtbl.mem register_hash x)  then let c = self#look_for x in c#incr_lifetime 1 else  
+	 	(let y = new variable in  y#set_register ("R"^ string_of_int counter); y#incr_lifetime 1  ; Hashtbl.replace register_hash x  y; reg_to_save <- reg_to_save @ [("R"^ string_of_int counter)] ;counter <- counter + 1);
 	 if counter > 11 then counter <- 4
-	method look_for x = 
-			 
-			try Hashtbl.find register_hash x with
-			Not_found -> sprintf "Variable not found in register table" 
+	method look_for x = 			 
+			 Hashtbl.find register_hash x 
 	method get_hast =
 				register_hash
 	method clear =
@@ -34,7 +45,7 @@ class functions_register_hash =
 	object (self)
 	val mutable functions_hash : z = Hashtbl.create 42;
 	method add x =
-	 if (Hashtbl.mem functions_hash x) == false then	(let func = new registers_function in  Hashtbl.replace functions_hash x  func ); 
+	 if (Hashtbl.mem functions_hash x) == true then	() else (let func = new registers_function in  Hashtbl.replace functions_hash (x)  (func) ); 
 	method look_for x = 
 			Hashtbl.find functions_hash x 
 	method get_hast =
@@ -91,17 +102,20 @@ let rec assign_function exp  =
 	| LetLabeleqFloat (i,fl,fu) -> () ; () ; assign_function fu (*Let _label = 0.2 in *)
 	| LetLabelEq (i,f,a,fu)-> function_has#add i ; assign_form f i;  assign_asmt a i; assign_function fu  (* Let _label = something in ...*)
 
+let rec count_occu  ke func valu =
+	let counter_oc = ref (0) in 
+	Hashtbl.iter (fun key value  -> if (value#get_reg = valu && key != ke ) then incr counter_oc else ()) func;
+	!counter_oc
 
-let rec linear_allocation funcs = 
-	Hashtbl.iter(fun key value -> Hashtbl.iter (fun key2 value2 -> print_endline "")value#get_hast )funcs#get_hast
-
-let rec registers_to_save funcs =
-	Hashtbl.iter(fun key value -> Hashtbl.iter (fun key2 value2 -> (value#add_saved_register [value2]) )value#get_hast )funcs#get_hast
+let rec linear_alloc funcs = 
+	Hashtbl.iter(fun key value -> 
+		Hashtbl.iter (fun key2 value2 -> if (count_occu key2 value#get_hast value2#get_reg ) > 1 
+		then print_endline "coucou" 
+		else () ) value#get_hast )funcs#get_hast
 
 let allocate exp =
 	function_has#clear;
 	assign_function exp;
-	registers_to_save function_has;
-	linear_allocation function_has;
+	linear_alloc function_has;
 
 	function_has
