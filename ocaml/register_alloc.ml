@@ -9,6 +9,11 @@ class registers_function =
 	object (self)
 	val mutable register_hash : t = Hashtbl.create 42;
 	val mutable counter = 4;
+	val mutable reg_to_save : string list = [];
+	method add_saved_register value =
+		reg_to_save <- reg_to_save @ value
+	method get_reg_used = 
+		reg_to_save
 	method add x =
 	 if (Hashtbl.mem register_hash x)  then ()  else (Hashtbl.replace register_hash x ("R"^ string_of_int counter) ;	counter <- counter + 1);
 	 if counter > 11 then counter <- 4
@@ -87,9 +92,16 @@ let rec assign_function exp  =
 	| LetLabelEq (i,f,a,fu)-> function_has#add i ; assign_form f i;  assign_asmt a i; assign_function fu  (* Let _label = something in ...*)
 
 
+let rec linear_allocation funcs = 
+	Hashtbl.iter(fun key value -> Hashtbl.iter (fun key2 value2 -> print_endline "")value#get_hast )funcs#get_hast
+
+let rec registers_to_save funcs =
+	Hashtbl.iter(fun key value -> Hashtbl.iter (fun key2 value2 -> (value#add_saved_register [value2]) )value#get_hast )funcs#get_hast
 
 let allocate exp =
 	function_has#clear;
 	assign_function exp;
+	registers_to_save function_has;
+	linear_allocation function_has;
 
 	function_has

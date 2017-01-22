@@ -1,6 +1,12 @@
 open Asml
 open Printf 
 
+let rec print_list_reg (myList : string list )  (listorigin : string list ) : string  = 
+match myList with
+ | [] ->  ""
+ | head::body ->  if (head = (List.nth  (listorigin) ((List.length listorigin)-1)) )  then (head) ^ (print_list_reg body listorigin) else (head) ^ "," ^ (print_list_reg body listorigin)
+
+
 let label_counter = ref(-1)
 let reg_counter = ref(-1)
 
@@ -43,7 +49,7 @@ let rec exp_to_asm (exp : exp) (regf : Register_alloc.registers_function)  (resr
 	(regf#look_for i) (ident_or_imm_to_asm id regf) (!label_counter) (asmt_to_asm t2 regf ) (!label_counter) (!label_counter)  (asmt_to_asm t1 regf ) (!label_counter)
 	| IfGEq (i, id , t1, t2 ) -> incr label_counter; sprintf "CMP %s , %s\n  BGEQ labeltrue%d \n  %s\n  B label_out%d \nlabeltrue%d: \n  %s  \nlabel_out%s: \n  " 
 	(regf#look_for i) (ident_or_imm_to_asm id regf ) (!label_counter) (asmt_to_asm t2 regf) (!label_counter) (!label_counter)  (asmt_to_asm t1 regf ) (i)
-	| CallLabel (i,l)-> sprintf "MOV R0, %s \n STMFD R13!, {R4-R8} \n  BL %s\n LDMFD R13!, {R4-R8}  \n  MOV %s, R0\n" (regf#look_for (List.hd l) ) (i) (resr)
+	| CallLabel (i,l)-> sprintf "MOV R0, %s \n  STMFD R13!, {%s} \n  BL %s\n  LDMFD R13!, {%s}  \n  MOV %s, R0\n" (regf#look_for (List.hd l) ) (print_list_reg regf#get_reg_used regf#get_reg_used) (i)  (print_list_reg regf#get_reg_used regf#get_reg_used) (resr)
 	| CallClo  (id,t) -> sprintf "MOV R0, %s \n  LDR %s,[%s]\n  BLX %s \n  MOV %s, R0" (regf#look_for (List.hd t) ) (regf#look_for id) (regf#look_for id) (regf#look_for id) (resr)
 and asmt_to_asm a reg =
 	match a with
