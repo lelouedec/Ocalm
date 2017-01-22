@@ -10,7 +10,8 @@ class registers_function =
 	val mutable register_hash : t = Hashtbl.create 42;
 	val mutable counter = 4;
 	method add x =
-	 if (Hashtbl.mem register_hash x)  then ()  else (Hashtbl.replace register_hash x ("R"^ string_of_int counter) ;	counter <- counter + 1)
+	 if (Hashtbl.mem register_hash x)  then ()  else (Hashtbl.replace register_hash x ("R"^ string_of_int counter) ;	counter <- counter + 1);
+	 if counter > 11 then counter <- 4
 	method look_for x = 
 			 
 			try Hashtbl.find register_hash x with
@@ -19,7 +20,7 @@ class registers_function =
 				register_hash
 	method clear =
 		Hashtbl.clear register_hash;
-		counter <- 0
+		counter <- 4
 	end;;
 
 type z = (string, registers_function) Hashtbl.t;;
@@ -56,7 +57,7 @@ let rec assign_exp exp f =
 	| FNeg i -> () 
 	| Add (i,id) ->  let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f 
 	| Sub (i,id) ->  let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f 
-	| Ld (i,id) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f 
+	| Ld (i,id) -> if i ="%self" then () else let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f 
 	| St (i1,id,i2) -> let fu = function_has#look_for f in fu#add i1 ; assign_ident_or_imm id f ;fu#add i2
 	| FAdd (i,id) -> let fu = function_has#look_for f in fu#add i ; fu#add id 
 	| FSub (i,id) -> let fu = function_has#look_for f in fu#add i ; fu#add id 
@@ -67,7 +68,7 @@ let rec assign_exp exp f =
 	| IfLEq (i, id , t1, t2 ) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f ; assign_asmt t1 f; assign_asmt t2 f 
 	| IfGEq (i, id , t1, t2 ) -> let fu = function_has#look_for f in fu#add i ; assign_ident_or_imm id f ; assign_asmt t1 f; assign_asmt t2 f 
 	| CallLabel (e,a) -> ()
-	| CallClo  (id,t) -> ()
+	| CallClo  (id,t) -> let fu = function_has#look_for f in fu#add id ;
 and assign_asmt a f =
 	match a with
 	| LpasmtRPAREN a -> assign_asmt a f

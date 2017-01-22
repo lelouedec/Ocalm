@@ -21,13 +21,13 @@ let file f flags : string =
         ()
       else (
         let _r =
-          (*(Elim.f
+          (Elim.f
             (Constant.f
-              (Inline.f*)
+              (Inline.f
                 (Let.f
                   (Beta.f
                     (Alpha.f
-                      (KNormal.f _t)))) in
+                      (KNormal.f _t))))))) in
         (* if List.mem "-d" flags then ( *)
           
 
