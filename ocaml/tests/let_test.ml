@@ -114,8 +114,6 @@ let case3 () =
   let letreduction_ed = Let.f knormed in
   print_endline (KNormal.to_string letreduction_ed)
 
-
-
 let () =
   print_endline "Nested let reduction tests";
 	case0 ();

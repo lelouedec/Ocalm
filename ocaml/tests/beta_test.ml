@@ -1,7 +1,6 @@
 open KNormal
 
 let case1 () =
-  print_endline ">> case 1";
   (* let x = y in x + y *)
   let knormed =
     Let (
@@ -16,11 +15,10 @@ let case1 () =
       )
     ) in
   let beta_ed = Beta.f knormed in
-  print_endline (KNormal.to_string beta_ed)
+  assert(beta_ed = Add("y", "y"))
 
 let case2 () =
-  print_endline ">> case 2";
-  (* let z = 1. in (let x = y +. z in x -. y) *)
+  (* let z = 1. in (let x = y *. z in x /. y) *)
   let knormed =
     Let (
       ( "z", Type.Var (ref (Some Type.Float)) ),
@@ -32,10 +30,9 @@ let case2 () =
       )
     ) in
   let beta_ed = Beta.f knormed in
-  print_endline (KNormal.to_string beta_ed)
+  assert(beta_ed = knormed)
 
 let case3 () =
-  print_endline ">> case 3";
   (* let z = (let x = y in x) in z *)
   let knormed =
     Let (
@@ -48,10 +45,9 @@ let case3 () =
       Neg "z"
     ) in
   let beta_ed = Beta.f knormed in
-  print_endline (KNormal.to_string beta_ed)
+  assert(beta_ed = Neg ("y"))
 
 let case4 () =
-  print_endline ">> case 4";
   (* let f x = (let z = y in x + z) in (let v = t in f v) *)
   let knormed =
     LetRec (
@@ -71,11 +67,17 @@ let case4 () =
       )
     ) in
   let beta_ed = Beta.f knormed in
-  print_endline (KNormal.to_string beta_ed)
+  assert(beta_ed = LetRec ( 
+    { name = ("f", Type.Var (ref (Some Type.Int)));
+      args = [("x", Type.Int)];
+      body = Add ("x", "y")
+    },
+    App ("f", ["t"])))
 
 let () =
-  print_endline "Beta-reduction tests";
+  print_string "Beta-reduction tests... ";
   case1 ();
   case2 ();
   case3 ();
-  case4 ()
+  case4 ();
+  print_endline "passed"

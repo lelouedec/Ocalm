@@ -2,7 +2,6 @@ open KNormal
 
 (* variable replacement expected if declared in let *)
 let case1 () =
-  print_endline ">> case 1";
   (* let x = 1 in (let _ = (let x = 2. in x + y) in x) *)
   let knormed =
     Let (
@@ -19,12 +18,10 @@ let case1 () =
       )
     ) in
   let alpha_ed = Alpha.f knormed in
-  print_endline (KNormal.to_string alpha_ed);
   assert (not (alpha_ed = knormed))
 
 (* replacement for let-rec *)
 let case2 () =
-  print_endline ">> case 2";
   (* let rec f x = (let y = 1 in x + y) in (let x = 2 in f x)*)
   let knormed =
     LetRec (
@@ -44,11 +41,10 @@ let case2 () =
       )
     ) in
   let alpha_ed = Alpha.f knormed in
-  print_endline (KNormal.to_string alpha_ed)
+  assert (not (alpha_ed = knormed))
 
 (* leave external function (name) unchanged *)
 let case3 () =
-  print_endline ">> case 3";
   (* let x = 1 in print_int x *)
   let knormed =
     Let (
@@ -57,10 +53,11 @@ let case3 () =
       AppExt ("print_int", ["x"])
     ) in
   let alpha_ed = Alpha.f knormed in
-  print_endline (KNormal.to_string alpha_ed)
+  assert (not (alpha_ed = knormed))
 
 let () =
-  print_endline "Alpha-conversion tests";
+  print_string "Alpha-conversion tests... ";
   case1 ();
   case2 ();
-  case3 ()
+  case3 ();
+  print_endline "passed"

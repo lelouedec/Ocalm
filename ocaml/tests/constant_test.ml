@@ -2,7 +2,6 @@ open KNormal
 
 (* let v1 = 1 in ( let v2 = 2 in v1 + v2 ) *)
 let case1 () =
-  print_endline ">> case 1";
   let knormed =
     Let (
       (
@@ -20,33 +19,23 @@ let case1 () =
       )
     ) in
   let constant_ed = Constant.f knormed in
-  print_endline (KNormal.to_string constant_ed)
-
-(* let v1 = 1. in ( let v2 = 2. in v1 /. v2 ) *)
-let case2 () =
-  print_endline ">> case 2";
-  let knormed =
+  assert(constant_ed = 
     Let (
       (
         "v1",
-        Type.Var (ref (Some Type.Float))
+        Type.Var (ref (Some Type.Int))
       ),
-      Float 1.,
+      Int 1,
       Let (
         (
         "v2",
-          Type.Var (ref (Some Type.Float))
+          Type.Var (ref (Some Type.Int))
         ),
-        Float 2.,
-        FDiv ( "v1", "v2" )
-      )
-    ) in
-  let constant_ed = Constant.f knormed in
-  print_endline (KNormal.to_string constant_ed)
+        Int 2,
+        Int 3))) (* variables in addition folded w/ result *)
 
 (* let rec f x = (let y = ( let v1 = 1 in ( let v2 = 2 in v1 + v2 ) ) in x + y) in (let x = 2 in f x)*)
-let case3 () =
-  print_endline ">> case 3";
+let case2 () =
   let knormed =
     LetRec (
       {
@@ -68,8 +57,7 @@ let case3 () =
               Int 2,
               Add ( "v1", "v2" )
             )
-          ),
-          Add ( "x", "y" )
+          ), Unit
         )
       },
       Let (
@@ -79,10 +67,39 @@ let case3 () =
       )
     ) in
   let constant_ed = Constant.f knormed in
-  print_endline (KNormal.to_string constant_ed)
+  assert(constant_ed = 
+    LetRec (
+      {
+        name = ( "f", Type.Var (ref (Some Type.Int)) );
+        args = [("x", Type.Int)];
+        body = Let (
+          ( "y", Type.Var (ref (Some Type.Int)) ),
+          Let (
+            (
+              "v1",
+              Type.Var (ref (Some Type.Int))
+            ),
+            Int 1,
+            Let (
+              (
+              "v2",
+                Type.Var (ref (Some Type.Int))
+              ),
+              Int 2,
+              Int 3 (* same thing happen in body of functions *)
+            )
+          ), Unit
+        )
+      },
+      Let (
+        ( "x", Type.Var (ref (Some Type.Int)) ),
+        Int 2,
+        App( "f", ["x"])
+      )
+    ))
 
 let () =
-  print_endline "Constant folding tests";
+  print_string "Constant folding tests... ";
   case1 ();
   case2 ();
-  case3 ()
+  print_endline "passed"
