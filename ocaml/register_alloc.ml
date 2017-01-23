@@ -68,9 +68,9 @@ class registers_function =
 	 							  y#set_last_u line; 
 	 							  Hashtbl.replace register_hash x  y;
 	 							  self#add_reg_to_save (y#get_reg);
-	 							  counter <- counter + 1;
+	 							  if counter = 10 then counter <- 12 else counter <- counter + 1;
 	 							  if t == 1 then y#set_par_offset c_offset; c_offset <- c_offset + 4);
-	 if counter > 11 then counter <- 4
+	 if counter > 12 then counter <- 4
 	method look_for x = 			 
 			 Hashtbl.find register_hash x 
 	method get_hast =
@@ -148,37 +148,50 @@ let rec assign_function exp  =
 	| LetUnderscEQ a -> function_has#add "_" ;assign_asmt a "_"(* Let _ =  *)
 	| LetLabeleqFloat (i,fl,fu) -> () ; () ; assign_function fu (*Let _label = 0.2 in *)
 	| LetLabelEq (i,f,a,fu)-> function_has#add i ; assign_form f i;  assign_asmt a i; assign_function fu  (* Let _label = something in ...*)
-
-let rec if_doubl_occcu  ke func valu ofset=
+let oset = ref(-4) 
+let rec if_doubl_occcu  ke func valu =
+	let ofset = !oset in 
 	Hashtbl.iter (fun key value  -> 
-		if (value#get_reg = valu#get_reg && key != ke ) then 
-			(
-			if ( (value#get_first_use) >= (valu#get_first_use) && (value#get_last_use) <= (valu#get_first_use) )
-			then () ;
-			if ( (value#get_first_use) >= (valu#get_first_use)  && (value#get_last_use) >= (valu#get_last_use) ) 
-			then (if(value#get_occ > valu#get_occ) 
-					then (value#set_in_stack ; value#set_offset !ofset) 
-					else (valu#set_in_stack ; valu#set_offset !ofset) );
-			if ( (value#get_first_use) <= (valu#get_first_use) && (value#get_last_use) >= (valu#get_last_use) ) 
-			then (if(value#get_occ > valu#get_occ) 
-				then  (value#set_in_stack; value#set_offset !ofset) 
-				else (valu#set_in_stack ; valu#set_offset !ofset) )  ;
-			if ( (value#get_first_use) >= (valu#get_first_use) && (value#get_last_use) <= (valu#get_last_use) )
-			then (if(value#get_occ > valu#get_occ) 
-				then  (value#set_in_stack; value#set_offset !ofset)
-				else (valu#set_in_stack ; valu#set_offset !ofset) )		
+		if (value#get_reg = valu#get_reg && key != ke && valu#get_is_in_stack = 0 &&  value#get_is_in_stack = 0 ) 
+			then ((*if the register is used twice*)
+			 (*printf "%s and %s use twice : %s,%s : %d-%d : %d-%d\n" (ke) (key) (valu#get_reg) (value#get_reg) (valu#get_first_use) (valu#get_last_use) (value#get_first_use) (value#get_last_use);*)
+			if ( (value#get_first_use) > (valu#get_last_use) ) (*if there is no concurrency we do nothing*)
+			then () 
+			else ( if ( (value#get_last_use) < (valu#get_first_use) ) (*if there is no concurrency we do nothing*)
+				then () 
+				else (
+					if ( (value#get_first_use) >= (valu#get_first_use)  && (value#get_last_use) >= (valu#get_last_use) ) 
+					then (
+							if(value#get_occ > valu#get_occ) 
+							then (value#set_in_stack ; value#set_offset ofset) 
+							else (valu#set_in_stack ; valu#set_offset ofset) )
+					else ( 
+						if ( (value#get_first_use) <= (valu#get_first_use) && (value#get_last_use) >= (valu#get_last_use) ) 
+						then (
+							if(value#get_occ > valu#get_occ) 
+							then  (value#set_in_stack; value#set_offset ofset) 
+							else (valu#set_in_stack ; valu#set_offset ofset) )  
+						else (
+							if ( (value#get_first_use) >= (valu#get_first_use) && (value#get_last_use) <= (valu#get_last_use) )
+							then (
+								if(value#get_occ > valu#get_occ) 
+								then  (value#set_in_stack; value#set_offset ofset)
+								else (valu#set_in_stack ; valu#set_offset ofset) )		
+							)
+						)
+					)
+				)
 			)
 	)func
-
 let rec linear_alloc funcs = 
-	
-	Hashtbl.iter(fun key value -> 
-		Hashtbl.iter (fun key2 value2 ->  let oset = ref (0) in   if_doubl_occcu key2 value#get_hast value2 oset;oset := !oset +4  ) value#get_hast 
+	Hashtbl.iter(fun key value -> oset := 0;
+		Hashtbl.iter (fun key2 value2 ->  oset := !oset +4 ; if_doubl_occcu key2 value#get_hast value2 ;  ) value#get_hast 
 	)funcs#get_hast
 
 let allocate exp =
 	function_has#clear;
 	assign_function exp;
 	linear_alloc function_has;
+	(*Hashtbl.iter (fun key value -> printf"function : %s \n " key;Hashtbl.iter (fun key2 value2 -> printf"var : %s , register : %s \n" key2 (value2#get_reg)) value#get_hast)function_has#get_hast;*)
 
 	function_has
