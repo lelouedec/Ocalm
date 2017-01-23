@@ -41,7 +41,7 @@ let function_has = Register_alloc.allocate e
 (*Testing Function_Number*)
 
 let actual_function_number=function_has#statistics.num_bindings;;
-let test1 test_ctxt = assert_equal !counter (actual_function_number);;
+let test1 test_ctxt = assert_equal 2 (actual_function_number);;
 
 
 (*testing the nb of variables per function*)
