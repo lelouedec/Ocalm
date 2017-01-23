@@ -38,7 +38,7 @@ let rec tr cls =
       | [] -> tr fbody
       | hd :: tl ->
         Asml.LetIdentEq (
-          Id.genid (),
+          Id.gen_asml_id (),
           Asml.St (id, Asml.Int (counter * word_size), hd),
           alloc_mem_for_free_vars tl ~counter:(counter + 1) fbody
         ) in
@@ -50,7 +50,7 @@ let rec tr cls =
         addr_id,
         Asml.Label (label), (* or Ident, not sure for now *)
         Asml.LetIdentEq (
-          Id.genid (),
+          Id.gen_asml_id (),
           Asml.St (id, Asml.Int (0), addr_id),
           alloc_mem_for_free_vars free_vars e
         )
