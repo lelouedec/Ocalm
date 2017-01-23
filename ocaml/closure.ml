@@ -155,7 +155,7 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
       let free_args = List.map (fun x -> (x, Type.Int)) (Env.elements free_vars) in
       let split_fn = ((fname, ftype), fargs, free_args, fbody') in
       functions := [split_fn] @ !functions;
-      let newid = Id.genid () in
+      let newid = Id.gen_asml_id () in
       (* add mapping between function label and variable that stores the closure *)
       let cls_names' = St.add fname newid cls_names in
       let e' = extract_main e known cls_names' in

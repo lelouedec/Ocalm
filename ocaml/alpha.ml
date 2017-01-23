@@ -32,7 +32,7 @@ let rec g (exp : t) (vars : Id.t St.t) : t =
   | IfLE (id1, id2, e1, e2) -> 
     let (n1, n2) = get_fresh2 id1 id2 vars in IfLE(n1, n2, g e1 vars, g e2 vars)
   | Let ((id, t), e1, e2) ->
-    let newid = Id.genid () in
+    let newid = Id.gen_asml_id () in
     let new_vars = St.add id newid vars in
     Let (
       (newid, t),
@@ -43,10 +43,10 @@ let rec g (exp : t) (vars : Id.t St.t) : t =
     let newid = lookup id vars
     in Var (newid)
   | LetRec ({name = (label, t); args = args; body = body}, e) ->
-    let new_label = Id.genid () in
+    let new_label = Id.gen_asml_id () in
     let new_vars = St.add label new_label vars in
     let new_vars_with_args = ref new_vars in
-    List.iter (fun (id, _) -> new_vars_with_args := St.add id (Id.genid ()) !new_vars_with_args) args;
+    List.iter (fun (id, _) -> new_vars_with_args := St.add id (Id.gen_asml_id ()) !new_vars_with_args) args;
     let new_args = List.map (fun (id, t) -> (St.find id !new_vars_with_args), t) args in
     let new_body = g body !new_vars_with_args in
     let e' = g e new_vars in
