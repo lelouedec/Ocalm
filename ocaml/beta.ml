@@ -43,9 +43,8 @@ let rec g (exp : t) (vars : Id.t St.t) : t =
   | LetTuple (l, e1, e2)->
   | Get (e1, e2) ->
   | Put (e1, e2, e3) ->
-  | Tuple (l) ->
-  | Array (e1, e2) ->
- *)
+  | Tuple (l) -> *)
+  | Array id -> Array (id)
   | _ -> failwith "no b-reduction defined for this yet"
 
 let rec f (exp : t) : t = g exp St.empty

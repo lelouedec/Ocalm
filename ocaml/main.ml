@@ -35,8 +35,8 @@ let file f flags : string =
           let vir = Virtual.f cls in
 
           if List.mem "-s" flags then (
-            print_endline ((Asml.fundefs_to_string vir) ^ "\n\n");
             print_endline ((KNormal.to_string _r) ^ "\n\n");
+            print_endline ((Asml.fundefs_to_string vir) ^ "\n\n");
           )
           else ();
 

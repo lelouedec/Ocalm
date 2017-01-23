@@ -19,6 +19,7 @@ type t =
   | AppCls of Id.t * Id.t list
   | AppDir of Id.t * Id.t list
   | MakeCls of (Id.t * Type.t) * Id.t * Id.t list * t
+  | Array of Id.t
   (* to be added *)
 
 type let_fn = (Id.t * Type.t) * (Id.t * Type.t) list * (Id.t * Type.t) list * t
@@ -171,6 +172,7 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
     AppCls (id', args')
   | KNormal.AppExt (label, args) ->
     AppDir ("min_caml_" ^ label, args)
+  | KNormal.Array (id) -> Array (id)
   | _ -> failwith ("nyi extract\nexp: " ^ KNormal.to_string exp)
 
 let rec f (exp : KNormal.t) : prog =

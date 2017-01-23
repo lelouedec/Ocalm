@@ -11,9 +11,8 @@ let a = f 1 in print_int a*)
 let r = f 4 in print_int r*)
 
 let x = 1 in
-let rec add_x y = y + x in
-let rec apply_to_zero u = u 0 in
-print_int (apply_to_zero add_x)
+let w = Array.create 3 0 in
+print_int w
 
 (*let rec fn x = x + x in
 let a = 1 in let r = fn 2 in print_int r*)
