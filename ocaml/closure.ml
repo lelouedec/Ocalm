@@ -84,28 +84,33 @@ let to_string (prog : prog) =
     (List.map fn_to_string functions)
   ) ^ main_to_string main
 
-let rec free_vars = function
-  | Unit | Int _ | Float _ -> Env.empty
-  | Neg id | FNeg id | Var id -> Env.singleton id
-  | Add (id1, id2) | Sub (id1, id2) -> Env.of_list [id1; id2]
-  | IfEq (id1, id2, e1, e2) | IfLE (id1, id2, e1, e2) ->
-    let free1 = free_vars e1 in
-    let free2 = free_vars e2 in
-    Env.add id1 (Env.add id2 (Env.union free1 free2))
-  | Let ((id, t), e1, e2) ->
-    let set1 = free_vars e1 in
-    let set2 = free_vars e2 in
-    Env.union set1 (Env.remove id set2)
-  | AppDir (id, args) -> Env.of_list args (* function labels are always known *)
-  | AppCls (id, args) -> Env.add id (Env.of_list args)
-  | MakeCls ((id, t), label, free_args, e) ->
-    let free = Env.union (Env.of_list free_args) (free_vars e) in
-    Env.remove id free
-  | _ -> Env.empty
+let rec free_vars exp =
+  Env.remove "%self" (
+    match exp with
+    | Unit | Int _ | Float _ -> Env.empty
+    | Neg id | FNeg id | Var id -> Env.singleton id
+    | Add (id1, id2) | Sub (id1, id2) -> Env.of_list [id1; id2]
+    | IfEq (id1, id2, e1, e2) | IfLE (id1, id2, e1, e2) ->
+      let free1 = free_vars e1 in
+      let free2 = free_vars e2 in
+      Env.add id1 (Env.add id2 (Env.union free1 free2))
+    | Let ((id, t), e1, e2) ->
+      let set1 = free_vars e1 in
+      let set2 = free_vars e2 in
+      Env.union set1 (Env.remove id set2)
+    | AppDir (id, args) -> Env.of_list args (* function labels are always known *)
+    | AppCls (id, args) -> Env.add id (Env.of_list args)
+    | MakeCls ((id, t), label, free_args, e) ->
+      let free = Env.union (Env.of_list free_args) (free_vars e) in
+      Env.remove id free
+    | _ -> Env.empty
+  )
 
 let functions : let_fn list ref = ref []
+let current_fn = ref ""
 
 let fname_to_cls f cls_names =
+  if f = !current_fn then "%self" else
   try
     St.find f cls_names
   with e -> f
@@ -130,7 +135,10 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
     let ({ KNormal.name = (fname, ftype); KNormal.args = fargs; KNormal.body = fbody }) = fn in
     (* assume fname is a known function -- no free variables *)
     let known' = Env.add fname known in
+    let current_fn_backup = !current_fn in
+    current_fn := fname;
     let fbody' = extract_main fbody known' cls_names in
+    current_fn := current_fn_backup;
     let list_args = List.map (fun (id, _) -> id) fargs in
     let free_vars = Env.diff (free_vars fbody') (Env.of_list (fname :: list_args)) in
 
@@ -140,7 +148,9 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
       extract_main e known' cls_names
     ) else (
       functions := functions_backup;
+      current_fn := fname;
       let fbody' = extract_main fbody known cls_names in
+      current_fn := current_fn_backup;
       (* TODO lookup type of free variable somewhere instead of assuming as int *)
       let free_args = List.map (fun x -> (x, Type.Int)) (Env.elements free_vars) in
       let split_fn = ((fname, ftype), fargs, free_args, fbody') in
@@ -149,7 +159,8 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
       (* add mapping between function label and variable that stores the closure *)
       let cls_names' = St.add fname newid cls_names in
       let e' = extract_main e known cls_names' in
-      MakeCls ((newid, ftype), fname, Env.elements free_vars, e')
+      MakeCls ((newid, ftype), fname, List.map (fun arg -> fname_to_cls arg cls_names) (Env.elements free_vars), e')
+      (* MakeCls ((newid, ftype), fname, Env.elements free_vars, e') *)
     )
   | KNormal.App (label, args) when Env.mem label known ->
     let args' = List.map (fun arg -> fname_to_cls arg cls_names) args in
@@ -163,6 +174,7 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
   | _ -> failwith ("nyi extract\nexp: " ^ KNormal.to_string exp)
 
 let rec f (exp : KNormal.t) : prog =
+  current_fn := "";
   functions := [];
   let main_body = extract_main exp Env.empty St.empty in
   (!functions, main_body)
