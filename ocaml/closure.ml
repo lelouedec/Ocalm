@@ -126,6 +126,7 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
   | KNormal.Var id ->
     Var (fname_to_cls id cls_names)
   | KNormal.LetRec (fn, e) ->
+    let functions_backup = !functions in
     let ({ KNormal.name = (fname, ftype); KNormal.args = fargs; KNormal.body = fbody }) = fn in
     (* assume fname is a known function -- no free variables *)
     let known' = Env.add fname known in
@@ -133,11 +134,12 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
     let list_args = List.map (fun (id, _) -> id) fargs in
     let free_vars = Env.diff (free_vars fbody') (Env.of_list (fname :: list_args)) in
 
-    if Env.is_empty free_vars then
+    if Env.is_empty free_vars then (
       let split_fn = ((fname, ftype), fargs, [], fbody') in
       functions := [split_fn] @ !functions;
       extract_main e known' cls_names
-    else (
+    ) else (
+      functions := functions_backup;
       let fbody' = extract_main fbody known cls_names in
       (* TODO lookup type of free variable somewhere instead of assuming as int *)
       let free_args = List.map (fun x -> (x, Type.Int)) (Env.elements free_vars) in
