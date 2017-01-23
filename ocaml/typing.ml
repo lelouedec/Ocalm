@@ -125,8 +125,11 @@ let rec generate exp t =
   (*| LetTuple (l, e1, e2)-> 
   | Get (e1, e2) -> 
   | Put (e1, e2, e3) -> 
-  | Tuple (l) -> 
-  | Array (e1, e2) -> *)
+  | Tuple (l) -> *)
+  | Array (e1, e2) -> 
+    let eqs1, _ = generate e1 Type.Int in
+    let eqs2, ta = generate e2 Type.Int in (* assume array type is int *)
+    eqs1 @ eqs2 @ [(Type.Array(ta), t)], Type.Array(ta)
   | _ -> [(Type.Unit, Type.Unit)], Type.Unit
 
 let rec unify eq = 
