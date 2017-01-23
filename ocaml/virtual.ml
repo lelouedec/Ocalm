@@ -28,9 +28,6 @@ let rec tr cls =
   | IfEq (id1, id2, e1, e2) -> Asml.Exp (Asml.IfEq(id1, Asml.Ident(id2), tr e1, tr e2))
   | IfLE (id1, id2, e1, e2) -> Asml.Exp (Asml.IfLEq(id1, Asml.Ident(id2), tr e1, tr e2))
   | Let ((id, t), e1, e2) -> Asml.LetIdentEq (id, make_exp e1, tr e2)
-  | Var id -> Asml.Exp (make_exp cls)
-  | AppCls (id, args) -> Asml.Exp (make_exp cls)
-  | AppDir (id, args) -> Asml.Exp (make_exp cls)
   | MakeCls ((id, t), label, free_vars, e) ->
     let size = List.length free_vars in
     let addr_id = "addr_" ^ label in

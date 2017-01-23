@@ -3,9 +3,18 @@ print_int (-456);
 print_int (789+0);*)
 (*let a = 1 in let c = a + (-a) in _*)
 
-let bc = 1 in
+(*let bc = 1 in
 let rec f x = x + 1 + 1 + 1 + 5 in 
-let a = f 1 in print_int a
+let a = f 1 in print_int a*)
+
+(*let rec f x = if x = 0 then 0 else x + f (x-1) in
+let r = f 4 in print_int r*)
+
+let x = 1 in
+let rec add_x y = y + x in
+let rec apply_to_zero u = u 0 in
+print_int (apply_to_zero add_x)
+
 (*let rec fn x = x + x in
 let a = 1 in let r = fn 2 in print_int r*)
 (*let rec x x1 x2 = x1 + x2 in

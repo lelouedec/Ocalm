@@ -74,9 +74,9 @@ and to_string exp =
 	| FMul (i,id) -> sprintf "%s + %s "  (i)  (id)
 	| FDiv (i,id) -> sprintf "%s + %s "  (i)  (id)
 	| New i -> sprintf "new %s in " (ident_or_imm_to_string	i)
-	| IfEq (i, id , t1, t2 ) -> sprintf ("if %s = %s  then %s else %s ") (i) (ident_or_imm_to_string id) ( asmt_to_string t1) (asmt_to_string t1 )
-	| IfLEq (i, id , t1, t2 ) -> sprintf ("if %s <= %s then %s else %s ") (i) (ident_or_imm_to_string id) ( asmt_to_string t1) (asmt_to_string t1 )
-	| IfGEq (i, id , t1, t2 ) -> sprintf ("if %s >= %s then %s else %s ") (i) (ident_or_imm_to_string id) ( asmt_to_string t1) (asmt_to_string t1 )
+	| IfEq (i, id , t1, t2 ) -> sprintf ("if %s = %s  then %s else %s ") (i) (ident_or_imm_to_string id) ( asmt_to_string t1) (asmt_to_string t2 )
+	| IfLEq (i, id , t1, t2 ) -> sprintf ("if %s <= %s then %s else %s ") (i) (ident_or_imm_to_string id) ( asmt_to_string t1) (asmt_to_string t2 )
+	| IfGEq (i, id , t1, t2 ) -> sprintf ("if %s >= %s then %s else %s ") (i) (ident_or_imm_to_string id) ( asmt_to_string t1) (asmt_to_string t2 )
 	| CallLabel (e,a)-> sprintf " Call %s %s " (e) (form_to_string a) 
 	| CallClo  (id,a) -> sprintf " Call  %s %s" (id) (form_to_string a)
 

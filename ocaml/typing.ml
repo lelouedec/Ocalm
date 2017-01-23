@@ -52,6 +52,7 @@ let rec generate exp t =
           let fn = St.find id !st in
           let (args, rt) = (match fn with 
             | Type.Fun (args1, rt1) -> (args1, rt1)
+            | Type.Var id -> ([], Type.Unit)
             | _ -> raise (failwith "invalid function type")) in
           let nb_args = List.length args in
           let nb_args_given = List.length le2 in
@@ -79,7 +80,7 @@ let rec generate exp t =
           let label_eqs, fun_t = generate e1 (Type.gentyp ()) in
           let (args, rt) = (match fun_t with
             | Type.Fun (args1, rt1) -> (args1, rt1)
-            | _ -> raise (failwith "invalid function type")) in
+            | _ -> raise (failwith "invalid function type ")) in
           let nb_args = List.length args in
           let nb_args_given = List.length le2 in
           if nb_args = nb_args_given then
