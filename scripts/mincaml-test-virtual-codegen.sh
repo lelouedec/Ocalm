@@ -1,6 +1,7 @@
 #! /bin/sh
 cd "$(dirname "$0")"/.. || exit 1
 
+OCAML=ocaml
 MINCAMLC=ocaml/mincamlc
 ASML_RUNNER=tools/asml
 
@@ -21,15 +22,24 @@ do
         continue
     fi
 
-    $ASML_RUNNER ./a.out 2> /dev/null 1> /dev/null
+    out=`$ASML_RUNNER ./a.out 2> /dev/null`
     if [ "$?" != "0" ]
     then
         nb_failures=$((nb_failures + 1))
         echo "KO ~~~~~~~~~~ not valid asml code"
+        rm a.out
+        continue
+    fi
+
+    expected=`$OCAML $test_case 2> /dev/null`
+    if [ "$out" != "$expected" ]
+    then
+        nb_failures=$((nb_failures + 1))
+        echo "KO ~~~~~~~~~~ output not as expected\n---actual---\n$out\n---expected---\n$expected\n"
+    else
+        echo "OK"
     fi
     rm a.out
-
-    # TODO have someway to assert the output based on expected patterns
 done
 
 echo "run $nb_cases tests"
