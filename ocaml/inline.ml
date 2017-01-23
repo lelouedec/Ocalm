@@ -19,18 +19,22 @@ let rec g exp vars =
   | IfLE (id1, id2, e1, e2) -> IfLE (id1, id2, g e1 vars, g e2 vars)
   | Let ((id, t), e1, e2) -> Let ((id, t), g e1 vars, g e2 vars)
   | LetRec ({ name = (label, t); args = args; body = body }, e) -> 
-      let vars = if size body > !threshold then vars else St.add label (args, body) vars in
-      LetRec ({ name = (label, t); args = args; body = g body vars}, g e vars)
-  | App (x, ys) when St.mem x vars -> 
-      let (zs, e) = St.find x vars in
-      (* Format.eprintf "inlining %s@." x; *)
-      let vars' =
-        List.fold_left2
-          (fun vars' (z, t) y -> St.add z y vars')
-          St.empty
-          zs
-          ys in
-      Alpha.g e vars'
+    let new_vars = 
+    (
+      match size body - !threshold with
+      | z when (z <= 0) -> St.add label (args, body) vars
+      | _ -> vars
+    ) in
+    LetRec ({ name = (label, t); args = args; body = g body new_vars}, g e new_vars)
+  | App (e1, le2) when St.mem e1 vars -> 
+    let (formal_args, e) = St.find e1 vars in
+    let vars' =
+      List.fold_right2
+        (fun (z, t) y vars' -> St.add z y vars')
+        formal_args
+        le2
+        St.empty in
+    Alpha.g e vars'
   (* | LetTuple (l, e1, e2) -> LetTuple (l, e1, g e2 vars) *)
   | e -> e
 
