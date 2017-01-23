@@ -96,7 +96,8 @@ let rec free_vars = function
     let set1 = free_vars e1 in
     let set2 = free_vars e2 in
     Env.union set1 (Env.remove id set2)
-  | AppCls (id, args) | AppDir (id, args) -> Env.add id (Env.of_list args)
+  | AppDir (id, args) -> Env.of_list args (* function labels are always known *)
+  | AppCls (id, args) -> Env.add id (Env.of_list args)
   | MakeCls ((id, t), label, free_args, e) ->
     let free = Env.union (Env.of_list free_args) (free_vars e) in
     Env.remove id free
