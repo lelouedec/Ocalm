@@ -123,7 +123,6 @@ let rec generate exp t =
       let eqs2, t2 = generate e2 t in
       [(fn, tv)] @ eqs_body @ eqs2, t2
   (*| LetTuple (l, e1, e2)-> 
-  | Put (e1, e2, e3) -> 
   | Tuple (l) -> *)
   | Array (e1, e2) -> 
     let eqs1, _ = generate e1 Type.Int in
@@ -134,6 +133,13 @@ let rec generate exp t =
     let eqs1, _ = generate e1 (Type.Array ta) in
     let eqs2, _ = generate e2 Type.Int in
     eqs1 @ eqs2 @ [(ta, t)], ta
+  | Put (e1, e2, e3) ->
+    let ta = Type.gentyp () in
+    let rt = Type.Unit in
+    let eqs1, _ = generate e1 (Type.Array ta) in
+    let eqs2, _ = generate e2 Type.Int in
+    let eqs3, _ = generate e3 ta in
+    eqs1 @ eqs2 @ eqs3 @ [(rt, t)], rt (* array put expression has type unit as in ocaml *)
   | _ -> [(Type.Unit, Type.Unit)], Type.Unit
 
 let rec unify eq = 
