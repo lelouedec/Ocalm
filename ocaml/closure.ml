@@ -114,7 +114,6 @@ let functions : let_fn list ref = ref []
 let current_fn = ref ""
 
 let fname_to_cls f cls_names =
-  if f = !current_fn then "%self" else
   try
     St.find f cls_names
   with e -> f
@@ -163,8 +162,21 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
       (* add mapping between function label and variable that stores the closure *)
       let cls_names' = St.add fname newid cls_names in
       let e' = extract_main e known cls_names' in
-      MakeCls ((newid, ftype), fname, List.map (fun arg -> fname_to_cls arg cls_names) (Env.elements free_vars), e')
-      (* MakeCls ((newid, ftype), fname, Env.elements free_vars, e') *)
+
+      let rec extract_label_to_arg args cls_names =
+        match args with
+        | [] ->
+          MakeCls ((newid, ftype), fname, List.map (fun arg -> fname_to_cls arg cls_names) (Env.elements free_vars), e')
+        | hd :: tl ->
+          if Env.mem hd known then
+            let id = Id.gen_asml_id () in
+            (* FIXME function type should be different *)
+            MakeCls ((id, ftype), hd, [], extract_label_to_arg tl (St.add hd id cls_names))
+          else
+            let cls_names = if hd = !current_fn then (St.add hd "%self" cls_names) else cls_names in
+            extract_label_to_arg tl cls_names
+      in  
+      extract_label_to_arg (Env.elements free_vars) cls_names
     )
   | KNormal.App (label, args) when Env.mem label known ->
     let args' = List.map (fun arg -> fname_to_cls arg cls_names) args in
