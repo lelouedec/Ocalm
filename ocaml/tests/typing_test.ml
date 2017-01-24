@@ -56,9 +56,47 @@ let case3 =
     assert false
   with e -> () (* Type error as expected *)
 
+let case4 =
+  let e =
+    Let (
+      ("x", Type.gentyp ()),
+      Array (Int (3), Int (10)),
+      Unit
+    ) in
+  let _exp = f e in
+  let tx = St.find "x" !Typing.st in
+  let t = match tx with
+  | Type.Array t -> t
+  | Type.Var ({ contents = Some t }) -> t
+  | _ ->
+    print_endline "not an array!";
+    assert false
+  in
+  assert ((Type.to_string t) = "int")
+
+let case5 =
+  let e =
+    Let (
+      ("x", Type.gentyp ()),
+      Array (Int (3), Float (10.)),
+      Unit
+    ) in
+  let _exp = f e in
+  let tx = St.find "x" !Typing.st in
+  let t = match tx with
+  | Type.Array t -> t
+  | Type.Var ({ contents = Some t }) -> t
+  | _ ->
+    print_endline "not an array!";
+    assert false
+  in
+  assert ((Type.to_string t) = "float")
+
 let _ =
   print_string "Type inference tests... ";
   case1;
   case2;
   case3;
+  case4;
+  case5;
   print_endline "passed"

@@ -25,7 +25,7 @@ let rec to_string = function
       )
       (to_string t)
   | Tuple l -> "<tuple>"
-  | Array t -> "<array>"
+  | Array t -> (to_string t) ^ " array"
   | Var r -> match !r with
     | Some t -> to_string t
     | _ -> "<undef>"
