@@ -35,7 +35,8 @@ do
     fi
 done
 
-rm a.out
+rm tests/typechecking/valid/*.{asml,s} 2> /dev/null
+rm tests/typechecking/invalid/*.{asml,s} 2> /dev/null
 
 echo "run $nb_cases tests"
 if test $nb_failures -gt $((0))
