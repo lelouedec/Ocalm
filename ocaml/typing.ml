@@ -122,20 +122,39 @@ let rec generate exp t =
       st := St.add id fn !st;
       let eqs2, t2 = generate e2 t in
       [(fn, tv)] @ eqs_body @ eqs2, t2
-  (*| LetTuple (l, e1, e2)-> 
-  | Get (e1, e2) -> 
-  | Put (e1, e2, e3) -> 
-  | Tuple (l) -> *)
+  | LetTuple (l, e1, e2) -> 
+      List.iter (fun (idi, tvi) ->
+        st := St.add idi tvi !st) l;
+      let tu = Type.Tuple (List.map (fun x -> snd x) l) in
+      let eqs1, t1 = generate e1 (Type.gentyp ()) in
+      let eqs2, t2 = generate e2 t in 
+      [(tu, t1)] @ eqs1 @ eqs2, t2
+  | Tuple (l) -> 
+    let eqst = List.map (fun x -> generate x (Type.gentyp ())) l in
+    let eqs = List.map (fun (x, y) -> x) eqst in
+    let typ = List.map (fun (x, y) -> y) eqst in
+    List.concat eqs @ [(Type.Tuple(typ), t)], Type.Tuple(typ)
   | Array (e1, e2) -> 
     let eqs1, _ = generate e1 Type.Int in
-    let eqs2, ta = generate e2 Type.Int in (* assume array type is int *)
+    let eqs2, ta = generate e2 (Type.gentyp ()) in
     eqs1 @ eqs2 @ [(Type.Array(ta), t)], Type.Array(ta)
-  | _ -> [(Type.Unit, Type.Unit)], Type.Unit
+  | Get (e1, e2) -> 
+    let ta = Type.gentyp () in
+    let eqs1, _ = generate e1 (Type.Array ta) in
+    let eqs2, _ = generate e2 Type.Int in
+    eqs1 @ eqs2 @ [(ta, t)], ta
+  | Put (e1, e2, e3) ->
+    let ta = Type.gentyp () in
+    let rt = Type.Unit in
+    let eqs1, _ = generate e1 (Type.Array ta) in
+    let eqs2, _ = generate e2 Type.Int in
+    let eqs3, _ = generate e3 ta in
+    eqs1 @ eqs2 @ eqs3 @ [(rt, t)], rt (* array put expression has type unit as in ocaml *)
 
 let rec unify eq = 
   match eq with
   | Type.Unit, Type.Unit | Type.Bool, Type.Bool | Type.Int, Type.Int | Type.Float, Type.Float -> ()
-  | Type.Array (t1), Type.Array (t2) when t1 == t2 -> ()
+  | Type.Array (t1), Type.Array (t2) -> unify (t1, t2)
   | Type.Var (t1), Type.Var (t2) when t1 == t2 -> ()
   | Type.Var ({ contents = Some(t1') }), _ -> let (_, t2) = eq in unify (t1', t2)
   | _, Type.Var ({ contents = Some(t2') }) -> let (t1, _) = eq in unify (t1, t2')
@@ -148,6 +167,8 @@ let rec unify eq =
   | Type.Fun(t1s, t1'), Type.Fun(t2s, t2') ->
       List.iter2 (fun x y -> unify (x, y)) t1s t2s;
       unify (t1', t2')
+  | Type.Tuple(t1), Type.Tuple(t2) ->
+      List.iter2 (fun x y -> unify (x, y)) t1 t2
   | _ ->
       let t1, t2 = eq in
       raise (failwith (Printf.sprintf "mismatch types during unification: %s vs %s" (Type.to_string t1) (Type.to_string t2)))

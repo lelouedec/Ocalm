@@ -144,15 +144,31 @@ let rec temporaries exp =
       LetRec ({name = (label, ft') ; args = args ; body = body'}, e'), t
   (*
   | Syntax.LetTuple (l, e1, e2)-> 
-  | Syntax.Get (e1, e2) -> 
-  | Syntax.Put (e1, e2, e3) -> 
-  | Syntax.Tuple (l) -> *)
+  | Syntax.Put (e1, e2, e3) -> *)
+  | Syntax.Tuple (l) ->  
+      let rec convert_elems d ids ts = 
+        match d with
+	      | [] -> Tuple(ids), Type.Tuple(ts)
+	      | hd::tl ->
+	          let g = temporaries hd in
+	          insert_let g
+	            (fun x -> convert_elems tl (ids @ [x]) (ts @ [snd g]) ) in
+      convert_elems l [] [] 
   | Syntax.Array (e1, e2) ->
       insert_let (temporaries e1)
 	      (fun x ->
 	        let t = temporaries e2 in
 	        insert_let t
 	          (fun y -> AppExt("create_array", [x; y]), Type.Array(snd t)))
+  | Syntax.Get (e1, e2) -> 
+      insert_let (temporaries e1)
+        (fun x -> insert_let (temporaries e2)
+          (fun y -> Get (x, y), Type.Float)) (* FIXME should be array element type *)
+  | Syntax.Put (e1, e2, e3) ->
+      insert_let (temporaries e1)
+        (fun ary -> insert_let (temporaries e2)
+          (fun index -> insert_let (temporaries e3)
+            (fun x -> Put (ary, index, x), Type.Unit)))
   | _ -> (Unit, Type.Int)
 
 let rec to_string exp =
@@ -210,13 +226,17 @@ let rec to_string exp =
             (Type.to_string fun_t)
             (to_string fd.body)
             (to_string e)
-(*
-  | LetTuple (l, e1, e2)->
-  | Get (e1, e2) ->
-  | Put (e1, e2, e3) ->
-  | Tuple (l) -> *)
+
+  | LetTuple (l, e1, e2)-> sprintf "(let tuple (%s) = %s in \n%s)"
+      (String.concat ","
+        (List.map (fun (id, t) -> sprintf "%s : %s" (Id.to_string id) (Type.to_string t)) l))
+      (Id.to_string e1) (to_string e2)
+  | Tuple (ids) -> sprintf "<tuple, (%s)>" 
+      (String.concat "," 
+        (List.map (fun id -> (Id.to_string id)) ids))
   | Array id -> sprintf "<array, %s>" (Id.to_string id)
-  | _ -> "unsupported knormal expression"
+  | Get (id1, id2) -> sprintf "%s.(%s)" (Id.to_string id1) (Id.to_string id2)
+  | Put (id1, id2, id3) -> sprintf "%s.(%s) <- %s" (Id.to_string id1) (Id.to_string id2) (Id.to_string id3)
 
 let f exp =
   let n, _ = temporaries exp in

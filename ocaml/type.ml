@@ -24,8 +24,10 @@ let rec to_string = function
         | _ -> String.concat " -> " (List.map (fun t -> to_string t) l)
       )
       (to_string t)
-  | Tuple l -> "<tuple>"
-  | Array t -> "<array>"
+  | Tuple l -> 
+    Printf.sprintf "(%s) tuple"
+      (String.concat "," (List.map (fun t -> (to_string t)) l))
+  | Array t -> (to_string t) ^ " array"
   | Var r -> match !r with
     | Some t -> to_string t
     | _ -> "<undef>"

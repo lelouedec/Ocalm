@@ -58,15 +58,18 @@ let rec g (exp : t) (vars : Id.t St.t) : t =
   | AppExt (id, args) ->
     let new_args = List.map (fun id -> lookup id vars) args in
     AppExt (id, new_args)
-
-(*
-  | LetTuple (l, e1, e2)-> 
-  | Get (e1, e2) -> 
-  | Put (e1, e2, e3) -> 
-  | Tuple (l) -> *)
+  (*| LetTuple (l, e1, e2)-> 
+  | Put (e1, e2, e3) -> *)
+  | Tuple ids -> Tuple (ids)
   | Array id -> 
     let newid = lookup id vars
     in Array (newid)
+  | Get (id1, id2) -> let (n1, n2) = get_fresh2 id1 id2 vars in Get(n1, n2)
+  | Put (id1, id2, id3) ->
+    let id1' = lookup id1 vars in
+    let id2' = lookup id2 vars in
+    let id3' = lookup id3 vars in
+    Put (id1', id2', id3')
   | _ -> failwith "no a-conversion defined for this yet"
 
 let rec f (exp : t) : t = g exp St.empty

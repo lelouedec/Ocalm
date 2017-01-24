@@ -19,7 +19,10 @@ type t =
   | AppCls of Id.t * Id.t list
   | AppDir of Id.t * Id.t list
   | MakeCls of (Id.t * Type.t) * Id.t * Id.t list * t
+  | Tuple of Id.t list
   | Array of Id.t
+  | Get of Id.t * Id.t
+  | Put of Id.t * Id.t * Id.t
   (* to be added *)
 
 type let_fn = (Id.t * Type.t) * (Id.t * Type.t) list * (Id.t * Type.t) list * t
@@ -65,6 +68,12 @@ let rec exp_to_string = function
       (Id.to_string label)
       (String.concat ", " (List.map Id.to_string free_vars))
       (exp_to_string e)
+  | Tuple ids -> sprintf "<tuple, (%s)>" 
+      (String.concat "," 
+        (List.map (fun id -> (Id.to_string id)) ids))
+  | Array id -> sprintf "<array, %s>" (Id.to_string id)
+  | Get (id1, id2) -> sprintf "%s.(%s)" (Id.to_string id1) (Id.to_string id2)
+  | Put (id1, id2, id3) -> sprintf "%s.(%s) <- %s" (Id.to_string id1) (Id.to_string id2) (Id.to_string id3)
   | _ -> failwith "nyi to_s"
 
 let fn_to_string fn =
@@ -111,7 +120,6 @@ let functions : let_fn list ref = ref []
 let current_fn = ref ""
 
 let fname_to_cls f cls_names =
-  if f = !current_fn then "%self" else
   try
     St.find f cls_names
   with e -> f
@@ -160,19 +168,35 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
       (* add mapping between function label and variable that stores the closure *)
       let cls_names' = St.add fname newid cls_names in
       let e' = extract_main e known cls_names' in
-      MakeCls ((newid, ftype), fname, List.map (fun arg -> fname_to_cls arg cls_names) (Env.elements free_vars), e')
-      (* MakeCls ((newid, ftype), fname, Env.elements free_vars, e') *)
+
+      let rec extract_label_to_arg args cls_names =
+        match args with
+        | [] ->
+          MakeCls ((newid, ftype), fname, List.map (fun arg -> fname_to_cls arg cls_names) (Env.elements free_vars), e')
+        | hd :: tl ->
+          if Env.mem hd known then
+            let id = Id.gen_asml_id () in
+            (* FIXME function type should be different *)
+            MakeCls ((id, ftype), hd, [], extract_label_to_arg tl (St.add hd id cls_names))
+          else
+            let cls_names = if hd = !current_fn then (St.add hd "%self" cls_names) else cls_names in
+            extract_label_to_arg tl cls_names
+      in  
+      extract_label_to_arg (Env.elements free_vars) cls_names
     )
   | KNormal.App (label, args) when Env.mem label known ->
     let args' = List.map (fun arg -> fname_to_cls arg cls_names) args in
     AppDir (label, args')
   | KNormal.App (id, args) ->
-    let id' = fname_to_cls id cls_names in
+    let id' = fname_to_cls id (St.add !current_fn "%self" cls_names) in
     let args' = List.map (fun arg -> fname_to_cls arg cls_names) args in
     AppCls (id', args')
   | KNormal.AppExt (label, args) ->
     AppDir ("min_caml_" ^ label, args)
+  | KNormal.Tuple (ids) -> Tuple (ids)
   | KNormal.Array (id) -> Array (id)
+  | KNormal.Get (id1, id2) -> Get(id1, id2)
+  | KNormal.Put (id1, id2, id3) -> Put (id1, id2, id3)
   | _ -> failwith ("nyi extract\nexp: " ^ KNormal.to_string exp)
 
 let rec f (exp : KNormal.t) : prog =

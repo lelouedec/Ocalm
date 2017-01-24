@@ -40,11 +40,11 @@ let rec g (exp : t) (vars : Id.t St.t) : t =
     AppExt (id, new_args)
 
 (*
-  | LetTuple (l, e1, e2)->
-  | Get (e1, e2) ->
-  | Put (e1, e2, e3) ->
-  | Tuple (l) -> *)
+  | LetTuple (l, e1, e2)-> *)
+  | Tuple ids -> Tuple (ids)
   | Array id -> Array (id)
+  | Get (id1, id2) -> Get (lookup id1 vars, lookup id2 vars)
+  | Put (id1, id2, id3) -> Put (lookup id1 vars, lookup id2 vars, lookup id3 vars)
   | _ -> failwith "no b-reduction defined for this yet"
 
 let rec f (exp : t) : t = g exp St.empty

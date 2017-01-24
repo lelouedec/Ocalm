@@ -1,23 +1,9 @@
 open OUnit2;;
 open Printf
-open Asml
 
 
-let e1 =
-    LetLabelEq (
-      "Sum",
-      ["x";"y";"z"],
-      LetIdentEq("a",Add( "x" , Ident "y"),Exp (Add( "a" , Ident "z"))),
-        LetLabelEq(
-          "Diff",
-          ["x";"y"],
-          Exp (Sub("x",Ident "y")),
-            LetUnderscEQ (LetIdentEq("a",Neg("10"),
-              LetIdentEq ("x",Neg("1"),LetIdentEq("y",Neg("2"),LetIdentEq("z",Neg("3"),
-                LetIdentEq("u",CallLabel ( "f",["x";"y"]),Exp ( CallLabel ( "diff",["a"; "u"]) ) ) ) ))))))
 
-
-let e = 
+let function1 = 
   LetLabelEq("f",["x"],
             Exp(
                 IfEq("x",
@@ -33,29 +19,38 @@ let e =
                         )
                         ) 
             )
-let function_has = Register_alloc.allocate e
 
 
 
-
-(*Testing Function_Number*)
-
+(*Testing function 1*)
+let function_has = Register_alloc.allocate function1
+(*Testing Number of functions*)
 let actual_function_number=function_has#statistics.num_bindings;;
 let test1 test_ctxt = assert_equal 2 (actual_function_number);;
 
+(*testing the nb of variables and registers allocated per function*)
+  (*Function f*)
+let fVariables =ref 0;;
+let fu = function_has#look_for "f" ;;
+Hashtbl.iter(fun key value -> fVariables:=!fVariables+1 )fu#get_hast;;
+let test2 test_ctxt = assert_equal 1 (!fVariables);;
+     (*nb registers*)
+(*Function main*)
+let mainVariables =ref 0;;
+let fu = function_has#look_for "_" in
+Hashtbl.iter(fun key value -> mainVariables:=!mainVariables+1 )fu#get_hast;;
+let test3 test_ctxt = assert_equal 1 (!mainVariables);;
 
-(*testing the nb of variables per function*)
-let counter =ref 0;;
-Hashtbl.iter (fun key value -> (  counter:=!counter+1 ) )function_has#get_hast
 
 
 
 
 (* Name the test cases and group them together *)
-let suite =
-"suite">:::
- [
-  "test1">:: test1]
+let f1 =
+"function 1">:::
+ ["nb functions test">:: test1;
+  "nb variables in function f">:: test2;
+  "nb variables un function main">:: test3]
 ;;
 
 
@@ -63,7 +58,9 @@ let suite =
 
 
 let () =
-  print_int !counter;;
 
-  run_test_tt_main suite
+  print_int !fVariables;
+
+  print_string "***** Testing function 1 ******";
+  run_test_tt_main f1
 ;;

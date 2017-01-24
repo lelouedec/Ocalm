@@ -1,4 +1,5 @@
 open Printf
+(*open Filename*)
 
 let version = "0.0.1"
 
@@ -21,30 +22,35 @@ let file f flags : string =
         ()
       else (
         let _r =
-          (*(Elim.f
+          (Let.f
+            (Beta.f
+              (Alpha.f
+                (KNormal.f _t)))) in
+        let _r = if List.mem "-opt" flags then
+          (Elim.f
             (Constant.f
-              (Inline.f*)
-                (Let.f
-                  (Beta.f
-                    (Alpha.f
-                      (KNormal.f _t)))) in
+              (Inline.f _r)
+            )
+          ) else _r in
         (* if List.mem "-d" flags then ( *)
           
-
+          
           let cls = Closure.f _r in
           let vir = Virtual.f cls in
 
           if List.mem "-s" flags then (
-            print_endline ((KNormal.to_string _r) ^ "\n\n");
+            print_endline ((Closure.to_string cls) ^ "\n\n");
             print_endline ((Asml.fundefs_to_string vir) ^ "\n\n");
           )
           else ();
 
           if List.mem "-asml" flags then (
             result := Asml.fundefs_to_string vir;
-            let reg = Register_alloc.allocate vir in  print_endline (Asm_generator.generate vir reg)
+            (* let reg = Register_alloc.allocate vir in  print_endline (Asm_generator.generate vir reg) *)
           )
-          else ();
+          else (
+            result := let reg = Register_alloc.allocate vir in (Asm_generator.generate vir reg);
+          );
           
         (* ) else () *)
       )
@@ -64,15 +70,16 @@ let version () =
 
 let () =
   let flags = ref [] in
-  let output = ref "a.out" in
+  (* let output = ref "a.out" in *)
+  (* let outputs = ref [] in *)
   let options = [
-    ("-o", Arg.String (fun fname -> output := fname), "<filename> set output file");
+    (* ("-o", Arg.String (fun fname -> output := fname), "<filename> set output file"); *)
     ("-h", Arg.Unit help, "display help");
     ("-v", Arg.Unit version, "display version");
     ("-t", Arg.Unit (fun () -> flags := "-t" :: !flags), "type check only");
     ("-p", Arg.Unit (fun () -> flags := "-p" :: !flags), "parse only");
     ("-asml", Arg.Unit (fun () -> flags := "-asml" :: !flags), "output ASML");
-    ("-wo", Arg.Unit (fun () -> flags := "-wo" :: !flags), "without optimizations");
+    ("-opt", Arg.Unit (fun () -> flags := "-opt" :: !flags), "with optimizations");
     ("-d", Arg.Unit (fun () -> flags := "-d" :: !flags), "debug mode");
     ("-s", Arg.Unit (fun () -> flags := "-s" :: !flags), "print closure and asml")
   ] in
@@ -84,6 +91,24 @@ let () =
     let results = List.map
       (fun f -> file f !flags)
       !files in
-    let ochan = open_out !output in
+    let outputs = List.map 
+      (fun f -> if List.mem "-asml" !flags then (Filename.chop_extension f) ^ ".asml" else (Filename.chop_extension f) ^ ".s") 
+      !files in
+    if (List.mem "-t" !flags && List.mem "-p" !flags) then ()
+    else if List.mem "-asml" !flags then 
+    List.iter2
+      (fun output res -> 
+        let ochan = open_out output in Printf.fprintf ochan "%s\n" res; 
+        close_out ochan )
+      outputs
+      results
+    else 
+    List.iter2
+      (fun output res -> 
+        let ochan = open_out output in Printf.fprintf ochan "%s\n" res; 
+        close_out ochan )
+      outputs
+      results
+    (* let ochan = open_out outputs in
     List.iter (fun res -> Printf.fprintf ochan "%s\n" res) results;
-    close_out ochan
+    close_out ochan *)
