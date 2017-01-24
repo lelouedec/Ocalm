@@ -20,6 +20,7 @@ type t =
   | AppDir of Id.t * Id.t list
   | MakeCls of (Id.t * Type.t) * Id.t * Id.t list * t
   | Array of Id.t
+  | Get of Id.t * Id.t
   (* to be added *)
 
 type let_fn = (Id.t * Type.t) * (Id.t * Type.t) list * (Id.t * Type.t) list * t
@@ -65,6 +66,8 @@ let rec exp_to_string = function
       (Id.to_string label)
       (String.concat ", " (List.map Id.to_string free_vars))
       (exp_to_string e)
+  | Get (id1, id2) -> sprintf "<array(%s) + %s>" (Id.to_string id1) (Id.to_string id2)
+  | Array id -> sprintf "<array, %s>" (Id.to_string id)
   | _ -> failwith "nyi to_s"
 
 let fn_to_string fn =
@@ -172,6 +175,7 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
     AppCls (id', args')
   | KNormal.AppExt (label, args) ->
     AppDir ("min_caml_" ^ label, args)
+  | KNormal.Get (id1, id2) -> Get(id1, id2)
   | KNormal.Array (id) -> Array (id)
   | _ -> failwith ("nyi extract\nexp: " ^ KNormal.to_string exp)
 

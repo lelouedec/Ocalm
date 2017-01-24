@@ -88,7 +88,7 @@ type fundefs =
 
 let rec fundefs_to_string fu =
 	match fu with 
-	| LetUnderscEQ a -> sprintf "let _ = %s" (asmt_to_string a)
+	| LetUnderscEQ a -> sprintf "let _ =\n %s" (asmt_to_string a)
 	| LetLabeleqFloat (l,fl, fu) -> sprintf "let %s = %.2f\n %s " (l) (fl) (fundefs_to_string fu)
-	| LetLabelEq (l,fo, a, fu) -> sprintf "let _%s %s = %s\n \n%s" (l) (form_to_string fo) (asmt_to_string a) (fundefs_to_string fu)
+	| LetLabelEq (l,fo, a, fu) -> sprintf "let _%s %s =\n %s\n \n%s" (l) (form_to_string fo) (asmt_to_string a) (fundefs_to_string fu)
 

@@ -18,7 +18,7 @@ let rec make_exp cls =
   | IfEq (id1, id2, e1, e2) -> Asml.IfEq(id1, Asml.Ident(id2), Asml.Exp(make_exp e1), Asml.Exp(make_exp e2))
   | IfLE (id1, id2, e1, e2) -> Asml.IfLEq(id1, Asml.Ident(id2), Asml.Exp(make_exp e1), Asml.Exp(make_exp e2))
   | Let ((id, t), e1, e2) -> make_exp(e1)
-  | Var id -> Asml.Ident(id)
+  | Var id | Array id -> Asml.Ident(id)
   | AppCls (id, args) -> Asml.CallClo(id, args)
   | AppDir (id, args) -> Asml.CallLabel(id, args)
   | _ -> Asml.Nop

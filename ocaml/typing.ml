@@ -123,13 +123,16 @@ let rec generate exp t =
       let eqs2, t2 = generate e2 t in
       [(fn, tv)] @ eqs_body @ eqs2, t2
   (*| LetTuple (l, e1, e2)-> 
-  | Get (e1, e2) -> 
   | Put (e1, e2, e3) -> 
   | Tuple (l) -> *)
   | Array (e1, e2) -> 
     let eqs1, _ = generate e1 Type.Int in
     let eqs2, ta = generate e2 Type.Int in (* assume array type is int *)
     eqs1 @ eqs2 @ [(Type.Array(ta), t)], Type.Array(ta)
+  | Get (e1, e2) -> 
+    let eqs1, _ = generate e1 (Type.Array(Type.Int)) in
+    let eqs2, _ = generate e2 Type.Int in
+    eqs1 @ eqs2 @ [(Type.Int, t)], Type.Int
   | _ -> [(Type.Unit, Type.Unit)], Type.Unit
 
 let rec unify eq = 

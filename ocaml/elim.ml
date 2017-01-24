@@ -13,7 +13,7 @@ let rec side_effect exp =
 let rec present exp i = 
   match exp with
   | Not id | Neg id | FNeg id -> i = id
-  | Add (id1, id2) | Sub (id1, id2) | FAdd (id1, id2) | FSub (id1, id2) | FMul (id1, id2) | FDiv (id1, id2) | Eq (id1, id2) | LE (id1, id2) -> i = id1 || i = id2
+  | Add (id1, id2) | Sub (id1, id2) | FAdd (id1, id2) | FSub (id1, id2) | FMul (id1, id2) | FDiv (id1, id2) | Eq (id1, id2) | LE (id1, id2) | Get (id1, id2) -> i = id1 || i = id2
   | IfEq (id1, id2, e1, e2) -> present e1 i || present e2 i
   | IfLE (id1, id2, e1, e2) -> present e1 i || present e2 i
   | Let ((id, t), e1, e2) -> present e1 i || present e2 i

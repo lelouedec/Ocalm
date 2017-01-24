@@ -11,7 +11,7 @@ echo "Compiling $1..."
 $MINCAMLC -asml $1 > $EBI.s
 
 echo "Compiling ARM..."
-make -C ARM/ 2> /dev/null 1> /dev/null
+make -C ARM/
 
 echo "Running program $1..." 
 mincaml=$($EBI.arm)

@@ -144,7 +144,6 @@ let rec temporaries exp =
       LetRec ({name = (label, ft') ; args = args ; body = body'}, e'), t
   (*
   | Syntax.LetTuple (l, e1, e2)-> 
-  | Syntax.Get (e1, e2) -> 
   | Syntax.Put (e1, e2, e3) -> 
   | Syntax.Tuple (l) -> *)
   | Syntax.Array (e1, e2) ->
@@ -153,6 +152,10 @@ let rec temporaries exp =
 	        let t = temporaries e2 in
 	        insert_let t
 	          (fun y -> AppExt("create_array", [x; y]), Type.Array(snd t)))
+  | Syntax.Get (e1, e2) -> 
+      insert_let (temporaries e1)
+        (fun x -> insert_let (temporaries e2)
+          (fun y -> Get (x, y), Type.Float))
   | _ -> (Unit, Type.Int)
 
 let rec to_string exp =
@@ -211,11 +214,11 @@ let rec to_string exp =
             (to_string fd.body)
             (to_string e)
 (*
-  | LetTuple (l, e1, e2)->
-  | Get (e1, e2) ->
+  | LetTuple (l, e1, e2)->  
   | Put (e1, e2, e3) ->
   | Tuple (l) -> *)
   | Array id -> sprintf "<array, %s>" (Id.to_string id)
+  | Get (id1, id2) -> sprintf "<array(%s) + %s>" (Id.to_string id1) (Id.to_string id2)
   | _ -> "unsupported knormal expression"
 
 let f exp =

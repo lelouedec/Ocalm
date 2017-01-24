@@ -16,3 +16,4 @@ let rec f exp =
 	| IfEq (id1, id2, e1, e2) -> IfEq (id1, id2, f e1, f e2) 
 	| IfLE (id1, id2, e1, e2) -> IfLE (id1, id2, f e1, f e2) 
 	| e -> e
+
