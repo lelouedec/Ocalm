@@ -127,18 +127,19 @@ let rec generate exp t =
   | Tuple (l) -> *)
   | Array (e1, e2) -> 
     let eqs1, _ = generate e1 Type.Int in
-    let eqs2, ta = generate e2 Type.Int in (* assume array type is int *)
+    let eqs2, ta = generate e2 (Type.gentyp ()) in
     eqs1 @ eqs2 @ [(Type.Array(ta), t)], Type.Array(ta)
   | Get (e1, e2) -> 
-    let eqs1, _ = generate e1 (Type.Array(Type.Int)) in
+    let ta = Type.gentyp () in
+    let eqs1, _ = generate e1 (Type.Array ta) in
     let eqs2, _ = generate e2 Type.Int in
-    eqs1 @ eqs2 @ [(Type.Int, t)], Type.Int
+    eqs1 @ eqs2 @ [(ta, t)], ta
   | _ -> [(Type.Unit, Type.Unit)], Type.Unit
 
 let rec unify eq = 
   match eq with
   | Type.Unit, Type.Unit | Type.Bool, Type.Bool | Type.Int, Type.Int | Type.Float, Type.Float -> ()
-  | Type.Array (t1), Type.Array (t2) when t1 == t2 -> ()
+  | Type.Array (t1), Type.Array (t2) -> unify (t1, t2)
   | Type.Var (t1), Type.Var (t2) when t1 == t2 -> ()
   | Type.Var ({ contents = Some(t1') }), _ -> let (_, t2) = eq in unify (t1', t2)
   | _, Type.Var ({ contents = Some(t2') }) -> let (t1, _) = eq in unify (t1, t2')
