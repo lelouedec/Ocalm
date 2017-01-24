@@ -1,0 +1,17 @@
+let _v6 v7  =
+ add v7 v7
+ 
+let _v3 v4  =
+ let v5 = 1 in
+ sub v4 v5
+ 
+let _v0 v1  =
+ let v2 = 1 in
+ add v1 v2
+ 
+let _ =
+ let v11 = 4 in
+ let v10 = call _v3 v11  in
+ let v9 = call _v0 v10  in
+ let v8 = call _v6 v9  in
+ call _min_caml_print_int v8 

@@ -1,0 +1,14 @@
+let _v2 v3  =
+ let v4 = 1 in
+ sub v3 v4
+ 
+let _v0 v1  =
+ add v1 v1
+ 
+let _ =
+ let v9 = 10 in
+ let v8 = call _v0 v9  in
+ let v7 = call _v2 v8  in
+ let v6 = call _v2 v7  in
+ let v5 = call _v0 v6  in
+ nop
