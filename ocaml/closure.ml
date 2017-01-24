@@ -21,6 +21,7 @@ type t =
   | MakeCls of (Id.t * Type.t) * Id.t * Id.t list * t
   | Array of Id.t
   | Get of Id.t * Id.t
+  | Put of Id.t * Id.t * Id.t
   (* to be added *)
 
 type let_fn = (Id.t * Type.t) * (Id.t * Type.t) list * (Id.t * Type.t) list * t
@@ -67,6 +68,7 @@ let rec exp_to_string = function
       (String.concat ", " (List.map Id.to_string free_vars))
       (exp_to_string e)
   | Get (id1, id2) -> sprintf "<array(%s) + %s>" (Id.to_string id1) (Id.to_string id2)
+  | Put (id1, id2, id3) -> sprintf "<array(%s) + %s> <- %s" (Id.to_string id1) (Id.to_string id2) (Id.to_string id3)
   | Array id -> sprintf "<array, %s>" (Id.to_string id)
   | _ -> failwith "nyi to_s"
 

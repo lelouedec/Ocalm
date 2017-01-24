@@ -213,12 +213,14 @@ let rec to_string exp =
             (Type.to_string fun_t)
             (to_string fd.body)
             (to_string e)
-(*
-  | LetTuple (l, e1, e2)->  
-  | Put (e1, e2, e3) ->
-  | Tuple (l) -> *)
+
+  (*| LetTuple (l, e1, e2)-> *)
+  | Tuple (ids) -> sprintf "<tuple, (%s)>" 
+      (String.concat "," 
+        (List.map (fun id -> (Id.to_string id)) ids))
   | Array id -> sprintf "<array, %s>" (Id.to_string id)
   | Get (id1, id2) -> sprintf "<array(%s) + %s>" (Id.to_string id1) (Id.to_string id2)
+  | Put (id1, id2, id3) -> sprintf "<array(%s) + %s> <- %s" (Id.to_string id1) (Id.to_string id2) (Id.to_string id3)
   | _ -> "unsupported knormal expression"
 
 let f exp =

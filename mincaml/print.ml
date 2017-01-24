@@ -13,6 +13,7 @@ let r = f 4 in print_int r*)
 let x = 1 in
 let y = Array.create 3 0 in
 let z = y.(0) in
+let tuple_test = (47, true, 1.0) in
 print_int z
 
 (*let rec fn x = x + x in

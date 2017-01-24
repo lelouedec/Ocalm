@@ -122,8 +122,19 @@ let rec generate exp t =
       st := St.add id fn !st;
       let eqs2, t2 = generate e2 t in
       [(fn, tv)] @ eqs_body @ eqs2, t2
-  (*| LetTuple (l, e1, e2)-> 
-  | Tuple (l) -> *)
+  | LetTuple (l, e1, e2) -> 
+      print_endline "LET TUPLE";
+      List.iter (fun (idi, tvi) ->
+        st := St.add idi tvi !st) l;
+      let tu = Type.Tuple (List.map (fun x -> snd x) l) in
+      let eqs1, t1 = generate e1 (Type.gentyp ()) in
+      let eqs2, t2 = generate e2 t in 
+      [(tu, t1)] @ eqs1 @ eqs2, t2
+  | Tuple (l) -> 
+    let eqst = List.map (fun x -> generate x (Type.gentyp ())) l in
+    let eqs = List.map (fun (x, y) -> x) eqst in
+    let typ = List.map (fun (x, y) -> y) eqst in
+    List.concat eqs @ [(Type.Tuple(typ), t)], Type.Tuple(typ)
   | Array (e1, e2) -> 
     let eqs1, _ = generate e1 Type.Int in
     let eqs2, ta = generate e2 (Type.gentyp ()) in
@@ -140,7 +151,6 @@ let rec generate exp t =
     let eqs2, _ = generate e2 Type.Int in
     let eqs3, _ = generate e3 ta in
     eqs1 @ eqs2 @ eqs3 @ [(rt, t)], rt (* array put expression has type unit as in ocaml *)
-  | _ -> [(Type.Unit, Type.Unit)], Type.Unit
 
 let rec unify eq = 
   match eq with
@@ -158,6 +168,8 @@ let rec unify eq =
   | Type.Fun(t1s, t1'), Type.Fun(t2s, t2') ->
       List.iter2 (fun x y -> unify (x, y)) t1s t2s;
       unify (t1', t2')
+  | Type.Tuple(t1), Type.Tuple(t2) ->
+      List.iter2 (fun x y -> unify (x, y)) t1 t2
   | _ ->
       let t1, t2 = eq in
       raise (failwith (Printf.sprintf "mismatch types during unification: %s vs %s" (Type.to_string t1) (Type.to_string t2)))
