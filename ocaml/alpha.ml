@@ -58,9 +58,9 @@ let rec g (exp : t) (vars : Id.t St.t) : t =
   | AppExt (id, args) ->
     let new_args = List.map (fun id -> lookup id vars) args in
     AppExt (id, new_args)
-(*
-  | LetTuple (l, e1, e2)-> 
-  | Tuple (l) -> *)
+  (*| LetTuple (l, e1, e2)-> 
+  | Put (e1, e2, e3) -> *)
+  | Tuple ids -> Tuple (ids)
   | Array id -> 
     let newid = lookup id vars
     in Array (newid)
