@@ -67,8 +67,8 @@ let rec exp_to_string = function
       (Id.to_string label)
       (String.concat ", " (List.map Id.to_string free_vars))
       (exp_to_string e)
-  | Get (id1, id2) -> sprintf "<array(%s) + %s>" (Id.to_string id1) (Id.to_string id2)
-  | Put (id1, id2, id3) -> sprintf "<array(%s) + %s> <- %s" (Id.to_string id1) (Id.to_string id2) (Id.to_string id3)
+  | Get (id1, id2) -> sprintf "%s.(%s)" (Id.to_string id1) (Id.to_string id2)
+  | Put (id1, id2, id3) -> sprintf "%s.(%s) <- %s" (Id.to_string id1) (Id.to_string id2) (Id.to_string id3)
   | Array id -> sprintf "<array, %s>" (Id.to_string id)
   | _ -> failwith "nyi to_s"
 
@@ -190,6 +190,7 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
   | KNormal.AppExt (label, args) ->
     AppDir ("min_caml_" ^ label, args)
   | KNormal.Get (id1, id2) -> Get(id1, id2)
+  | KNormal.Put (id1, id2, id3) -> Put (id1, id2, id3)
   | KNormal.Array (id) -> Array (id)
   | _ -> failwith ("nyi extract\nexp: " ^ KNormal.to_string exp)
 

@@ -1,4 +1,5 @@
 open Printf
+(*open Filename*)
 
 let version = "0.0.1"
 
@@ -46,9 +47,11 @@ let file f flags : string =
 
           if List.mem "-asml" flags then (
             result := Asml.fundefs_to_string vir;
-            let reg = Register_alloc.allocate vir in  print_endline (Asm_generator.generate vir reg)
+            (* let reg = Register_alloc.allocate vir in  print_endline (Asm_generator.generate vir reg) *)
           )
-          else ();
+          else (
+            result := let reg = Register_alloc.allocate vir in (Asm_generator.generate vir reg);
+          );
           
         (* ) else () *)
       )
@@ -68,9 +71,10 @@ let version () =
 
 let () =
   let flags = ref [] in
-  let output = ref "a.out" in
+  (* let output = ref "a.out" in *)
+  (* let outputs = ref [] in *)
   let options = [
-    ("-o", Arg.String (fun fname -> output := fname), "<filename> set output file");
+    (* ("-o", Arg.String (fun fname -> output := fname), "<filename> set output file"); *)
     ("-h", Arg.Unit help, "display help");
     ("-v", Arg.Unit version, "display version");
     ("-t", Arg.Unit (fun () -> flags := "-t" :: !flags), "type check only");
@@ -88,6 +92,13 @@ let () =
     let results = List.map
       (fun f -> file f !flags)
       !files in
-    let ochan = open_out !output in
+    let outputs = List.map 
+      (fun f -> if List.mem "-asml" !flags then (Filename.chop_extension f) ^ ".asml" else (Filename.chop_extension f) ^ ".s") 
+      !files in
+    List.iter2
+      (fun output res -> let ochan = open_out output in Printf.fprintf ochan "%s\n" res; close_out ochan)
+      outputs
+      results
+    (* let ochan = open_out outputs in
     List.iter (fun res -> Printf.fprintf ochan "%s\n" res) results;
-    close_out ochan
+    close_out ochan *)
