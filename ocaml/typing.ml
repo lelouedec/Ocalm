@@ -123,7 +123,6 @@ let rec generate exp t =
       let eqs2, t2 = generate e2 t in
       [(fn, tv)] @ eqs_body @ eqs2, t2
   | LetTuple (l, e1, e2) -> 
-      print_endline "LET TUPLE";
       List.iter (fun (idi, tvi) ->
         st := St.add idi tvi !st) l;
       let tu = Type.Tuple (List.map (fun x -> snd x) l) in

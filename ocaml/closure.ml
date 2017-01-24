@@ -19,6 +19,7 @@ type t =
   | AppCls of Id.t * Id.t list
   | AppDir of Id.t * Id.t list
   | MakeCls of (Id.t * Type.t) * Id.t * Id.t list * t
+  | Tuple of Id.t list
   | Array of Id.t
   | Get of Id.t * Id.t
   | Put of Id.t * Id.t * Id.t
@@ -67,9 +68,12 @@ let rec exp_to_string = function
       (Id.to_string label)
       (String.concat ", " (List.map Id.to_string free_vars))
       (exp_to_string e)
+  | Tuple ids -> sprintf "<tuple, (%s)>" 
+      (String.concat "," 
+        (List.map (fun id -> (Id.to_string id)) ids))
+  | Array id -> sprintf "<array, %s>" (Id.to_string id)
   | Get (id1, id2) -> sprintf "%s.(%s)" (Id.to_string id1) (Id.to_string id2)
   | Put (id1, id2, id3) -> sprintf "%s.(%s) <- %s" (Id.to_string id1) (Id.to_string id2) (Id.to_string id3)
-  | Array id -> sprintf "<array, %s>" (Id.to_string id)
   | _ -> failwith "nyi to_s"
 
 let fn_to_string fn =
@@ -189,9 +193,10 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
     AppCls (id', args')
   | KNormal.AppExt (label, args) ->
     AppDir ("min_caml_" ^ label, args)
+  | KNormal.Tuple (ids) -> Tuple (ids)
+  | KNormal.Array (id) -> Array (id)
   | KNormal.Get (id1, id2) -> Get(id1, id2)
   | KNormal.Put (id1, id2, id3) -> Put (id1, id2, id3)
-  | KNormal.Array (id) -> Array (id)
   | _ -> failwith ("nyi extract\nexp: " ^ KNormal.to_string exp)
 
 let rec f (exp : KNormal.t) : prog =
