@@ -11,4 +11,4 @@ let _ =
  let v7 = call _v2 v8  in
  let v6 = call _v2 v7  in
  let v5 = call _v0 v6  in
- nop
+ call _min_caml_print_int v5 
