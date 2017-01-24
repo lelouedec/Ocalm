@@ -2,36 +2,34 @@ open Closure
 
 let word_size = 4
 
-let rec make_exp cls =
-  match cls with
-  | Unit -> Asml.Nop
-  | Int i -> Asml.Int(i)
-  (*| Float f -> *)
-  | Neg id -> Asml.Neg(id)
-  | Add (id1, id2) -> Asml.Add(id1, Asml.Ident(id2))
-  | Sub (id1, id2) -> Asml.Sub(id1, Asml.Ident(id2))
-  | FNeg id -> Asml.FNeg(id)
-  | FAdd (id1, id2) -> Asml.FAdd(id1, id2)
-  | FSub (id1, id2) -> Asml.FSub(id1, id2)
-  | FMul (id1, id2) -> Asml.FMul(id1, id2)
-  | FDiv (id1, id2) -> Asml.FDiv(id1, id2)
-  | IfEq (id1, id2, e1, e2) -> Asml.IfEq(id1, Asml.Ident(id2), Asml.Exp(make_exp e1), Asml.Exp(make_exp e2))
-  | IfLE (id1, id2, e1, e2) -> Asml.IfLEq(id1, Asml.Ident(id2), Asml.Exp(make_exp e1), Asml.Exp(make_exp e2))
-  | Let ((id, t), e1, e2) -> make_exp(e1)
-  | Var id | Array id -> Asml.Ident(id)
-  | AppCls (id, args) -> Asml.CallClo(id, args)
-  | AppDir (id, args) -> Asml.CallLabel(id, args)
-  | Get (id1, id2) -> Asml.Ld (id1, Asml.Ident(id2))
-  | Put (id1, id2, id3) -> Asml.St (id1, Asml.Ident(id2), id3)
-  | _ -> Asml.Nop
-
 let rec tr cls =
   match cls with
   | Unit -> Asml.Exp (Asml.Nop)
+  | Int i -> Asml.Exp (Asml.Int i)
   (*| Float f -> *)
+  | Neg id -> Asml.Exp (Asml.Neg id)
+  | Add (id1, id2) -> Asml.Exp (Asml.Add(id1, Asml.Ident(id2)))
+  | Sub (id1, id2) -> Asml.Exp (Asml.Sub(id1, Asml.Ident(id2)))
+  | FNeg id -> Asml.Exp (Asml.FNeg id)
+  | FAdd (id1, id2) -> Asml.Exp (Asml.FAdd(id1, id2))
+  | FSub (id1, id2) -> Asml.Exp (Asml.FSub(id1, id2))
+  | FMul (id1, id2) -> Asml.Exp (Asml.FMul(id1, id2))
+  | FDiv (id1, id2) -> Asml.Exp (Asml.FDiv(id1, id2))
   | IfEq (id1, id2, e1, e2) -> Asml.Exp (Asml.IfEq(id1, Asml.Ident(id2), tr e1, tr e2))
   | IfLE (id1, id2, e1, e2) -> Asml.Exp (Asml.IfLEq(id1, Asml.Ident(id2), tr e1, tr e2))
-  | Let ((id, t), e1, e2) -> Asml.LetIdentEq (id, make_exp e1, tr e2)
+  | Let ((id, t), e1, e2) ->
+    let e1' = tr e1 in
+    let e1' = (
+      match e1' with
+      | Asml.Exp e -> e
+      | _ -> Asml.Nop (* not sure *)
+    ) in
+    Asml.LetIdentEq (id, e1', tr e2)
+  | Var id | Array id -> Asml.Exp (Asml.Ident(id))
+  | AppCls (id, args) -> Asml.Exp (Asml.CallClo(id, args))
+  | AppDir (id, args) -> Asml.Exp (Asml.CallLabel(id, args))
+  | Get (id1, id2) -> Asml.Exp (Asml.Ld (id1, Asml.Ident(id2)))
+  | Put (id1, id2, id3) -> Asml.Exp (Asml.St (id1, Asml.Ident(id2), id3))
   | MakeCls ((id, t), label, free_vars, e) ->
     let size = List.length free_vars in
     let addr_id = "addr_" ^ label in
@@ -58,7 +56,7 @@ let rec tr cls =
         )
       )
     )
-  | _ -> Asml.Exp (make_exp cls)
+  | _ -> Asml.Exp (Asml.Nop)
 
 let rec generate_fun_body fargs ?(counter = 1) fbody =
   match fargs with
