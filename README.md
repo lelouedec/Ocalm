@@ -38,6 +38,7 @@ which will generate a binary file as `mincamlc` in the same directory
     * -v : show `mincamlc` version
     * -t : only perform type checking
     * -p : only parse `mincaml` programs into Syntax Tree
+    * -opt : include code optimizations in frontend steps - constant folding, inline expansion, unnecessary definitions elimination
     * -asml : output intermediate `asml` code
     * -d : debug mode, output syntax tree, k-normalized form, closure-converted form, asml form
 
@@ -45,11 +46,11 @@ which will generate a binary file as `mincamlc` in the same directory
 ### File structure
 * Test scripts are located in `scripts/` directory
 * Test cases are located in `tests/` directory
-    * Test cases are divided into `syntax/`, `typechecking/`, etc (_to be added_) subdirectories which indicate which phase of the compiler these tests are dedicate for
+    * Test cases are divided into `syntax/`, `typechecking/`, `asml/`, and `gen-code` subdirectories which indicate which phase of the compiler these tests are dedicate for
     * For *syntax* and *type checking* tests:
         * In each directory representing compiler phase, test cases are further divided into `invalid/` and `valid/`, indicating whether these test `mincaml` programs should be rejected by the compiler or not
-    * For _other_ tests (_which is very likely to be structured differently_):
-        * _to be added_
+    * For frontend steps after type checking, test cases are stored in `asml/` subdirectory. All these tests are valid `mincaml` programs.
+    * For backend (assembly code generation): _to be added_
 
 ### Launch tests
 The following scripts are meant to be run at project root directory.
@@ -69,6 +70,21 @@ At the end of execution, the test runner also prints out the number of failed te
 ```
 
 Type checking test runner works in the same manner as with syntax test runner
+
+#### Virtual code generation tests
+```
+./scripts/mincaml-test-virtual-codegen.sh
+```
+
+The test runner runs through all test cases, compile each of them, generate _asml_ virtual code, then execute _asml_ code using asml tool at `tools/asml`. Execution result is compared with expected result, which is yielded by running the test case using `Ocaml` interpreter. The test runner yields *KO* if any of the aforementioned steps fails. Otherwise, it yields *OK* (test passes).
+
+##### To include optimizations
+```
+./scripts/mincaml-test-virtual-codegen.sh -opt
+```
+
+#### Assembly code generation tests
+_to be added_
 
 #### Executing ML file
 ```
