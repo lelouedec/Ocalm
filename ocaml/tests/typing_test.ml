@@ -60,7 +60,7 @@ let case4 =
   let e =
     Let (
       ("x", Type.gentyp ()),
-      Array (Int (3), Int (10)),
+      Array (Int 3, Int 10),
       Unit
     ) in
   let _exp = f e in
@@ -78,7 +78,7 @@ let case5 =
   let e =
     Let (
       ("x", Type.gentyp ()),
-      Array (Int (3), Float (10.)),
+      Array (Int 3, Float 10.),
       Unit
     ) in
   let _exp = f e in
@@ -92,6 +92,18 @@ let case5 =
   in
   assert ((Type.to_string t) = "float")
 
+let case6 =
+  let e =
+    Let (
+      ("x", Type.gentyp ()),
+      Array (Float 2., Int 10),
+      Unit
+    ) in
+  try
+    let _exp = f e in
+    assert false
+  with e -> () (* Type error as expected *)
+
 let _ =
   print_string "Type inference tests... ";
   case1;
@@ -99,4 +111,5 @@ let _ =
   case3;
   case4;
   case5;
+  case6;
   print_endline "passed"
