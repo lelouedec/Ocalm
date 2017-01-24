@@ -95,8 +95,19 @@ let () =
     let outputs = List.map 
       (fun f -> if List.mem "-asml" !flags then (Filename.chop_extension f) ^ ".asml" else (Filename.chop_extension f) ^ ".s") 
       !files in
+    if (List.mem "-t" !flags && List.mem "-p" !flags) then ()
+    else if List.mem "-asml" !flags then 
     List.iter2
-      (fun output res -> let ochan = open_out output in Printf.fprintf ochan "%s\n" res; close_out ochan)
+      (fun output res -> 
+        let ochan = open_out output in Printf.fprintf ochan "%s\n" res; 
+        close_out ochan )
+      outputs
+      results
+    else 
+    List.iter2
+      (fun output res -> 
+        let ochan = open_out output in Printf.fprintf ochan "%s\n" res; 
+        close_out ochan )
       outputs
       results
     (* let ochan = open_out outputs in
