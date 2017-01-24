@@ -182,7 +182,7 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
     let args' = List.map (fun arg -> fname_to_cls arg cls_names) args in
     AppDir (label, args')
   | KNormal.App (id, args) ->
-    let id' = fname_to_cls id cls_names in
+    let id' = fname_to_cls id (St.add !current_fn "%self" cls_names) in
     let args' = List.map (fun arg -> fname_to_cls arg cls_names) args in
     AppCls (id', args')
   | KNormal.AppExt (label, args) ->
