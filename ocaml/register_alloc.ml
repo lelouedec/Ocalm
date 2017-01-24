@@ -51,7 +51,8 @@ class registers_function =
 	val mutable counter = 4;
 	val mutable reg_to_save : string list = [];
 	val mutable line = 0;
-	val mutable c_offset = -16
+	val mutable c_offset = -16;
+	val mutable var_on_stack = 0
 	method get_reg_used = 
 		reg_to_save
 	method add_reg_to_save (x:string): unit =
@@ -82,7 +83,10 @@ class registers_function =
     	line <- line+1
     method display_nb_line =
     	print_endline (string_of_int line)
-
+    method get_var_on_stack = 
+    	var_on_stack
+    method incr_local_var = 
+    	var_on_stack <- var_on_stack +1
 	end;;
 
 type z = (string, registers_function) Hashtbl.t;;
@@ -148,8 +152,8 @@ let rec assign_function exp  =
 	| LetUnderscEQ a -> function_has#add "_" ;assign_asmt a "_"(* Let _ =  *)
 	| LetLabeleqFloat (i,fl,fu) -> () ; () ; assign_function fu (*Let _label = 0.2 in *)
 	| LetLabelEq (i,f,a,fu)-> function_has#add i ; assign_form f i;  assign_asmt a i; assign_function fu  (* Let _label = something in ...*)
-let oset = ref(-4) 
-let rec if_doubl_occcu  ke func valu =
+let oset = ref(4) 
+let rec if_doubl_occcu  ke func valu f_env=
 	let ofset = !oset in 
 	Hashtbl.iter (fun key value  -> 
 		if (value#get_reg = valu#get_reg && key != ke && valu#get_is_in_stack = 0 &&  value#get_is_in_stack = 0 ) 
@@ -163,20 +167,20 @@ let rec if_doubl_occcu  ke func valu =
 					if ( (value#get_first_use) >= (valu#get_first_use)  && (value#get_last_use) >= (valu#get_last_use) ) 
 					then (
 							if(value#get_occ > valu#get_occ) 
-							then (value#set_in_stack ; value#set_offset ofset) 
-							else (valu#set_in_stack ; valu#set_offset ofset) )
+							then (value#set_in_stack ; value#set_offset ofset ;oset := !oset +4 ; f_env#incr_local_var)
+							else (valu#set_in_stack ; valu#set_offset ofset;oset := !oset +4 ; f_env#incr_local_var ))
 					else ( 
 						if ( (value#get_first_use) <= (valu#get_first_use) && (value#get_last_use) >= (valu#get_last_use) ) 
 						then (
 							if(value#get_occ > valu#get_occ) 
-							then  (value#set_in_stack; value#set_offset ofset) 
-							else (valu#set_in_stack ; valu#set_offset ofset) )  
+							then  (value#set_in_stack; value#set_offset ofset; oset := !oset +4 ;f_env#incr_local_var)
+							else (valu#set_in_stack ; valu#set_offset ofset; oset := !oset +4 ;f_env#incr_local_var  ))
 						else (
 							if ( (value#get_first_use) >= (valu#get_first_use) && (value#get_last_use) <= (valu#get_last_use) )
 							then (
 								if(value#get_occ > valu#get_occ) 
-								then  (value#set_in_stack; value#set_offset ofset)
-								else (valu#set_in_stack ; valu#set_offset ofset) )		
+								then  (value#set_in_stack; value#set_offset ofset; oset := !oset +4 ;f_env#incr_local_var)
+								else (valu#set_in_stack ; valu#set_offset ofset;  oset := !oset +4 ;f_env#incr_local_var ) )		
 							)
 						)
 					)
@@ -184,10 +188,10 @@ let rec if_doubl_occcu  ke func valu =
 			)
 	)func
 let rec linear_alloc funcs = 
-	Hashtbl.iter(fun key value -> oset := 0;
-		Hashtbl.iter (fun key2 value2 ->  oset := !oset +4 ; if_doubl_occcu key2 value#get_hast value2 ;  ) value#get_hast 
+	Hashtbl.iter(fun key value -> oset := 4;
+		Hashtbl.iter (fun key2 value2 ->   if_doubl_occcu key2 value#get_hast value2 value ;  ) value#get_hast 
 	)funcs#get_hast
-
+	
 let allocate exp =
 	function_has#clear;
 	assign_function exp;

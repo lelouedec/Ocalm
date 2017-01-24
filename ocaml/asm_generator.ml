@@ -16,13 +16,13 @@ let rec move_parameters_out (f: string list) (reg : Register_alloc.registers_fun
 	match f with
     [] -> sprintf ""
 	| x :: xs -> reg_counter_out:= !reg_counter_out +1;
-					if (!reg_counter_out > 3) 
+					if (!reg_counter_out > 4) 
 					then (
 						let d = reg#look_for x in(
 								if (d#get_is_in_stack = 1)
 									then  (
 											let top =  ((List.length l) * 4 ) - 16 in sprintf "LDR R0, [FP,#%d] \n  STR R0, [FP,#-%d]\n  %s"
-											(top - (d#get_par_offset))(d#get_par_offset+8)(move_parameters_out xs reg l)
+											(top - (d#get_par_offset))(d#get_offset)(move_parameters_out xs reg l)
 										 )
 									else  (
 										    let top =  ((List.length l) * 4 ) - 16 in  sprintf "LDR %s,[FP,#%d] \n  %s"
@@ -34,8 +34,8 @@ let rec move_parameters_out (f: string list) (reg : Register_alloc.registers_fun
 						let d = reg#look_for x in (
 							let z = !reg_counter_out in(
 								if(d#get_is_in_stack = 1) 
-									then ( printf " %s , %s : %d\n" x d#get_reg d#get_is_in_stack;
-										sprintf "STR R%d, [FP,#-%d]\n  %s" (z)(d#get_offset+8)(move_parameters_out xs reg l )
+									then ( 
+										sprintf "STR R%d, [FP,#-%d]\n  %s" (z)(d#get_offset)(move_parameters_out xs reg l )
 									)
 									else(										 
 										sprintf "MOV %s, R%d\n  %s"(d#get_reg)(z)(move_parameters_out xs reg l)
@@ -53,7 +53,7 @@ let rec move_parameters_in (f:string list) (reg : Register_alloc.registers_funct
 					let d= reg#look_for x in( 
 							if(d#get_is_in_stack = 1)
 							then (
-								sprintf" push [FP,#-%d]\n %s" (d#get_par_offset+8) (move_parameters_in xs reg)
+								sprintf" push {[FP,#-%d]}\n %s" (d#get_par_offset+4) (move_parameters_in xs reg)
 							)
 							else(
 								sprintf "push {%s}\n  %s" (d#get_reg) (move_parameters_in xs reg)
@@ -64,10 +64,10 @@ let rec move_parameters_in (f:string list) (reg : Register_alloc.registers_funct
 					let d= reg#look_for x in( 
 						if(d#get_is_in_stack = 1)
 						then (
-							sprintf" STR %s, [FP,#-%d]\n %s" (d#get_reg )(d#get_par_offset+8) (move_parameters_in xs reg)
+							sprintf" STR %s, [FP,#-%d]\n %s" (d#get_reg )(d#get_offset) (move_parameters_in xs reg)
 						)
 						else(
-							let z = !reg_counter_in in sprintf "MOV R%d, %s\n  %s" (z) (let v = reg#look_for x in v#get_reg) (move_parameters_in xs reg)
+							let z = !reg_counter_in in sprintf "MOV R%d, %s\n  %s" (z) (d#get_reg) (move_parameters_in xs reg)
 						)
 					)
 				)
@@ -77,58 +77,103 @@ match l  with
 	| Ident i-> sprintf "%s " (let v = regf#look_for i in v#get_reg)
 	| Int i ->  "#"^ string_of_int (i)
 
-let prologue i = sprintf "STMFD  SP!, {FP,LR} \n  ADD FP, SP, #4 \n  SUB SP, #4 \n\n" 
+let prologue i = sprintf "STMFD  SP!, {FP,LR} \n  ADD FP, SP, #4 \n  SUB SP, #%d \n" i
 
-let epilogue = sprintf "SUB SP, FP, #4 \n  LDMFD  SP!, {FP, LR} \n  BX LR \n\n  "
+let epilogue = sprintf "SUB SP, FP, #4 \n  LDMFD  SP!, {FP, LR} \n  BX LR \n"
+
+
 
 let rec exp_to_asm (exp : exp) (regf : Register_alloc.registers_function)  (resr : string) : string  = (*expression, variable->registers, register to put the result in*)
  match exp with 
  	| Nop -> sprintf ""
 	| LPexpRp e -> sprintf "(%s)" (exp_to_asm exp regf resr)
-	| Int i -> sprintf "MOV %s , #%d\n" (resr) (i) 
+	| Int i ->  if (i < 250 ) then sprintf "MOV %s , #%d\n" (resr) (i) else  sprintf "LDR %s , =#%d\n" (resr) (i)
 	| Ident i ->  let v = (regf#look_for i) in if (v#get_is_in_stack = 0) 
 											   then  sprintf "MOV R0, %s\n" ( v#get_reg ) 
 											   else sprintf "LDR R0, [FP,#-%d]\n" (v#get_offset)
 	| Label s -> sprintf "LDR %s,=%s\n" (resr) (s)
-	| Neg i ->  sprintf "MOV R1, #%s \n  NEG R1, R1\n" i 
+	| Neg i ->  let x = regf#look_for i in if(x#get_is_in_stack = 0) then (sprintf "NEG %s, %s\n" ) (resr)(x#get_reg)
+										else (sprintf "LDR R1, [FP,#-%d]\n  NED R1, R1\n  STR R1, [FP,#-%d]\n"(x#get_offset) (x#get_offset))
 	| FNeg i ->  sprintf " "
 	| Add (i,id) -> let v = (regf#look_for i) in if (v#get_is_in_stack =0) 
-												then (sprintf "ADD %s , %s , %s\n"(resr) (ident_or_imm_to_asm id regf) ( v#get_reg ))
+												then (match id with 
+													|Int i -> (sprintf "MOVE R3, #%d\n  ADD %s , R3 , %s\n" (i) (resr) ( v#get_reg ))
+													|Ident i -> let x= (regf#look_for i) in if (x#get_is_in_stack = 0) 
+																						then (sprintf " ADD %s, %s, %s\n" (resr) (v#get_reg) ( x#get_reg) )
+																						else  (sprintf "LDR R3, [FP,#-%d]\n  ADD %s, R3, %s " (x#get_offset) (resr) (v#get_reg)) )
 												else ( match id with 
 													|Int i-> sprintf "LDR R2, [FP,#-%d]\n ADD %s, %s, R2 " (v#get_offset) (resr) (ident_or_imm_to_asm id regf)
-													|Ident i -> let x= (regf#look_for i) in if (v#get_is_in_stack = 0) 
-																						then (sprintf "LDR R2, [FP,#-%d]\n ADD %s, %s, R2 " (v#get_offset) (resr) ( v#get_reg) )
-																						else  (sprintf "LDR R2, [FP,#-%d]\nLDR R3, [FP,#-%d] ADD %s, R3, R2 " (v#get_offset)  (x#get_offset) (resr)) )
+													|Ident i -> let x= (regf#look_for i) in if (x#get_is_in_stack = 0) 
+																						then (sprintf "LDR R2, [FP,#-%d]\n  ADD %s, %s, R2 " (v#get_offset) (resr) ( v#get_reg) )
+																						else  (sprintf "LDR R2, [FP,#-%d]\n  LDR R3, [FP,#-%d]\n  ADD %s, R3, R2 " (v#get_offset)  (x#get_offset) (resr)) )
 	| Sub (i,id) -> let v = (regf#look_for i) in if (v#get_is_in_stack =0) 
-												then (sprintf "ADD %s , %s , %s\n"(resr) (ident_or_imm_to_asm id regf) ( v#get_reg ))
+												then (match id with 
+													|Int i -> (sprintf "MOVE R3, #%d\n  SUB %s , %s , R3\n" (i) (resr) ( v#get_reg ))
+													|Ident i -> let x= (regf#look_for i) in if (x#get_is_in_stack = 0) 
+																						then (sprintf " SUB %s, %s, %s\n" (resr)   ( x#get_reg) (v#get_reg)  )
+																						else  (sprintf "LDR R2, [FP,#-%d]\n  SUB %s, %s, R2 " (x#get_offset)  (resr) (v#get_reg) ) )
 												else ( match id with 
-													|Int i-> sprintf "LDR R2, [FP,#-%d]\n SUB %s, %s, R2 " (v#get_offset) (resr) (ident_or_imm_to_asm id regf)
-													|Ident i -> let x= (regf#look_for i) in if (v#get_is_in_stack = 0) 
-																						then (sprintf "LDR R2, [FP,#-%d]\n SUB %s, %s, R2 " (v#get_offset) (resr) ( v#get_reg) )
-																						else  (sprintf "LDR R2, [FP,#-%d]\nLDR R3, [FP,#-%d] SUB %s, R3, R2 " (v#get_offset)  (x#get_offset) (resr)) ) 
-	| Ld (i,id) -> sprintf ""
-	| St (i1,id,i2) -> sprintf " " (*mem( i1 + ofset) <- i2*)
+													|Int i-> sprintf "LDR R2, [FP,#-%d]\n  SUB %s, %s, R2\n" (v#get_offset) (resr) (ident_or_imm_to_asm id regf)
+													|Ident i -> let x= (regf#look_for i) in if (x#get_is_in_stack = 0) 
+																						then (sprintf "LDR R2, [FP,#-%d]\n  SUB %s, R2, %s\n" (v#get_offset) (resr) ( x#get_reg) )
+																						else  (sprintf "LDR R2, [FP,#-%d]\n  LDR R3, [FP,#-%d]\n  SUB %s, R2, R3 " (v#get_offset)  (x#get_offset) (resr)) )
+	| Ld (i,id) -> let x = regf#look_for i in 
+					if (x#get_is_in_stack = 0 )
+					then ( sprintf "LDR %s, [%s,#%s]" (resr) (x#get_reg) (ident_or_imm_to_asm id regf)	)
+					else (sprintf "LDR R3, [FP;#-%d] \n  LDR %s, [%s,#%s]" (x#get_offset) (resr) (x#get_reg) (ident_or_imm_to_asm id regf)		)
+	| St (i1,id,i2) -> let x = regf#look_for i1 in 
+					if (x#get_is_in_stack = 0 )
+					then ( let y = regf#look_for i2	 in 
+						if (y#get_is_in_stack = 0)
+						then (sprintf "STR %s, [%s,#%s]\n" (y#get_reg) (x#get_reg) (ident_or_imm_to_asm id regf)  )
+						else ( sprintf "LDR R3, [FP,#-%d]\n STR R3, [%s,#%s]") (y#get_offset) (x#get_reg) (ident_or_imm_to_asm id regf)) 
+					else (let y = regf#look_for i2	 in 
+						if (y#get_is_in_stack = 0)
+						then (sprintf "LDR R3, [FP,#-%d]\n  STR R3, [%s,#%s\n" (x#get_offset) (y#get_reg) (ident_or_imm_to_asm id regf))
+						else (sprintf "LDR R2, [FP,#-%d]\n LDR R3, [FP,#-%d]\n STR R2, [R3,#%s]\n") (y#get_offset) (x#get_offset) (ident_or_imm_to_asm id regf) ) (*mem( i1 + ofset) <- i2*)
 	| FAdd (i,id) -> sprintf " "
 	| FSub (i,id) -> sprintf " "
 	| FMul (i,id) -> sprintf " "
 	| FDiv (i,id) -> sprintf " "
-	| New i -> sprintf "LDR %s, addr_first_free\n  MOV R1, %s \n  ADD R1, R2, %s\n" (resr) (resr) (ident_or_imm_to_asm i regf) 
-	| IfEq (i, id , t1, t2 ) -> incr label_counter ; sprintf "CMP %s , %s\n  BEQ labeltrue%d \n %s\n  B label_out%d  \nlabeltrue%d: \n  %s  \nlabel_out%d: \n  " 
-	(let v = (regf#look_for i) in v#get_reg ) (ident_or_imm_to_asm id regf ) (!label_counter) (asmt_to_asm t2 regf) (!label_counter) (!label_counter)  (asmt_to_asm t1 regf ) (!label_counter)
-	| IfLEq (i, id , t1, t2 ) ->incr label_counter; sprintf "CMP %s , %s\n  BLEQ labeltrue%d \n  %s\n  B label_out%d  \nlabeltrue%d: \n  %s  \nlabel_out%d: \n  " 
-	(let v = (regf#look_for i) in v#get_reg ) (ident_or_imm_to_asm id regf) (!label_counter) (asmt_to_asm t2 regf ) (!label_counter) (!label_counter)  (asmt_to_asm t1 regf ) (!label_counter)
-	| IfGEq (i, id , t1, t2 ) -> incr label_counter; sprintf "CMP %s , %s\n  BGEQ labeltrue%d \n  %s\n  B label_out%d \nlabeltrue%d: \n  %s  \nlabel_out%s: \n  " 
-	(let v = (regf#look_for i) in v#get_reg ) (ident_or_imm_to_asm id regf ) (!label_counter) (asmt_to_asm t2 regf) (!label_counter) (!label_counter)  (asmt_to_asm t1 regf ) (i)
-	| CallLabel (i,l)-> reg_counter_in := -1;sprintf "STMFD R13!, {%s} \n  %s\n    BL %s\n  LDMFD R13!, {%s}  \n  MOV %s, R0\n"
-	 (print_list_reg regf#get_reg_used regf#get_reg_used) (move_parameters_in l regf ) (i)  (print_list_reg regf#get_reg_used regf#get_reg_used) (resr)
-	| CallClo  (id,t) -> sprintf "MOV R0, %s \n  LDR %s,[%s]\n  BLX %s \n  MOV %s, R0" (let v = (regf#look_for (List.hd t)) in v#get_reg ) (let v = (regf#look_for id) in v#get_reg ) (let v =  (regf#look_for id) in v#get_reg) (let v =  (regf#look_for id) in v#get_reg) (resr)
-and asmt_to_asm a reg =
+	| New i -> sprintf "LDR %s, addr_first_free\n  MOV R1, %s \n  ADD R1, R2, %s\n STR R1, addr_first_free" (resr) (resr) (ident_or_imm_to_asm i regf) 
+	| IfEq (i, id , t1, t2 ) -> doIf i id t1 t2 "BEQ" regf resr
+	| IfLEq (i, id , t1, t2 ) ->doIf i id t1 t2 "BLE" regf resr
+	| IfGEq (i, id , t1, t2 ) -> doIf i id t1 t2 "BGE" regf  resr
+	| CallLabel (i,l)-> reg_counter_in := -1;sprintf " STMFD SP!, {R1,R2,R3}\n %s\n  BL %s\n LDMFD SP!, {R1,R2,R3}\n  MOV %s, R0\n"
+	  (move_parameters_in l regf ) (i)   (resr)
+	| CallClo  (id,t) ->let x = regf#look_for id in 
+				if(x#get_is_in_stack = 0) 
+				then (sprintf "MOV R0, %s \n  LDR %s,[%s]\n  BLX %s \n  MOV %s, R0" 
+				   (let v = (regf#look_for (List.hd t)) in v#get_reg ) (x#get_reg ) (x#get_reg) (x#get_reg) (resr))
+				else (sprintf "LDR R0,[FP,#-%d] \n  LDR %s,[%s]\n  BLX %s \n  MOV %s, R0" 
+					(let v = (regf#look_for (List.hd t) ) in v#get_offset ) (x#get_reg ) (x#get_reg) (x#get_reg) (resr))
+and asmt_to_asm a reg resr=
 	match a with
-	| LpasmtRPAREN a -> sprintf "%s\n" (asmt_to_asm a reg)
+	| LpasmtRPAREN a -> sprintf "%s\n" (asmt_to_asm a reg resr)
 	| LetIdentEq (i,e2,a) ->  let v = reg#look_for i  in if (v#get_is_in_stack = 0) 
-													  then sprintf "%s\n  %s\n " (exp_to_asm e2 reg ( v#get_reg))  (asmt_to_asm a reg)
-													  else sprintf "LDR R1, [FP,#-%d]\n  %s\n  %s\n " (v#get_offset)(exp_to_asm e2 reg "R1")  (asmt_to_asm a reg)
-	| Exp e -> exp_to_asm e reg "R0"
+													  then sprintf "%s\n  %s\n " (exp_to_asm e2 reg (v#get_reg))  (asmt_to_asm a reg v#get_reg)
+													  else sprintf "%s\n  STR R0, [FP,#-%d]\n  %s\n " (exp_to_asm e2 reg "R0")(v#get_offset)  (asmt_to_asm a reg "R0")
+	| Exp e ->  exp_to_asm e reg resr
+and doIf i (id : ident_or_imm) t1 t2 cmp regf resr: string = incr label_counter; let count = !label_counter in 
+	let v = regf#look_for i in if (v#get_is_in_stack = 0)
+		then ( incr label_counter ; match id with
+			|Int i ->  sprintf "CMP %s , #%d\n  %s labeltrue%d \n %s\n  B label_out%d  \nlabeltrue%d: \n  %s label_out%d: \n" 	
+			(v#get_reg ) (i) (cmp) (count) (asmt_to_asm t2 regf resr) (count) (count)  (asmt_to_asm t1 regf resr) (count)
+			|Ident i -> let x = regf#look_for i in if (x#get_is_in_stack= 0 )
+			then (sprintf "CMP %s , %s\n  %s labeltrue%d \n %s\n  B label_out%d  \nlabeltrue%d: \n  %s  label_out%d: \n" 	
+			(v#get_reg ) (x#get_reg) (cmp) (count) (asmt_to_asm t2 regf resr) (count) (count)  (asmt_to_asm t1 regf resr) (count))
+			else(sprintf "LDR R2, [FP,#-%d] \n  CMP %s , R2\n  %s labeltrue%d \n %s\n  B label_out%d  \nlabeltrue%d: \n  %s  label_out%d: \n" 
+			(x#get_offset)(v#get_reg )(cmp)(count)  (asmt_to_asm t2 regf resr) (count) (count)  (asmt_to_asm t1 regf resr ) (count))
+		)
+		else ( match id with
+		| Int i -> sprintf "LDR R3, [FP,#-%d]\n  CMP R3 , #%d\n  %s labeltrue%d \n %s\n  B label_out%d  \nlabeltrue%d: \n  %s  label_out%d: \n" 	
+			(v#get_offset) (i) (cmp) (count) (asmt_to_asm t2 regf resr) (count) (count)  (asmt_to_asm t1 regf resr ) (count)
+		| Ident i -> let x = regf#look_for i in if(x#get_is_in_stack = 0)
+			then (sprintf " LDR R3, [FP,#-%d]\n  CMP R3 , %s\n  %s labeltrue%d \n %s\n  B label_out%d  \nlabeltrue%d: \n  %s  label_out%d: \n" 	
+			(v#get_offset) (x#get_reg) (cmp) (count) (asmt_to_asm t2 regf resr) (count) (count)  (asmt_to_asm t1 regf resr) (count))
+			else (sprintf " LDR R2, [FP,#-%d]\n  LDR R3, [FP,#-%d]\n  CMP R3 , R2\n  %s labeltrue%d \n %s\n  B label_out%d  \nlabeltrue%d: \n  %s  label_out%d: \n" 	
+			(v#get_offset) (x#get_offset) (cmp) (count) (asmt_to_asm t2 regf resr) (count) (count)  (asmt_to_asm t1 regf resr) (count))
+		) 
 
 let rec form_to_asm (l : string list)  reg : string =
   match l with
@@ -139,11 +184,12 @@ let rec form_to_asm (l : string list)  reg : string =
 
 let rec function_to_asm exp reg =
 	match exp with
-	| LetUnderscEQ a -> sprintf ".data\n  .balign 4\n  heap: .skip 20000\n .text   \n  .global _start \n_start: \n %s\n\n\n addr_of_heap : .word heap\n addr_first_free: .word heap\n" ( asmt_to_asm a (reg#look_for "_") ); 
+	| LetUnderscEQ a -> sprintf "_start: \n%s %s\n\n\n addr_of_heap : .word heap\n addr_first_free: .word heap\n"(prologue (let s = reg#look_for "_" in s#get_var_on_stack)) ( asmt_to_asm a (reg#look_for "_") "" ); 
 	| LetLabeleqFloat (i,fl,fu) -> sprintf " "
-	| LetLabelEq (i,f,a,fu)-> reg_counter_out := -1;sprintf "%s:\n  %s  %s \n  %s  %s \n  %s\n" 
-	(i) (prologue 2) (move_parameters_out f (reg#look_for i) f) (asmt_to_asm a (reg#look_for i)) (epilogue) (function_to_asm fu reg)
+	| LetLabelEq (i,f,a,fu)-> reg_counter_out := -1;sprintf "%s:\n  %s\nSTMFD R13!, {%s} \n  %s \n  %s  \n  LDMFD R13!, {%s}  \n\n  %s \n  %s" 
+	(i) (prologue (let s = reg#look_for i in s#get_var_on_stack)) (print_list_reg (let x =reg#look_for i in x#get_reg_used) (let x =reg#look_for i in x#get_reg_used))  (move_parameters_out f (reg#look_for i) f) (asmt_to_asm a (reg#look_for i) "R0") (print_list_reg (let q = reg#look_for i in q#get_reg_used)(let q = reg#look_for i in q#get_reg_used)) (epilogue) (function_to_asm fu reg)
 
 let generate exp reg = 
-	function_to_asm exp reg
+	let x = function_to_asm exp reg in 
+	".data\n  .balign 4\n  heap: .skip 20000\n .text   \n  .global _start \n" ^ x
 
