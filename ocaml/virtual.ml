@@ -21,6 +21,8 @@ let rec make_exp cls =
   | Var id | Array id -> Asml.Ident(id)
   | AppCls (id, args) -> Asml.CallClo(id, args)
   | AppDir (id, args) -> Asml.CallLabel(id, args)
+  | Get (id1, id2) -> Asml.Ld (id1, Asml.Ident(id2))
+  | Put (id1, id2, id3) -> Asml.St (id1, Asml.Ident(id2), id3)
   | _ -> Asml.Nop
 
 let rec tr cls =
