@@ -21,13 +21,16 @@ let file f flags : string =
         ()
       else (
         let _r =
+          (Let.f
+            (Beta.f
+              (Alpha.f
+                (KNormal.f _t)))) in
+        let _r = if List.mem "-opt" flags then
           (Elim.f
             (Constant.f
-              (Inline.f
-                (Let.f
-                  (Beta.f
-                    (Alpha.f
-                      (KNormal.f _t))))))) in
+              (Inline.f _r)
+            )
+          ) else _r in
         (* if List.mem "-d" flags then ( *)
           
           
@@ -73,7 +76,7 @@ let () =
     ("-t", Arg.Unit (fun () -> flags := "-t" :: !flags), "type check only");
     ("-p", Arg.Unit (fun () -> flags := "-p" :: !flags), "parse only");
     ("-asml", Arg.Unit (fun () -> flags := "-asml" :: !flags), "output ASML");
-    ("-wo", Arg.Unit (fun () -> flags := "-wo" :: !flags), "without optimizations");
+    ("-opt", Arg.Unit (fun () -> flags := "-opt" :: !flags), "with optimizations");
     ("-d", Arg.Unit (fun () -> flags := "-d" :: !flags), "debug mode");
     ("-s", Arg.Unit (fun () -> flags := "-s" :: !flags), "print closure and asml")
   ] in
