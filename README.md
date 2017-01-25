@@ -40,6 +40,7 @@ which will generate a binary file as `mincamlc` in the same directory
     * -opt : include code optimizations in frontend steps - constant folding, inline expansion, unnecessary definitions elimination
     * -asml : output intermediate `asml` code
     * -s : debug mode, output closure-converted form and asml form
+    * -threshold : maximum function size allowed for inlining
 
 ## Test
 ### File structure
