@@ -2,19 +2,16 @@ open KNormal
 
 (* x + y  *)
 let case0 () = 
-	print_endline ">> case 0";
 	let knormed = 
 			Add (
         "x",
         "y"
       ) in
-	let letreduction_ed = Let.f knormed in
-	print_endline (KNormal.to_string letreduction_ed)
+	let letreduction_ed = Let.f knormed in ()
 
 
 (* let x = (let y = v1 + v2 in x2) in x + x2  *)
 let case1 () = 
-	print_endline ">> case 1";
 	let knormed = 
 		Let (
 			(
@@ -37,13 +34,11 @@ let case1 () =
         "x3"
       )
 		) in
-	let letreduction_ed = Let.f knormed in
-	print_endline (KNormal.to_string letreduction_ed)
+	let letreduction_ed = Let.f knormed in ()
 
 
 (* let x = ( let y = ( let v1 = 1 in ( let v2 = 2 in v1 + v2 ) ) in y ) in v3 *)
 let case2 () =
-	print_endline ">> case 2";
 	let knormed = 
 		Let (
 			(
@@ -74,12 +69,10 @@ let case2 () =
 			),
 			Var "v3"
 		) in
-	let letreduction_ed = Let.f knormed in
-	print_endline (KNormal.to_string letreduction_ed)
+	let letreduction_ed = Let.f knormed in ()
 
 (* let rec f x = (let y = ( let v1 = 1 in ( let v2 = 2 in v1 + v2 ) ) in x + y) in (let x = 2 in f x)*)
 let case3 () =
-  print_endline ">> case 3";
   let knormed =
     LetRec (
       {
@@ -111,12 +104,12 @@ let case3 () =
         App( "f", ["x"])
       )
     ) in
-  let letreduction_ed = Let.f knormed in
-  print_endline (KNormal.to_string letreduction_ed)
+  let letreduction_ed = Let.f knormed in ()
 
 let () =
-  print_endline "Nested let reduction tests";
+  print_string "Nested let reduction tests... ";
 	case0 ();
   case1 ();
   case2 ();
-  case3 ()
+  case3 ();
+  print_endline "assertions required"

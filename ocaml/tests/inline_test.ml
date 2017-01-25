@@ -2,7 +2,6 @@ open KNormal
 
 (* let rec f x = x + 1 in let g = x + y in f y *)
 let case1 () =
-  print_endline ">> case 1";
   let knormed =
     LetRec (
       {
@@ -16,12 +15,10 @@ let case1 () =
         App ("f", ["y"])
       )
     ) in
-  let inline_ed = Inline.f knormed in
-  print_endline (KNormal.to_string inline_ed)
+  let inline_ed = Inline.f knormed in ()
 
 (* let rec f x = (let y = ( let v1 = 1 in ( let v2 = 2 in v1 + v2 ) ) in x + y) in (let x = 2 in f x)*)
 let case2 () =
-  print_endline ">> case 2";
   let knormed =
     LetRec (
       {
@@ -53,10 +50,10 @@ let case2 () =
         App( "f", ["x"])
       )
     ) in
-  let inline_ed = Inline.f knormed in
-  print_endline (KNormal.to_string inline_ed)
+  let inline_ed = Inline.f knormed in ()
 
 let () =
-	print_endline "Inline expansion test";
+	print_string "Inline expansion tests... ";
 	case1 ();
-	case2 ()
+	case2 ();
+  print_endline "assertions required"

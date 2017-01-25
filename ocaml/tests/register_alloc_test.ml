@@ -2,7 +2,6 @@ open Asml
 open Printf
 
 let case1 () =
-  print_endline ">> case 1";
   let e =
     LetLabelEq (
       "f", 
@@ -24,7 +23,6 @@ let case1 () =
   ignore(Register_alloc.allocate e)
 
 let case2 () =
-  print_endline ">> case 2";
   let e =
     LetLabelEq (
       "f",
@@ -42,7 +40,6 @@ let case2 () =
   ignore(Register_alloc.allocate e)
 
 let case3 () = 
-  print_endline ">> case 3";
   let e =
     LetLabelEq (
       "succ" ,
@@ -67,7 +64,6 @@ let case3 () =
   ignore(Register_alloc.allocate e)
 
 let case4 () =
-  print_endline ">> case 4";
   let e =
     LetUnderscEQ (
       LetIdentEq (
@@ -95,7 +91,6 @@ let case4 () =
 
 
 let case5 () =
-  print_endline ">> case 5";
   let e =
     LetLabelEq (
       "Sum",
@@ -110,14 +105,7 @@ let case5 () =
                 LetIdentEq("u",CallLabel ( "f",["x";"y"]),Exp ( CallLabel ( "diff",["a"; "u"]) ) ) ) )))))) in 
 ignore(Register_alloc.allocate e)
 
-
-
-
-
-
-
 let case6 () =
-  print_endline ">> case 6";
   let e =
 	  LetUnderscEQ ( 
       LetIdentEq (
@@ -126,10 +114,9 @@ let case6 () =
         Exp (Add ("x", Ident "y") )
 	    )
 	  ) in 
-  let reg = Register_alloc.allocate e in ignore(Asm_generator.generate e reg)
+  ignore(Register_alloc.allocate e)
 
 let case7() = 
-  print_endline">>Case 7";
  let e = 
   LetLabelEq("f",["x"],
             Exp(
@@ -147,11 +134,11 @@ let case7() =
                         ) 
             )
  in 
- let reg = Register_alloc.allocate e in print_endline(Asm_generator.generate e reg)
+ ignore(Register_alloc.allocate e)
 
 
 let () = 
-  print_endline "Register allocation tests";
+  print_string "Register allocation tests... ";
   case1 ();
   case2 ();
   case3 ();
@@ -159,5 +146,5 @@ let () =
   case5 ();
   case6 ();
   case7 ();
-  print_endline "***********End Back end test**********"
+  print_endline "assertions required"
 

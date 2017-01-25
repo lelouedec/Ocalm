@@ -12,8 +12,6 @@ let case1 () =
       )
     ) in
   let closured = f knormed in
-  print_endline ">> case 1";
-  print_endline (to_string closured);
   ()
 
 let case2 () =
@@ -32,8 +30,6 @@ let case2 () =
       )
     ) in
   let closured = f knormed in
-  print_endline ">> case 2";
-  print_endline (to_string closured);
   ()
 
 let case3 () =
@@ -71,8 +67,6 @@ let case3 () =
       )
     ) in
     let closured = f knormed in
-    print_endline ">> case 3";
-    print_endline (to_string closured);
     ()
 
 let case4 () =
@@ -83,9 +77,7 @@ let case4 () =
       KNormal.Int 1,
       KNormal.AppExt ("print_int", ["z"])
     ) in
-  let closured = f knormed in
-  print_endline ">> case 4";
-  print_endline (to_string closured)
+  let closured = f knormed in ()
 
 let case5 () =
   (* let x = 1 in
@@ -120,14 +112,13 @@ let case5 () =
         )
       )
     ) in
-  let closured = f knormed in
-  print_endline ">> case 5";
-  print_endline (to_string closured)
+  let closured = f knormed in ()
 
 let () =
-  print_endline "\n*****\nClosure conversion tests";
+  print_string "Closure conversion tests... ";
   case1 ();
   case2 ();
   case3 ();
   case4 ();
-  case5 ()
+  case5 ();
+  print_endline "assertions required"
