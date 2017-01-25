@@ -31,7 +31,6 @@ which will generate a binary file as `mincamlc` in the same directory
 ./mincamlc <mincaml_filenames>
 ```
 * Some command-line options:
-    * -o <output_file> : 
     * -h : display help
     * -help : display help
     * --help : display help
@@ -40,7 +39,7 @@ which will generate a binary file as `mincamlc` in the same directory
     * -p : only parse `mincaml` programs into Syntax Tree
     * -opt : include code optimizations in frontend steps - constant folding, inline expansion, unnecessary definitions elimination
     * -asml : output intermediate `asml` code
-    * -d : debug mode, output syntax tree, k-normalized form, closure-converted form, asml form
+    * -s : debug mode, output closure-converted form and asml form
 
 ## Test
 ### File structure

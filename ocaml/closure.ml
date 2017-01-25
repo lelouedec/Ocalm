@@ -136,7 +136,28 @@ let rec extract_main (exp : KNormal.t) (known : Env.t) (cls_names : Id.t St.t) :
     IfEq (id1, id2, extract_main e1 known cls_names, extract_main e2 known cls_names)
   | KNormal.IfLE (id1, id2, e1, e2) ->
     IfLE (id1, id2, extract_main e1 known cls_names, extract_main e2 known cls_names)
-  | KNormal.Let ((id, t), e1, e2) -> Let ((id, t), extract_main e1 known cls_names, extract_main e2 known cls_names)
+  | KNormal.Let ((id, t), e1, e2) ->
+    (
+      match e1 with
+      (* when function argument is another function label, it must be converted to closure *)
+      | KNormal.App (label, args) ->
+        let rec extract_label_to_arg iter_args cls_names =
+          match iter_args with
+          | [] ->
+            let e1' = extract_main e1 known cls_names in
+            Let ((id, t), e1', extract_main e2 known cls_names)
+          | hd :: tl ->
+            if Env.mem hd known then
+              let id = Id.gen_asml_id () in
+              MakeCls ((id, Type.gentyp ()), hd, [], extract_label_to_arg tl (St.add hd id cls_names))
+            else
+              let cls_names = if hd = !current_fn then (St.add hd "%self" cls_names) else cls_names in
+              extract_label_to_arg tl cls_names
+        in 
+        extract_label_to_arg args cls_names
+      | _ ->
+        Let ((id, t), extract_main e1 known cls_names, extract_main e2 known cls_names)
+    )
   | KNormal.Var id ->
     Var (fname_to_cls id cls_names)
   | KNormal.LetRec (fn, e) ->

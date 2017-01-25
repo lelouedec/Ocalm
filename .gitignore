@@ -23,6 +23,9 @@ setup.log
 *.s
 *.arm
 
+# generated asml files
+tests/asml/**/*.asml
+
 ocaml/mincamlc
 .DS_Store
 a.out
