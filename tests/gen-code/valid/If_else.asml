@@ -1,4 +1,0 @@
-let _ =
- let v0 = 1 in
- let v1 = 2 in
- if v1 <= v0 then call _min_caml_print_int v1  else call _min_caml_print_int v0 

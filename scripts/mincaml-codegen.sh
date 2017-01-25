@@ -2,13 +2,14 @@
 cd "$(dirname "$0")"/.. || exit 1
 
 MINCAMLC=ocaml/mincamlc
+ASML=tools/asml
 EBI=ARM
 nb_cases=0
 nb_failures=0
 
 echo "--------------------"
-echo "testing scripts against asml tool"
-for test_case in tests/asml/*.ml
+echo "testing valid scripts"
+for test_case in tests/gen-code/valid/*.ml
 do
     nb_cases=$((nb_cases + 1))
     echo "generating files for testing: $test_case"
@@ -20,13 +21,14 @@ do
     test_out=${test_str%.ml}.asml
     exec_out=${test_str%.ml}.s
 
-    mv $exec_out $EBI/`basename $test_case`
+    mv $exec_out $EBI/`basename $exec_out`
     make -C $EBI 2> /dev/null 1> /dev/null
-
-    echo "testing generation and ground truth"
-    mincaml=$($EBI/`basename $test_case`.arm)
-    groundt=$($ASML "$test_out")
-    if [ "$(<$exec_out)" = "$groundt" ];
+    
+    mincaml=$($EBI/`basename ${test_str%.ml}.arm`)
+    asmltoo=$($ASML "$test_out")
+    groundt=$(ocaml $test_case)
+    echo "ASML tool :" "$asmltoo"", OCaml compiler :" "$groundt"
+    if [ "$mincaml" = "$asmltoo" && "$mincaml" = "$groundt" ];
     then
         echo "OK"
     else

@@ -1,17 +1,7 @@
 #! /bin/sh
 cd "$(dirname "$0")"/.. || exit 1
 
-# TODO change this to point to your mincamlc executable if it's different, or add
-# it to your PATH. Use the appropriate option to run the parser as soon
-# as it is implemented
 MINCAMLC=ocaml/mincamlc
-
-# run all test cases in syntax/valid and make sure they are parsed without error
-# run all test cases in syntax/invalid and make sure the parser returns an error
-
-# TODO extends this script to run test in subdirectories
-# 
-
 nb_cases=0
 nb_failures=0
 
@@ -44,9 +34,6 @@ do
         echo "KO"
     fi
 done
-
-rm tests/typechecking/valid/*.{asml,s} 2> /dev/null
-rm tests/typechecking/invalid/*.{asml,s} 2> /dev/null
 
 echo "run $nb_cases tests"
 if test $nb_failures -gt $((0))

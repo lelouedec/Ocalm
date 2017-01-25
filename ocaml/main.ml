@@ -45,8 +45,7 @@ let file f flags : string =
           else ();
 
           if List.mem "-asml" flags then (
-            result := Asml.fundefs_to_string vir;
-            let reg = Register_alloc.allocate vir in  print_endline (Asm_generator.generate vir reg) 
+            result := Asml.fundefs_to_string vir; 
           )
           else (
             result := let reg = Register_alloc.allocate vir in (Asm_generator.generate vir reg);
