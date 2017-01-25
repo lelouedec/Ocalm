@@ -87,6 +87,8 @@ class registers_function =
     	var_on_stack
     method incr_local_var = 
     	var_on_stack <- var_on_stack +1
+    method statistics =
+	Hashtbl.stats register_hash;
 	end;;
 
 type z = (string, registers_function) Hashtbl.t;;
@@ -103,6 +105,8 @@ class functions_register_hash =
 				functions_hash
 	method clear =
 		Hashtbl.clear functions_hash;
+	method statistics =
+		Hashtbl.stats functions_hash;
 	end;;
 
 
