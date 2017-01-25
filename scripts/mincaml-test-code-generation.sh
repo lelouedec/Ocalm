@@ -1,4 +1,5 @@
-#!/bin/sh
+#! /bin/sh
+
 echo "hello"
 
 
@@ -7,7 +8,7 @@ nb_failures=0
 
 echo "--------------------"
 echo "testing Code generation"
-cd ../tests/gen-code/
+cd ../tests/gen-code/valid
 mkdir Actual
 for test_case in *.ml
 do
