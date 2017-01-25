@@ -2,6 +2,7 @@ open Printf
 (*open Filename*)
 
 let version = "0.0.1"
+let inline_threshold = ref 0
 
 let print_ast exp =
   print_string (Syntax.to_string (exp)); print_newline ()
@@ -29,7 +30,7 @@ let file f flags : string =
         let _r = if List.mem "-opt" flags then
           (Elim.f
             (Constant.f
-              (Inline.f _r)
+              (Inline.f _r !inline_threshold)
             )
           ) else _r in
 
@@ -73,7 +74,7 @@ let () =
     ("-asml", Arg.Unit (fun () -> flags := "-asml" :: !flags), "output ASML");
     ("-opt", Arg.Unit (fun () -> flags := "-opt" :: !flags), "with optimizations");
     ("-s", Arg.Unit (fun () -> flags := "-s" :: !flags), "debug mode: print closure and asml");
-    ("-threshold", Arg.Int (fun threshold -> Inline.threshold := threshold), "Maximum function size alloxed for inlining")
+    ("-threshold", Arg.Int (fun threshold -> inline_threshold := threshold), "Maximum function size alloxed for inlining")
   ] in
   let files = ref [] in
     Arg.parse
