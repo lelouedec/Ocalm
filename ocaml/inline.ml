@@ -1,7 +1,7 @@
 open KNormal
 
 (* Threshold is set by user *)
-let threshold = ref 7
+let threshold = ref 0
 
 (* Helper function: Inline.size to compute the size of expression *)
 let rec size exp = 
