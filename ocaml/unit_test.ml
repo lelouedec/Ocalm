@@ -1,10 +1,47 @@
 open OUnit2;;
 open Printf
+open Asml
+
+  let function2 =
+    LetLabelEq (
+      "Sum",
+      ["x";"y";"z";"p1";"p2";"p3";"p4";"p5";"p6";"p7";"p8";"p9"],
+      LetIdentEq("a",Add( "x" , Ident "y"),Exp (Add( "a" , Ident "z"))),
+        LetLabelEq(
+          "Diff",
+          ["x";"y"],
+          Exp (Sub("x",Ident "y")),
+            LetUnderscEQ (LetIdentEq("a",Neg("10"),
+              LetIdentEq ("x",Neg("1"),LetIdentEq("y",Neg("2"),LetIdentEq("z",Neg("3"),
+                LetIdentEq("u",CallLabel ( "f",["x";"y"]),Exp ( CallLabel ( "diff",["a"; "u"]) ) ) ) ))))))
 
 
 
-let function1 = 
-  LetLabelEq("f",["x"],
+  let function3=
+     LetLabelEq (
+      "succ" ,
+      ["a"; "b"; "c"; "d"; "e"; "f"; "j"; "h"; "i"; "j";"k";"l";"m"], 
+      LetIdentEq (
+        "t" , 
+        Neg ("1") ,
+        Exp( Add ( "x" , Ident "t" ) ) 
+      ),  (* x +t *)
+      LetUnderscEQ (
+        LetIdentEq ("y",
+          Neg ("1"),
+          Exp (
+            CallLabel(
+              "succ ",
+              ["x" ;"y"]
+            )
+          ) 
+        )
+      )
+    )  
+
+
+   let function1 = 
+  LetLabelEq("f",["x";"p1";"p2";"p3";"p4";"p5";"p6";"p7";"p8"],
             Exp(
                 IfEq("x",
                       Int(0),
@@ -15,52 +52,78 @@ let function1 =
             LetUnderscEQ(
                         LetIdentEq("z",
                           Int(4),
-                          Exp(CallLabel("f",["z"]))
+                          Exp(CallLabel("f",["z";"p1";"p2";"p3";"p4";"p5";"p6";"p7";"p8"]))
                         )
                         ) 
             )
 
 
 
-(*Testing function 1*)
-let function_has = Register_alloc.allocate function1
+(***************Testing function 1*******************)
+let function_has = Register_alloc.allocate function1;;
 (*Testing Number of functions*)
 let actual_function_number=function_has#statistics.num_bindings;;
 let test1 test_ctxt = assert_equal 2 (actual_function_number);;
 
-(*testing the nb of variables and registers allocated per function*)
+(*testing the nb of variables  per function*)
   (*Function f*)
 let fVariables =ref 0;;
 let fu = function_has#look_for "f" ;;
-Hashtbl.iter(fun key value -> fVariables:=!fVariables+1 )fu#get_hast;;
-let test2 test_ctxt = assert_equal 1 (!fVariables);;
-     (*nb registers*)
+Hashtbl.iter(fun key value -> fVariables:=!fVariables+1  )fu#get_hast;;
+let test2 test_ctxt = assert_equal 9 (!fVariables);;
+
+(*Testing the nubmer of variables allocated in registers and numbers of variables in the stack*)
+let register_variable =ref 0;;
+let stack_variable =ref 0;;
+
+
+
+  (*Variables on registers & stack*)
+print_string "function f \n";;
+Hashtbl.iter(fun key value -> if (value#get_is_in_stack =0) then register_variable:=!register_variable+1 else  stack_variable:=!stack_variable+1 )fu#get_hast;;
+let test3 test_ctxt = assert_equal 8 (!register_variable);;
+let test4 test_ctxt = assert_equal ~msg:"Er" 1 (!stack_variable);;
+(*
+Hashtbl.iter(fun key value ->  print_string key ; print_string " "; print_string value#get_reg ; print_string " " ; print_int value#get_is_in_stack ;  print_string " Time slice    " ; value#display_timeslice ;  print_string "\n")fu#get_hast;;
+Hashtbl.iter(fun key value ->  print_string key ; print_string " " ; print_string " " ; print_int value#get_is_in_stack ;  print_string "\n" )fu#get_hast;;
+*)
+
 (*Function main*)
 let mainVariables =ref 0;;
-let fu = function_has#look_for "_" in
+let fu = function_has#look_for "_" ;;
 Hashtbl.iter(fun key value -> mainVariables:=!mainVariables+1 )fu#get_hast;;
-let test3 test_ctxt = assert_equal 1 (!mainVariables);;
+let test5 test_ctxt = assert_equal 1 (!mainVariables);;
+
+(* Variables on registers & stack *)
+print_string "function main \n";;
+let register_variable =ref 0;;
+let stack_variable =ref 0;;
+Hashtbl.iter(fun key value -> if (value#get_is_in_stack =0) then register_variable:=!register_variable+1 else  stack_variable:=!stack_variable+1 )fu#get_hast;;
+
+let test6 test_ctxt = assert_equal 1 (!register_variable);;
+let test7 test_ctxt = assert_equal ~msg:"Er" 0 (!stack_variable);;
+
+Hashtbl.iter(fun key value ->  print_string key ; print_string " "; print_string value#get_reg ; print_string " " ; print_int value#get_is_in_stack ;  print_string " Time slice    " ; value#display_timeslice ;  print_string "\n")fu#get_hast;;
+Hashtbl.iter(fun key value ->  print_string key ; print_string " " ; print_string " " ; print_int value#get_is_in_stack ;  print_string "\n" )fu#get_hast;;
+
+      
+     
 
 
 
-
-
-(* Name the test cases and group them together *)
+(* Grouping the test cases together *)
 let f1 =
 "function 1">:::
  ["nb functions test">:: test1;
   "nb variables in function f">:: test2;
-  "nb variables un function main">:: test3]
+  "nb variables un function main">:: test5;
+  "Variables on registers for function f">:: test3;
+  "Variables on the stack for function f">:: test4;
+  "Variables on the stack for function main">:: test6;
+  "Variables on the stack for function main">:: test7]
 ;;
 
-
-
-
-
 let () =
-
-  print_int !fVariables;
-
   print_string "***** Testing function 1 ******";
   run_test_tt_main f1
 ;;
