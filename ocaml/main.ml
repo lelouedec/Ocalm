@@ -74,7 +74,7 @@ let () =
     ("-asml", Arg.Unit (fun () -> flags := "-asml" :: !flags), "output ASML");
     ("-opt", Arg.Unit (fun () -> flags := "-opt" :: !flags), "with optimizations");
     ("-s", Arg.Unit (fun () -> flags := "-s" :: !flags), "debug mode: print closure and asml");
-    ("-threshold", Arg.Int (fun threshold -> inline_threshold := threshold), "Maximum function size alloxed for inlining")
+    ("-threshold", Arg.Int (fun threshold -> inline_threshold := threshold), "Maximum function size allowed for inlining")
   ] in
   let files = ref [] in
     Arg.parse
