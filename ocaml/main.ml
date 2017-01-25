@@ -32,9 +32,7 @@ let file f flags : string =
               (Inline.f _r)
             )
           ) else _r in
-        (* if List.mem "-d" flags then ( *)
-          
-          
+
           let cls = Closure.f _r in
           let vir = Virtual.f cls in
 
@@ -68,18 +66,14 @@ let version () =
 
 let () =
   let flags = ref [] in
-  (* let output = ref "a.out" in *)
-  (* let outputs = ref [] in *)
   let options = [
-    (* ("-o", Arg.String (fun fname -> output := fname), "<filename> set output file"); *)
     ("-h", Arg.Unit help, "display help");
     ("-v", Arg.Unit version, "display version");
     ("-t", Arg.Unit (fun () -> flags := "-t" :: !flags), "type check only");
     ("-p", Arg.Unit (fun () -> flags := "-p" :: !flags), "parse only");
     ("-asml", Arg.Unit (fun () -> flags := "-asml" :: !flags), "output ASML");
     ("-opt", Arg.Unit (fun () -> flags := "-opt" :: !flags), "with optimizations");
-    ("-d", Arg.Unit (fun () -> flags := "-d" :: !flags), "debug mode");
-    ("-s", Arg.Unit (fun () -> flags := "-s" :: !flags), "print closure and asml");
+    ("-s", Arg.Unit (fun () -> flags := "-s" :: !flags), "debug mode: print closure and asml");
     ("-threshold", Arg.Int (fun threshold -> Inline.threshold := threshold), "Maximum function size alloxed for inlining")
   ] in
   let files = ref [] in
@@ -108,6 +102,3 @@ let () =
         close_out ochan )
       outputs
       results
-    (* let ochan = open_out outputs in
-    List.iter (fun res -> Printf.fprintf ochan "%s\n" res) results;
-    close_out ochan *)
