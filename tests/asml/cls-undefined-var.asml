@@ -1,8 +1,0 @@
-let _v0 v1  =
- let v2 = nop in
- add v2 v1
- 
-let _ =
- let v4 = 3 in
- let v3 = call _v0 v4  in
- call _min_caml_print_int v3 
