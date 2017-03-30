@@ -12,3 +12,8 @@ Hierarchy
          directory to your path
 * tests/   put your tests there
 * tools/   asml intepreter (linux binary)
+
+
+Participated in this project for the University :
+- https://github.com/demonkid98
+- https://github.com/hrkz
